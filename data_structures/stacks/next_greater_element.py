@@ -44,34 +44,18 @@ def next_greatest_element_fast(arr: list[float]) -> list[float]:
         result.append(next_item)
     return result
 
-
 def next_greatest_element(arr: list[float]) -> list[float]:
     """
     Get the Next Greatest Element (NGE) for all elements in a list.
-    Maximum element present after the current one which is also greater than the
-    current one.
 
-    A naive way to solve this is to take two loops and check for the next bigger
-    number but that will make the time complexity as O(n^2). The better way to solve
-    this would be to use a stack to keep track of maximum number giving a linear time
-    solution.
-    >>> next_greatest_element(arr) == expect
-    True
+    Args:
+    arr (list[float]): List of numbers for which NGE is to be calculated.
+
+    Returns:
+    list[float]: List of NGEs for each element in the input list.
+                 For any numbers without a corresponding NGE, -1 is returned.
     """
-    arr_size = len(arr)
-    stack: list[float] = []
-    result: list[float] = [-1] * arr_size
-
-    for index in reversed(range(arr_size)):
-        if stack:
-            while stack[-1] <= arr[index]:
-                stack.pop()
-                if not stack:
-                    break
-        if stack:
-            result[index] = stack[-1]
-        stack.append(arr[index])
-    return result
+    return [find_next_greater(arr, i) for i in range(len(arr))]
 
 
 if __name__ == "__main__":
@@ -99,3 +83,21 @@ if __name__ == "__main__":
         "     next_greatest_element():",
         timeit("next_greatest_element(arr)", setup=setup),
     )
+
+
+def find_next_greater(arr: list[float], index: int) -> float:
+    """
+    Find the Next Greatest Element (NGE) for an element in a list.
+
+    Args:
+    arr (list[float]): List of numbers for which NGE is to be calculated.
+    index (int): Position of the element for which NGE is to be calculated.
+
+    Returns:
+    float: NGE for the element at position 'index'.
+           If there is no NGE, -1 is returned.
+    """
+    for next_index in range(index + 1, len(arr)):
+        if arr[next_index] > arr[index]:
+            return arr[next_index]
+    return -1
