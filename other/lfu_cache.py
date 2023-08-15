@@ -160,6 +160,8 @@ class DoubleLinkedList(Generic[T, U]):
         return node
 
 
+
+
 class LFUCache(Generic[T, U]):
     """
     LFU Cache to store a given capacity of data. Can be used as a stand-alone object
@@ -194,9 +196,6 @@ class LFUCache(Generic[T, U]):
     >>> fib.cache_info()
     CacheInfo(hits=196, misses=100, capacity=100, current_size=100)
     """
-
-    # class variable to map the decorator functions to their respective instance
-    decorator_function_to_instance_map: dict[Callable[[T], U], LFUCache[T, U]] = {}
 
     def __init__(self, capacity: int):
         self.list: DoubleLinkedList[T, U] = DoubleLinkedList()
@@ -251,33 +250,13 @@ class LFUCache(Generic[T, U]):
         return None
 
     def put(self, key: T, value: U) -> None:
-        """
-        Sets the value for the input key and updates the Double Linked List
-        """
-
-        if key not in self.cache:
-            if self.num_keys >= self.capacity:
-                # delete first node when over capacity
-                first_node = self.list.head.next
-
-                # guaranteed to have a non-None first node when num_keys > 0
-                # explain to type checker via assertions
-                assert first_node is not None
-                assert first_node.key is not None
-                assert self.list.remove(first_node) is not None
-                # first_node guaranteed to be in list
-
-                del self.cache[first_node.key]
-                self.num_keys -= 1
-            self.cache[key] = DoubleLinkedListNode(key, value)
-            self.list.add(self.cache[key])
-            self.num_keys += 1
-
+        """Insert a new key-value pair or update an existing one."""
+        if key in self.cache:
+            self.update_existing_key(key, value)
         else:
-            node = self.list.remove(self.cache[key])
-            assert node is not None  # node guaranteed to be in list
-            node.val = value
-            self.list.add(node)
+            self.insert_new_key(key, value)
+            if len(self.cache) > self.capacity:
+                self.remove_least_frequently_used()
 
     @classmethod
     def decorator(
@@ -308,6 +287,18 @@ class LFUCache(Generic[T, U]):
             return cache_decorator_wrapper
 
         return cache_decorator_inner
+
+    def update_existing_key(self, key: T, value: U) -> None:
+        """Update an existing key-value pair and its frequency."""
+        # TODO: implement own logic here
+
+    def insert_new_key(self, key: T, value: U) -> None:
+        """Add a new key-value pair."""
+        # TODO: implement own logic here
+
+    def remove_least_frequently_used(self) -> None:
+        """Remove the least frequently used key-value pair."""
+        # TODO: implement own logic here
 
 
 if __name__ == "__main__":

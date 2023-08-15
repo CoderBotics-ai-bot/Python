@@ -6,33 +6,35 @@ import qiskit
 from qiskit.providers import Backend
 
 
+import qiskit
+
+
 def store_two_classics(val1: int, val2: int) -> tuple[qiskit.QuantumCircuit, str, str]:
     """
-    Generates a Quantum Circuit which stores two classical integers
-    Returns the circuit and binary representation of the integers
+    Generates a Quantum Circuit and prepares it to store two classical integers.
+    The Quantum Circuit's state is set according to two passed classical integers.
+
+    Parameters:
+    val1 (int) : First input number to store in circuit.
+    val2 (int) : Second input number to store in circuit.
+
+    Returns:
+    tuple : A tuple containing generated Quantum Circuit, and binary representation of the integers.
     """
-    x, y = bin(val1)[2:], bin(val2)[2:]  # Remove leading '0b'
+    binary1 = int_to_binary(val1)
+    binary2 = int_to_binary(val2)
 
-    # Ensure that both strings are of the same length
-    if len(x) > len(y):
-        y = y.zfill(len(x))
-    else:
-        x = x.zfill(len(y))
+    length = max(len(binary1), len(binary2))
+    binary1 = binary1.zfill(length)
+    binary2 = binary2.zfill(length)
 
-    # We need (3 * number of bits in the larger number)+1 qBits
-    # The second parameter is the number of classical registers, to measure the result
-    circuit = qiskit.QuantumCircuit((len(x) * 3) + 1, len(x) + 1)
+    circuit = qiskit.QuantumCircuit(length * 3, length * 2)
 
-    # We are essentially "not-ing" the bits that are 1
-    # Reversed because it's easier to perform ops on more significant bits
-    for i in range(len(x)):
-        if x[::-1][i] == "1":
-            circuit.x(i)
-    for j in range(len(y)):
-        if y[::-1][j] == "1":
-            circuit.x(len(x) + j)
+    # Initializing qubits for inputs 1 and 2
+    initialize_qubits(circuit, binary1, 0)
+    initialize_qubits(circuit, binary2, length)
 
-    return circuit, x, y
+    return circuit, binary1, binary2
 
 
 def full_adder(
@@ -51,6 +53,22 @@ def full_adder(
     circuit.ccx(input2_loc, carry_in, carry_out)
     circuit.cx(input2_loc, carry_in)
     circuit.cx(input1_loc, input2_loc)
+
+def int_to_binary(val: int) -> str:
+    """
+    Convert integer to binary.
+    """
+    return bin(val)[2:]
+
+
+def initialize_qubits(circuit: qiskit.QuantumCircuit, binary: str, offset: int) -> None:
+    """
+    Initialize qubits based on a binary string.
+    For each qubit that should be changed, a NOT gate is applied to change its state.
+    """
+    for i in range(len(binary)):
+        if binary[i] == "1":
+            circuit.x(offset + i)
 
 
 # The default value for **backend** is the result of a function call which is not
