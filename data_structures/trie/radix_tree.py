@@ -5,6 +5,15 @@ with its parent [https://en.wikipedia.org/wiki/Radix_tree]
 """
 
 
+from typing import Optional
+
+
+
+
+
+
+
+
 class RadixNode:
     def __init__(self, prefix: str = "", is_leaf: bool = False) -> None:
         # Mapping from the first character of the prefix of the node
@@ -48,56 +57,18 @@ class RadixNode:
             self.insert(word)
 
     def insert(self, word: str) -> None:
-        """Insert a word into the tree
+        word = word.lower()
 
-        Args:
-            word (str): word to insert
+        if not self.prefix:
+            self.prefix, self.is_leaf = word, True
+            return
 
-        >>> RadixNode("myprefix").insert("mystring")
+        i = self._get_common_prefix_index(word)
 
-        >>> root = RadixNode()
-        >>> root.insert_many(['myprefix', 'myprefixA', 'myprefixAA'])
-        >>> root.print_tree()
-        - myprefix   (leaf)
-        -- A   (leaf)
-        --- A   (leaf)
-        """
-        # Case 1: If the word is the prefix of the node
-        # Solution: We set the current node as leaf
-        if self.prefix == word and not self.is_leaf:
-            self.is_leaf = True
-
-        # Case 2: The node has no edges that have a prefix to the word
-        # Solution: We create an edge from the current node to a new one
-        # containing the word
-        elif word[0] not in self.nodes:
-            self.nodes[word[0]] = RadixNode(prefix=word, is_leaf=True)
-
+        if i < len(self.prefix):
+            self._handle_partial_match(word, i)
         else:
-            incoming_node = self.nodes[word[0]]
-            matching_string, remaining_prefix, remaining_word = incoming_node.match(
-                word
-            )
-
-            # Case 3: The node prefix is equal to the matching
-            # Solution: We insert remaining word on the next node
-            if remaining_prefix == "":
-                self.nodes[matching_string[0]].insert(remaining_word)
-
-            # Case 4: The word is greater equal to the matching
-            # Solution: Create a node in between both nodes, change
-            # prefixes and add the new node for the remaining word
-            else:
-                incoming_node.prefix = remaining_prefix
-
-                aux_node = self.nodes[matching_string[0]]
-                self.nodes[matching_string[0]] = RadixNode(matching_string, False)
-                self.nodes[matching_string[0]].nodes[remaining_prefix[0]] = aux_node
-
-                if remaining_word == "":
-                    self.nodes[matching_string[0]].is_leaf = True
-                else:
-                    self.nodes[matching_string[0]].insert(remaining_word)
+            self._handle_full_match(word, i)
 
     def find(self, word: str) -> bool:
         """Returns if the word is on the tree
@@ -128,56 +99,83 @@ class RadixNode:
             else:
                 return incoming_node.find(remaining_word)
 
+    def _get_common_prefix_index(self, word: str) -> int:
+        i = 0
+        while i < min(len(word), len(self.prefix)) and word[i] == self.prefix[i]:
+            i += 1
+        return i
+
     def delete(self, word: str) -> bool:
-        """Deletes a word from the tree if it exists
-
-        Args:
-            word (str): word to be deleted
-
-        Returns:
-            bool: True if the word was found and deleted. False if word is not found
-
-        >>> RadixNode("myprefix").delete("mystring")
-        False
-        """
-        incoming_node = self.nodes.get(word[0], None)
+        self._validate_word(word)
+        incoming_node = self._find_incoming_node(word)
         if not incoming_node:
             return False
         else:
             matching_string, remaining_prefix, remaining_word = incoming_node.match(
                 word
             )
-            # If there is remaining prefix, the word can't be on the tree
             if remaining_prefix != "":
                 return False
-            # We have word remaining so we check the next node
             elif remaining_word != "":
                 return incoming_node.delete(remaining_word)
             else:
-                # If it is not a leaf, we don't have to delete
-                if not incoming_node.is_leaf:
-                    return False
-                else:
-                    # We delete the nodes if no edges go from it
-                    if len(incoming_node.nodes) == 0:
-                        del self.nodes[word[0]]
-                        # We merge the current node with its only child
-                        if len(self.nodes) == 1 and not self.is_leaf:
-                            merging_node = next(iter(self.nodes.values()))
-                            self.is_leaf = merging_node.is_leaf
-                            self.prefix += merging_node.prefix
-                            self.nodes = merging_node.nodes
-                    # If there is more than 1 edge, we just mark it as non-leaf
-                    elif len(incoming_node.nodes) > 1:
-                        incoming_node.is_leaf = False
-                    # If there is 1 edge, we merge it with its child
-                    else:
-                        merging_node = next(iter(incoming_node.nodes.values()))
-                        incoming_node.is_leaf = merging_node.is_leaf
-                        incoming_node.prefix += merging_node.prefix
-                        incoming_node.nodes = merging_node.nodes
+                return self._handle_delete(incoming_node, remaining_word)
 
-                    return True
+    def _handle_partial_match(self, word: str, i: int) -> None:
+        common_prefix = word[:i]
+        remaining_prefix_current = self.prefix[i:]
+        remaining_prefix_word = word[i:]
+
+        # Create new node for common prefix
+        new_node = RadixNode(common_prefix, False)
+
+        # Modify prefixes of the current and next node,
+        # also move the next node to be the child of the new common prefix node.
+        new_node.children[remaining_prefix_current] = self
+        self.prefix = remaining_prefix_current
+        self.parent.children[common_prefix] = new_node
+        new_node.parent = self.parent
+        self.parent = new_node
+
+        # If any remaining part of the word is still left, insert it into the tree using current node.
+        if remaining_prefix_word:
+            new_node.insert(remaining_prefix_word)
+
+    def _validate_word(self, word: str) -> None:
+        if not isinstance(word, str):
+            raise TypeError("Word must be a string.")
+        if word == "":
+            raise ValueError("Word must not be an empty string.")
+
+    def _find_incoming_node(self, word: str) -> Optional["RadixNode"]:
+        return self.nodes.get(word[0])
+
+    def _handle_delete(self, incoming_node: "RadixNode", remaining_word: str) -> bool:
+        if not incoming_node.is_leaf:
+            return False
+        elif len(incoming_node.nodes) == 0:
+            del self.nodes[word[0]]
+        elif len(incoming_node.nodes) > 1:
+            incoming_node.is_leaf = False
+        else:
+            self._merge_node(incoming_node)
+        return True
+
+    def _merge_node(self, node: "RadixNode") -> None:
+        merging_node = next(iter(node.nodes.values()))
+        node.is_leaf = merging_node.is_leaf
+        node.prefix += merging_node.prefix
+        node.nodes = merging_node.nodes
+
+    def _handle_full_match(self, word: str, i: int) -> None:
+        if i < len(word):
+            remaining_word = word[i:]
+            if remaining_word not in self.children:
+                self.children[remaining_word] = RadixNode(remaining_word, True)
+            else:
+                self.children[remaining_word].insert(remaining_word)
+        else:
+            self.is_leaf = True
 
     def print_tree(self, height: int = 0) -> None:
         """Print the tree

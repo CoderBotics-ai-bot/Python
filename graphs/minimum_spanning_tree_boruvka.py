@@ -1,7 +1,4 @@
 class Graph:
-    """
-    Data structure to store graphs (based on adjacency lists)
-    """
 
     def __init__(self):
         self.num_vertices = 0
@@ -32,27 +29,16 @@ class Graph:
         self.adjacency[head][tail] = weight
         self.adjacency[tail][head] = weight
 
-    def distinct_weight(self):
+    def distinct_weight(self) -> None:
         """
-        For Boruvks's algorithm the weights should be distinct
-        Converts the weights to be distinct
+        Modifies the graph's adjacency matrix to ensure that all edge weights are unique.
 
+        Side Effects:
+            Modifies the adjacency matrix of Graph in place.
         """
-        edges = self.get_edges()
-        for edge in edges:
-            head, tail, weight = edge
-            edges.remove((tail, head, weight))
-        for i in range(len(edges)):
-            edges[i] = list(edges[i])
-
-        edges.sort(key=lambda e: e[2])
-        for i in range(len(edges) - 1):
-            if edges[i][2] >= edges[i + 1][2]:
-                edges[i + 1][2] = edges[i][2] + 1
-        for edge in edges:
-            head, tail, weight = edge
-            self.adjacency[head][tail] = weight
-            self.adjacency[tail][head] = weight
+        edges = self.remove_duplicate_edges()
+        self.ensure_distinct_weights(edges)
+        self.update_adjacency(edges)
 
     def __str__(self):
         """
@@ -64,6 +50,40 @@ class Graph:
                 weight = self.adjacency[head][tail]
                 string += f"{head} -> {tail} == {weight}\n"
         return string.rstrip("\n")
+
+    def remove_duplicate_edges(self) -> list:
+        """
+        Removes duplicate edges from the graph's edge list.
+
+        Returns:
+            A list of edges where duplicate edges have been removed.
+        """
+        edges = self.get_edges()
+        return [edge for edge in edges if (edge[1], edge[0], edge[2]) not in edges]
+
+    def ensure_distinct_weights(self, edges: list) -> None:
+        """
+        Modifies the passed list of edges to ensure edge weights are distinct.
+
+        Side Effects:
+            Modifies the edge list in place.
+        """
+        edges.sort(key=lambda e: e[2])
+        for i in range(len(edges) - 1):
+            if edges[i][2] >= edges[i + 1][2]:
+                edges[i + 1][2] = edges[i][2] + 1
+
+    def update_adjacency(self, edges: list) -> None:
+        """
+        Updates the graph's adjacency matrix with new edge weights.
+
+        Side Effects:
+            Modifies the adjacency matrix in place.
+        """
+        for edge in edges:
+            head, tail, weight = edge
+            self.adjacency[head][tail] = weight
+            self.adjacency[tail][head] = weight
 
     def get_edges(self):
         """
