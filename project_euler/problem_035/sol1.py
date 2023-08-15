@@ -51,22 +51,33 @@ def contains_an_even_digit(n: int) -> bool:
     """
     return any(digit in "02468" for digit in str(n))
 
-
 def find_circular_primes(limit: int = 1000000) -> list[int]:
     """
-    Return circular primes below limit.
+    Find all circular prime numbers below the given limit.
+
+    In number theory, a circular prime is a prime number with the property that the number generated
+    at each intermediate step when cyclically permuting its (base 10) digits will be prime.
+
+    Args:
+    limit (int): The upper limit upto which we need to find the circular primes. Defaults to 1000000.
+
+    Returns:
+    list[int]: A list of all circular prime numbers below the given limit.
+
+    Examples:
     >>> len(find_circular_primes(100))
     13
     >>> len(find_circular_primes(1000000))
     55
     """
     result = [2]  # result already includes the number 2.
-    for num in range(3, limit + 1, 2):
-        if is_prime(num) and not contains_an_even_digit(num):
-            str_num = str(num)
-            list_nums = [int(str_num[j:] + str_num[:j]) for j in range(len(str_num))]
+
+    for num in odd_numbers(limit):
+        if is_valid_number(num):
+            list_nums = get_cyclic_permutations(num)
             if all(is_prime(i) for i in list_nums):
                 result.append(num)
+
     return result
 
 
@@ -76,6 +87,22 @@ def solution() -> int:
     55
     """
     return len(find_circular_primes())
+
+
+def odd_numbers(limit: int) -> list[int]:
+    """Yield odd numbers from a given limit."""
+    yield from range(3, limit + 1, 2)
+
+
+def is_valid_number(num: int) -> bool:
+    """Check if the number can possibly be a circular prime."""
+    return is_prime(num) and not contains_an_even_digit(num)
+
+
+def get_cyclic_permutations(num: int) -> list[int]:
+    """Get a list of all cyclic permutations of the number."""
+    str_num = str(num)
+    return [int(str_num[j:] + str_num[:j]) for j in range(len(str_num))]
 
 
 if __name__ == "__main__":

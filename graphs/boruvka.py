@@ -29,6 +29,8 @@ from __future__ import annotations
 from typing import Any
 
 
+
+
 class Graph:
     def __init__(self, num_of_nodes: int) -> None:
         """
@@ -80,61 +82,104 @@ class Graph:
             self.set_component(v_node)
 
     def boruvka(self) -> None:
-        """Performs Borůvka's algorithm to find MST."""
+        """
+        Performs Borůvka's algorithm to find the minimum spanning tree (MST) of a given graph.
 
-        # Initialize additional lists required to algorithm.
-        component_size = []
-        mst_weight = 0
+        The function iteratively connects the minimal weight edge of a component to another component.
+        This process is repeated until the graph is fully connected.
 
-        minimum_weight_edge: list[Any] = [-1] * self.m_num_of_nodes
+        Borůvka's algorithm is a greedy algorithm used in graph theory. It finds the minimal spanning tree
+        in a graph which is not necessary connected. It can also be applied on directed graphs.
 
-        # A list of components (initialized to all of the nodes)
-        for node in range(self.m_num_of_nodes):
-            self.m_component.update({node: node})
-            component_size.append(1)
+        Note: This function alters the state of the graph.
+        """
+        (
+            component_size,
+            mst_weight,
+            minimum_weight_edge,
+        ) = self.initialize_boruvka_components()
 
         num_of_components = self.m_num_of_nodes
 
         while num_of_components > 1:
-            for edge in self.m_edges:
-                u, v, w = edge
+            minimum_weight_edge = self.check_min_weight_edges(
+                component_size, minimum_weight_edge, mst_weight, num_of_components
+            )
 
-                u_component = self.m_component[u]
-                v_component = self.m_component[v]
-
-                if u_component != v_component:
-                    """If the current minimum weight edge of component u doesn't
-                    exist (is -1), or if it's greater than the edge we're
-                    observing right now, we will assign the value of the edge
-                    we're observing to it.
-
-                    If the current minimum weight edge of component v doesn't
-                    exist (is -1), or if it's greater than the edge we're
-                    observing right now, we will assign the value of the edge
-                    we're observing to it"""
-
-                    for component in (u_component, v_component):
-                        if (
-                            minimum_weight_edge[component] == -1
-                            or minimum_weight_edge[component][2] > w
-                        ):
-                            minimum_weight_edge[component] = [u, v, w]
-
-            for edge in minimum_weight_edge:
-                if isinstance(edge, list):
-                    u, v, w = edge
-
-                    u_component = self.m_component[u]
-                    v_component = self.m_component[v]
-
-                    if u_component != v_component:
-                        mst_weight += w
-                        self.union(component_size, u_component, v_component)
-                        print(f"Added edge [{u} - {v}]\nAdded weight: {w}\n")
-                        num_of_components -= 1
-
-            minimum_weight_edge = [-1] * self.m_num_of_nodes
         print(f"The total weight of the minimal spanning tree is: {mst_weight}")
+
+    def initialize_boruvka_components(self) -> tuple:
+        component_size = []
+        minimum_weight_edge = [-1] * self.m_num_of_nodes
+        mst_weight = 0
+
+        for node in range(self.m_num_of_nodes):
+            self.m_component.update({node: node})
+            component_size.append(1)
+
+        return component_size, mst_weight, minimum_weight_edge
+
+    def check_min_weight_edges(
+        self,
+        component_size: list,
+        minimum_weight_edge: list,
+        mst_weight: int,
+        num_of_components: int,
+    ) -> list:
+        for edge in self.m_edges:
+            u, v, w = edge
+            u_component = self.m_component[u]
+            v_component = self.m_component[v]
+
+            if u_component == v_component:
+                continue
+
+            minimum_weight_edge = self.update_min_weight_edge(
+                u_component, v_component, w, minimum_weight_edge
+            )
+
+        minimum_weight_edge, mst_weight, num_of_components = self.add_edges_to_mst(
+            component_size, minimum_weight_edge, mst_weight, num_of_components
+        )
+
+        return minimum_weight_edge
+
+    def update_min_weight_edge(
+        self, u_component: int, v_component: int, w: int, minimum_weight_edge: list
+    ) -> list:
+        for component in (u_component, v_component):
+            if (
+                minimum_weight_edge[component] == -1
+                or minimum_weight_edge[component][2] > w
+            ):
+                minimum_weight_edge[component] = [u_component, v_component, w]
+
+        return minimum_weight_edge
+
+    def add_edges_to_mst(
+        self,
+        component_size: list,
+        minimum_weight_edge: list,
+        mst_weight: int,
+        num_of_components: int,
+    ) -> tuple:
+        for edge in minimum_weight_edge:
+            if edge == -1:
+                continue
+
+            u, v, w = edge
+
+            if self.m_component[u] == self.m_component[v]:
+                continue
+
+            mst_weight += w
+            self.union(component_size, self.m_component[u], self.m_component[v])
+            print(f"Added edge [{u} - {v}]\nAdded weight: {w}\n")
+            num_of_components -= 1
+
+        minimum_weight_edge = [-1] * self.m_num_of_nodes
+
+        return minimum_weight_edge, mst_weight, num_of_components
 
 
 def test_vector() -> None:
