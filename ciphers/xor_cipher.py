@@ -19,6 +19,20 @@
 from __future__ import annotations
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 class XORCipher:
     def __init__(self, key: int = 0):
         """
@@ -31,64 +45,105 @@ class XORCipher:
 
     def encrypt(self, content: str, key: int) -> list[str]:
         """
-        input: 'content' of type string and 'key' of type int
-        output: encrypted string 'content' as a list of chars
-        if key not passed the method uses the key by the constructor.
-        otherwise key = 1
-        """
+        Encrypts the given string content with the XOR operation using the provided key.
 
+        The key is first modulo 255 to ensure it's an appropriate size.
+        For each character in the given content string,
+        it calculates the XOR of the ASCII value of the character and the key,
+        and converts the result back into a character.
+        If key is not provided, it uses the key available in the constructor,
+        and if that isn't available too, it defaults to 1.
+
+        Args:
+            content (str): The string contents to encrypt.
+            key (int): The integer key to use for XOR encryption.
+
+        Returns:
+            list[str]: The encrypted content represented as a list of characters.
+
+        Raises:
+            AssertionError: If key isn't an int or content isn't a str.
+        """
         # precondition
         assert isinstance(key, int) and isinstance(content, str)
 
-        key = key or self.__key or 1
+        key = self.normalize_key(key)
 
-        # make sure key is an appropriate size
-        key %= 255
-
-        return [chr(ord(ch) ^ key) for ch in content]
+        return self.apply_xor_operation(content, key)
 
     def decrypt(self, content: str, key: int) -> list[str]:
         """
-        input: 'content' of type list and 'key' of type int
-        output: decrypted string 'content' as a list of chars
-        if key not passed the method uses the key by the constructor.
-        otherwise key = 1
+        Decrypts a string of characters using XOR cipher.
+
+        Args:
+        content (str): The string to be decrypted.
+        key (int): The key used for decryption; defaults to class key or 1.
+
+        Returns:
+        list[str]: A list of characters representing the decrypted string.
         """
+        # Preconditions
+        assert isinstance(key, int) and isinstance(content, str)
 
-        # precondition
-        assert isinstance(key, int) and isinstance(content, list)
-
-        key = key or self.__key or 1
-
-        # make sure key is an appropriate size
-        key %= 255
+        key = self._get_valid_key(key)
 
         return [chr(ord(ch) ^ key) for ch in content]
 
+    def normalize_key(self, key: int) -> int:
+        """Ensures that key is within the acceptable range."""
+        return (key or self.__key or 1) % 255
+
     def encrypt_string(self, content: str, key: int = 0) -> str:
         """
-        input: 'content' of type string and 'key' of type int
-        output: encrypted string 'content'
-        if key not passed the method uses the key by the constructor.
-        otherwise key = 1
+        Encrypts a given string using the XOR cipher with a specified key.
+
+        Args:
+            content (str): The string to be encrypted.
+            key (int, optional): The key used for encryption. If no key is provided, the default key or 1 is used.
+
+        Returns:
+            str: The encrypted string.
+
+        Pre-condition:
+            The key should be an integer and content should be a string.
+
+        Post-condition:
+            The returned string is the encrypted version of the input string.
+
+        Raises:
+            AssertionError: An error occurred if key is not integer or content is not a string.
         """
+        self._validate_inputs(content, key)
 
-        # precondition
-        assert isinstance(key, int) and isinstance(content, str)
+        key = self._normalize_key(key)
 
+        return self._perform_encryption(content, key)
+
+    def _get_valid_key(self, key: int) -> int:
+        """Ensures the supplied key is non-zero and less than 255."""
+        default_key = self.__key if hasattr(self, "__key") else 1
+        return key or default_key % 255
+
+    def _validate_inputs(self, content: str, key: int) -> None:
+        assert isinstance(key, int) and isinstance(
+            content, str
+        ), "Key should be an integer and content should be a string."
+
+    def _normalize_key(self, key: int) -> int:
         key = key or self.__key or 1
 
-        # make sure key can be any size
+        # Make sure key can be any size
         while key > 255:
             key -= 255
 
-        # This will be returned
-        ans = ""
+        return key
 
-        for ch in content:
-            ans += chr(ord(ch) ^ key)
+    def _perform_encryption(self, content: str, key: int) -> str:
+        return "".join([chr(ord(ch) ^ key) for ch in content])
 
-        return ans
+    def apply_xor_operation(self, content: str, key: int) -> list[str]:
+        """Applies XOR operation to the content using the key."""
+        return [chr(ord(ch) ^ key) for ch in content]
 
     def decrypt_string(self, content: str, key: int = 0) -> str:
         """

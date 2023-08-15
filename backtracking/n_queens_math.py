@@ -86,55 +86,46 @@ def depth_first_search(
     n: int,
 ) -> None:
     """
-    >>> boards = []
-    >>> depth_first_search([], [], [], boards, 4)
-    >>> for board in boards:
-    ...     print(board)
-    ['. Q . . ', '. . . Q ', 'Q . . . ', '. . Q . ']
-    ['. . Q . ', 'Q . . . ', '. . . Q ', '. Q . . ']
+    Recursively solves the N-Queens problem using depth-first search (DFS).
+
+    Args:
+        possible_board (list): List of integers representing the possible positions of the queens on the board.
+        diagonal_right_collisions (list): List of integers representing the positions that cause a collision on the right diagonal.
+        diagonal_left_collisions (list): List of integers representing the positions that cause a collision on the left diagonal.
+        boards (list): List of boards to keep track of found solutions.
+        n (int): The size of the board (n x n) and the number of queens to be placed on the board.
+
+    Returns:
+        None
+
+    Examples:
+        >>> boards = []
+        >>> depth_first_search([], [], [], boards, 4)
+        >>> for board in boards:
+        ...     print(board)
+        ['. Q . . ', '. . . Q ', 'Q . . . ', '. . Q . ']
+        ['. . Q . ', 'Q . . . ', '. . . Q ', '. Q . . ']
     """
-
-    # Get next row in the current board (possible_board) to fill it with a queen
     row = len(possible_board)
-
-    # If row is equal to the size of the board it means there are a queen in each row in
-    # the current board (possible_board)
     if row == n:
-        # We convert the variable possible_board that looks like this: [1, 3, 0, 2] to
-        # this: ['. Q . . ', '. . . Q ', 'Q . . . ', '. . Q . ']
-        boards.append([". " * i + "Q " + ". " * (n - 1 - i) for i in possible_board])
+        add_solution(possible_board, boards, n)
         return
 
-    # We iterate each column in the row to find all possible results in each row
-    for col in range(n):
-        # We apply that we learned previously. First we check that in the current board
-        # (possible_board) there are not other same value because if there is it means
-        # that there are a collision in vertical. Then we apply the two formulas we
-        # learned before:
-        #
-        # 45º: y - x = b or 45: row - col = b
-        # 135º: y + x = b or row + col = b.
-        #
-        # And we verify if the results of this two formulas not exist in their variables
-        # respectively.  (diagonal_right_collisions, diagonal_left_collisions)
-        #
-        # If any or these are True it means there is a collision so we continue to the
-        # next value in the for loop.
-        if (
-            col in possible_board
-            or row - col in diagonal_right_collisions
-            or row + col in diagonal_left_collisions
+    for pos in range(n):
+        if is_pos_valid(
+            pos,
+            possible_board,
+            diagonal_right_collisions,
+            diagonal_left_collisions,
+            row,
         ):
-            continue
-
-        # If it is False we call dfs function again and we update the inputs
-        depth_first_search(
-            [*possible_board, col],
-            [*diagonal_right_collisions, row - col],
-            [*diagonal_left_collisions, row + col],
-            boards,
-            n,
-        )
+            depth_first_search(
+                [*possible_board, pos],
+                [*diagonal_right_collisions, row - pos],
+                [*diagonal_left_collisions, row + pos],
+                boards,
+                n,
+            )
 
 
 def n_queens_solution(n: int) -> None:
@@ -148,6 +139,27 @@ def n_queens_solution(n: int) -> None:
         print("")
 
     print(len(boards), "solutions were found.")
+
+
+
+def is_pos_valid(
+    pos: int,
+    possible_board: list[int],
+    diag_right_collisions: list[int],
+    diag_left_collisions: list[int],
+    row: int,
+) -> bool:
+    """Check if the position is valid"""
+    return (
+        pos not in possible_board
+        and row - pos not in diag_right_collisions
+        and row + pos not in diag_left_collisions
+    )
+
+
+def add_solution(possible_board: list[int], boards: list[list[str]], n: int) -> None:
+    """Adds the current board to the list of solutions"""
+    boards.append([". " * i + "Q " + ". " * (n - 1 - i) for i in possible_board])
 
 
 if __name__ == "__main__":
