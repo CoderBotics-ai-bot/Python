@@ -43,6 +43,9 @@ from math import sqrt
 
 from typing import List
 
+
+from math import gcd
+
 def is_prime(number: int) -> bool:
     """
     This function checks whether the input integer 'number' is a prime number. A prime number
@@ -219,6 +222,20 @@ def smallest_prime_factor(number):
 
     return ans
 
+def kg_v(number1: int, number2: int) -> int:
+    assert isinstance(number1, int) and isinstance(
+        number2, int
+    ), "Inputs must be integers"
+    assert number1 > 0 and number2 > 0, "Inputs must be positive integers"
+
+    if number1 == 1 or number2 == 1:
+        return max(number1, number2)
+
+    if number1 == number2:
+        return number1
+
+    return lcm(number1, number2)
+
 
 # ----------------------
 
@@ -234,6 +251,21 @@ def is_even(number):
     assert isinstance(number % 2 == 0, bool), "compare bust been from type bool"
 
     return number % 2 == 0
+
+
+def lcm(number1: int, number2: int) -> int:
+    """
+    Calculate the least common multiple of two integers using the gcd function.
+
+    Args:
+        number1: first integer
+        number2: second integer
+
+    Returns:
+        least common multiple (lcm) of the two inputs
+    """
+    result = abs(number1 * number2) // gcd(number1, number2)
+    return result
 
 
 # ------------------------
@@ -336,78 +368,6 @@ def gcd(number1, number2):
     ), "'number' must been from type int and positive"
 
     return number1
-
-
-# ----------------------------------------------------
-
-
-def kg_v(number1, number2):
-    """
-    Least common multiple
-    input: two positive integer 'number1' and 'number2'
-    returns the least common multiple of 'number1' and 'number2'
-    """
-
-    # precondition
-    assert (
-        isinstance(number1, int)
-        and isinstance(number2, int)
-        and (number1 >= 1)
-        and (number2 >= 1)
-    ), "'number1' and 'number2' must been positive integer."
-
-    ans = 1  # actual answer that will be return.
-
-    # for kgV (x,1)
-    if number1 > 1 and number2 > 1:
-        # builds the prime factorization of 'number1' and 'number2'
-        prime_fac_1 = prime_factorization(number1)
-        prime_fac_2 = prime_factorization(number2)
-
-    elif number1 == 1 or number2 == 1:
-        prime_fac_1 = []
-        prime_fac_2 = []
-        ans = max(number1, number2)
-
-    count1 = 0
-    count2 = 0
-
-    done = []  # captured numbers int both 'primeFac1' and 'primeFac2'
-
-    # iterates through primeFac1
-    for n in prime_fac_1:
-        if n not in done:
-            if n in prime_fac_2:
-                count1 = prime_fac_1.count(n)
-                count2 = prime_fac_2.count(n)
-
-                for _ in range(max(count1, count2)):
-                    ans *= n
-
-            else:
-                count1 = prime_fac_1.count(n)
-
-                for _ in range(count1):
-                    ans *= n
-
-            done.append(n)
-
-    # iterates through primeFac2
-    for n in prime_fac_2:
-        if n not in done:
-            count2 = prime_fac_2.count(n)
-
-            for _ in range(count2):
-                ans *= n
-
-            done.append(n)
-
-    # precondition
-    assert isinstance(ans, int) and (
-        ans >= 0
-    ), "'ans' must been from type int and positive"
-
-    return ans
 
 
 # ----------------------------------
