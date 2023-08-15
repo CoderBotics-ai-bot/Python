@@ -5,6 +5,9 @@ with its parent [https://en.wikipedia.org/wiki/Radix_tree]
 """
 
 
+from typing import List
+
+
 class RadixNode:
     def __init__(self, prefix: str = "", is_leaf: bool = False) -> None:
         # Mapping from the first character of the prefix of the node
@@ -193,17 +196,26 @@ class RadixNode:
 
 
 def test_trie() -> bool:
+    """
+    Tests the functionality of a trie implemented using radix nodes.
+
+    First, a set of words is inserted into the trie. It then asserts
+    that each of these words can be found in the trie. It also verifies
+    that words not inserted cannot be found.
+
+    Then, it tests the delete operation by removing some words and
+    asserting they can no longer be found. It further makes sure that
+    deleting a word doesn't affect other words with similar prefixes.
+
+    Returns:
+        bool: True if all assertions pass. The function will raise an AssertionError if any test fails.
+    """
     words = "banana bananas bandana band apple all beast".split()
     root = RadixNode()
     root.insert_many(words)
-
-    assert all(root.find(word) for word in words)
-    assert not root.find("bandanas")
-    assert not root.find("apps")
-    root.delete("all")
-    assert not root.find("all")
-    root.delete("banana")
-    assert not root.find("banana")
+    test_insertion(root, words)
+    test_absence(root, ["bandanas", "apps"])
+    test_deletion(root, ["all", "banana"])
     assert root.find("bananas")
 
     return True
@@ -211,6 +223,29 @@ def test_trie() -> bool:
 
 def pytests() -> None:
     assert test_trie()
+
+def test_insertion(root: RadixNode, words: List[str]) -> None:
+    """
+    Test insertion of words into the radix trie and their subsequent availability.
+    """
+    assert all(root.find(word) for word in words)
+
+
+def test_absence(root: RadixNode, words: List[str]) -> None:
+    """
+    Test the absence of words from the radix trie that were not inserted.
+    """
+    assert all(not root.find(word) for word in words)
+
+
+def test_deletion(root: RadixNode, words: List[str]) -> None:
+    """
+    Test the deletion functionality of the radix trie.
+    Words deleted should not be found, but similar words should remain.
+    """
+    for word in words:
+        root.delete(word)
+        assert not root.find(word)
 
 
 def main() -> None:
