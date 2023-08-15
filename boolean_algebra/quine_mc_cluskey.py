@@ -128,21 +128,38 @@ def selection(chart: list[list[int]], prime_implicants: list[str]) -> list[str]:
                     chart[j][i] = 0
 
 
+
 def prime_implicant_chart(
-    prime_implicants: list[str], binary: list[str]
+    prime_implicants: Sequence[str], binary: Sequence[str]
 ) -> list[list[int]]:
     """
-    >>> prime_implicant_chart(['0.00.01.5'],['0.00.01.5'])
-    [[1]]
-    """
-    chart = [[0 for x in range(len(binary))] for x in range(len(prime_implicants))]
-    for i in range(len(prime_implicants)):
-        count = prime_implicants[i].count("_")
-        for j in range(len(binary)):
-            if is_for_table(prime_implicants[i], binary[j], count):
-                chart[i][j] = 1
+    Generate a prime implicant chart given prime implicants and binary strings.
 
-    return chart
+    This function creates a prime implicant chart which is a 2D list of integers,
+    by comparing each prime implicant with each binary string.
+    If the number of mismatching characters in the prime implicant and binary string is
+    equal to the count of underscore("_") in the prime implicant, then it is a match (1),
+    otherwise no match (0).
+
+    Args:
+        prime_implicants (Sequence[str]): A sequence of prime implicant strings.
+        binary (Sequence[str]): A sequence of binary strings.
+
+    Returns:
+        list[list[int]]: The generated 2D prime implicant chart,
+                          where rows correspond to prime implicants and columns to binary strings.
+
+    Examples:
+        >>> prime_implicant_chart(['0.00.01.5'],['0.00.01.5'])
+        [[1]]
+    """
+    underscore_counts = list(
+        map(str.count, prime_implicants, ["_"] * len(prime_implicants))
+    )
+    return [
+        [int(is_for_table(p, b, u)) for b in binary]
+        for p, u in zip(prime_implicants, underscore_counts)
+    ]
 
 
 def main() -> None:
