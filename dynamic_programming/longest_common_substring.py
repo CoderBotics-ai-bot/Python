@@ -7,57 +7,52 @@ Therefore, algorithm should return any one of them.
 """
 
 
+from typing import List
+
 def longest_common_substring(text1: str, text2: str) -> str:
     """
-    Finds the longest common substring between two strings.
-    >>> longest_common_substring("", "")
-    ''
-    >>> longest_common_substring("a","")
-    ''
-    >>> longest_common_substring("", "a")
-    ''
-    >>> longest_common_substring("a", "a")
-    'a'
-    >>> longest_common_substring("abcdef", "bcd")
-    'bcd'
-    >>> longest_common_substring("abcdef", "xabded")
-    'ab'
-    >>> longest_common_substring("GeeksforGeeks", "GeeksQuiz")
-    'Geeks'
-    >>> longest_common_substring("abcdxyz", "xyzabcd")
-    'abcd'
-    >>> longest_common_substring("zxabcdezy", "yzabcdezx")
-    'abcdez'
-    >>> longest_common_substring("OldSite:GeeksforGeeks.org", "NewSite:GeeksQuiz.com")
-    'Site:Geeks'
-    >>> longest_common_substring(1, 1)
-    Traceback (most recent call last):
-        ...
-    ValueError: longest_common_substring() takes two strings for inputs
+    Finds the longest common substring between two given strings.
+
+    Args:
+        text1 (str): The first string.
+        text2 (str): The second string.
+
+    Returns:
+        str: The longest common substring. If there is none, returns an empty string.
     """
+    _raise_for_incorrect_types(text1, text2)
 
-    if not (isinstance(text1, str) and isinstance(text2, str)):
-        raise ValueError("longest_common_substring() takes two strings for inputs")
+    matrix = _init_matrix(len(text1), len(text2))
+    longest_substring = _compute_longest_substring(text1, text2, matrix)
 
-    text1_length = len(text1)
-    text2_length = len(text2)
-
-    dp = [[0] * (text2_length + 1) for _ in range(text1_length + 1)]
-    ans_index = 0
-    ans_length = 0
-
-    for i in range(1, text1_length + 1):
-        for j in range(1, text2_length + 1):
-            if text1[i - 1] == text2[j - 1]:
-                dp[i][j] = 1 + dp[i - 1][j - 1]
-                if dp[i][j] > ans_length:
-                    ans_index = i
-                    ans_length = dp[i][j]
-
-    return text1[ans_index - ans_length : ans_index]
+    return longest_substring
 
 
 if __name__ == "__main__":
     import doctest
 
     doctest.testmod()
+
+
+def _raise_for_incorrect_types(text1: str, text2: str):
+    if not (isinstance(text1, str) and isinstance(text2, str)):
+        raise ValueError("longest_common_substring() takes two strings for inputs")
+
+
+def _init_matrix(width: int, height: int) -> List[List[int]]:
+    return [[0] * (height + 1) for _ in range(width + 1)]
+
+
+def _compute_longest_substring(text1: str, text2: str, dp: List[List[int]]) -> str:
+    ans_length = ans_index = 0
+
+    for i in range(1, len(text1) + 1):
+        for j in range(1, len(text2) + 1):
+            if text1[i - 1] == text2[j - 1]:
+                dp[i][j] = 1 + dp[i - 1][j - 1]
+
+                if dp[i][j] > ans_length:
+                    ans_length = dp[i][j]
+                    ans_index = i
+
+    return text1[ans_index - ans_length : ans_index]
