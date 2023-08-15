@@ -15,23 +15,37 @@ prime cube, and prime fourth power?
 """
 
 
-def solution(limit: int = 50000000) -> int:
-    """
-    Return the number of integers less than limit which can be expressed as the sum
-    of a prime square, prime cube, and prime fourth power.
-    >>> solution(50)
-    4
-    """
-    ret = set()
-    prime_square_limit = int((limit - 24) ** (1 / 2))
+from typing import Set
 
-    primes = set(range(3, prime_square_limit + 1, 2))
+
+def solution(limit: int = 50_000_000) -> int:
+    primes = generate_primes(int((limit - 24) ** (1 / 2)))
+    return len(generate_integers(primes, limit))
+
+
+if __name__ == "__main__":
+    print(f"{solution() = }")
+
+def generate_primes(n: int) -> Set[int]:
+    ...
+
+
+def generate_integers(primes: Set[int], limit: int) -> Set[int]:
+    ...
+
+
+def generate_primes(n: int) -> Set[int]:
+    primes = set(range(3, n + 1, 2))
     primes.add(2)
-    for p in range(3, prime_square_limit + 1, 2):
+    for p in range(3, n + 1, 2):
         if p not in primes:
             continue
-        primes.difference_update(set(range(p * p, prime_square_limit + 1, p)))
+        primes.difference_update(set(range(p * p, n + 1, p)))
+    return primes
 
+
+def generate_integers(primes: Set[int], limit: int) -> Set[int]:
+    ret = set()
     for prime1 in primes:
         square = prime1 * prime1
         for prime2 in primes:
@@ -44,9 +58,4 @@ def solution(limit: int = 50000000) -> int:
                 if total >= limit:
                     break
                 ret.add(total)
-
-    return len(ret)
-
-
-if __name__ == "__main__":
-    print(f"{solution() = }")
+    return ret
