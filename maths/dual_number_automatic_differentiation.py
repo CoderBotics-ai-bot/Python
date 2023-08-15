@@ -8,6 +8,20 @@ Note this only works for basic functions, f(x) where the power of x is positive.
 """
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 class Dual:
     def __init__(self, real, rank):
         self.real = real
@@ -28,42 +42,151 @@ class Dual:
             cur.pop(-1)
         return Dual(self.real, cur)
 
-    def __add__(self, other):
-        if not isinstance(other, Dual):
-            return Dual(self.real + other, self.duals)
-        s_dual = self.duals.copy()
-        o_dual = other.duals.copy()
-        if len(s_dual) > len(o_dual):
-            o_dual.extend([1] * (len(s_dual) - len(o_dual)))
-        elif len(s_dual) < len(o_dual):
-            s_dual.extend([1] * (len(o_dual) - len(s_dual)))
-        new_duals = []
-        for i in range(len(s_dual)):
-            new_duals.append(s_dual[i] + o_dual[i])
-        return Dual(self.real + other.real, new_duals)
+    def __add__(self, other: "Dual") -> "Dual":
+        """
+        Overloads the addition operation for instances of the Dual class.
+        If the other operand is not a Dual instance, it is assumed to be of a numerical type
+        and only used for the real part calculation, while the existing dual numbers are retained.
 
-    __radd__ = __add__
+        Ensures the operand's dual parts are the same length before adding.
+
+        Args:
+            other (Dual): The other operand which may be a `Dual` instance or a numerical type.
+
+        Returns:
+            Dual: A new Dual instance with the summed real and dual numbers.
+        """
+        real_total = self.real + (other.real if isinstance(other, Dual) else other)
+        duals_total = (
+            self._combine_duals(other) if isinstance(other, Dual) else self.duals
+        )
+
+        return Dual(real_total, duals_total)
 
     def __sub__(self, other):
         return self + other * -1
 
-    def __mul__(self, other):
+    def _combine_duals(self, other: "Dual") -> list:
+        """
+        Combines the dual parts of `self` and `other` into a new list. Fills in gaps
+        with 1s to make both lists of dual numbers the same length before combining.
+
+        Args:
+            other (Dual): The other operand which is a `Dual` instance.
+
+        Returns:
+            list: A new list of dual numbers.
+        """
+        s_dual, o_dual = self._level_duals(other)
+
+        return [s + o for s, o in zip(s_dual, o_dual)]
+
+    def __mul__(self, other: "Dual") -> "Dual":
+        """
+        Multiply a Dual by another Dual or a real number.
+
+        Args:
+            other (Dual or int or float): The Dual object or real number to multiply with.
+
+        Returns:
+            Dual: The result of the multiplication.
+
+        Raises:
+            TypeError: If other is not a Dual object or a real number.
+        """
         if not isinstance(other, Dual):
-            new_duals = []
-            for i in self.duals:
-                new_duals.append(i * other)
-            return Dual(self.real * other, new_duals)
-        new_duals = [0] * (len(self.duals) + len(other.duals) + 1)
-        for i, item in enumerate(self.duals):
-            for j, jtem in enumerate(other.duals):
-                new_duals[i + j + 1] += item * jtem
-        for k in range(len(self.duals)):
-            new_duals[k] += self.duals[k] * other.real
-        for index in range(len(other.duals)):
-            new_duals[index] += other.duals[index] * self.real
+            return self.multiply_with_real(other)
+
+        new_duals = self.initialize_new_duals(other)
+        self.add_duales(self, other, new_duals)
+        self.add_duales(other, self, new_duals)
+
         return Dual(self.real * other.real, new_duals)
 
-    __rmul__ = __mul__
+    def _level_duals(self, other: "Dual") -> tuple:
+        """
+        Extends the shorter list of dual numbers with 1s until it is the same length as
+        the longer list.
+
+        Args:
+            other (Dual): The other operand which is a `Dual` instance.
+
+        Returns:
+            tuple: The leveled lists of dual numbers.
+        """
+        s_dual = self.duals.copy()
+        o_dual = other.duals.copy()
+
+        len_difference = len(s_dual) - len(o_dual)
+        if len_difference > 0:
+            o_dual.extend([1] * len_difference)
+        elif len_difference < 0:
+            s_dual.extend([1] * abs(len_difference))
+
+        return s_dual, o_dual
+
+    def multiply_with_real(self, other: float) -> "Dual":
+        return Dual(self.real * other, [dual * other for dual in self.duals])
+
+    def __pow__(self, n: int) -> "Dual":
+        """
+        Overloads the power operator '**' for Dual numbers.
+
+        Args:
+            n (int): The power to raise the Dual number to. Must be a positive integer.
+
+        Returns:
+            Dual: The result of raising the Dual number to the power n.
+
+        Raises:
+            ValueError: If n is not a positive integer.
+
+        """
+        self._validate_power_parameter(n)
+
+        if n == 0:
+            return 1
+        if n == 1:
+            return self
+
+        return self._calculate_power(n)
+
+    @staticmethod
+    def initialize_new_duals(other: "Dual") -> list:
+        return [0] * (len(self.duals) + len(other.duals) + 1)
+
+    def _validate_power_parameter(self, n: int) -> None:
+        """
+        Checks if n is a positive integer
+
+        Args:
+            n (int): The power to raise the Dual number to.
+
+        Raises:
+            ValueError: If n is not a positive integer.
+        """
+        if n < 0 or not isinstance(n, int):
+            raise ValueError("power must be a positive integer")
+
+    def _calculate_power(self, n: int) -> "Dual":
+        """
+        Calculates power operation
+
+        Args:
+            n (int): The power to raise the Dual number to.
+
+        Returns:
+            Dual: The result of raising the Dual number to the power n.
+        """
+        x = self
+        for _ in range(n - 1):
+            x *= self
+        return x
+
+    @staticmethod
+    def add_duales(first: "Dual", second: "Dual", new_duals: list) -> None:
+        for i in range(len(first.duals)):
+            new_duals[i] += first.duals[i] * second.real
 
     def __truediv__(self, other):
         if not isinstance(other, Dual):
@@ -80,18 +203,6 @@ class Dual:
                 new_duals.append(i // other)
             return Dual(self.real // other, new_duals)
         raise ValueError
-
-    def __pow__(self, n):
-        if n < 0 or isinstance(n, float):
-            raise ValueError("power must be a positive integer")
-        if n == 0:
-            return 1
-        if n == 1:
-            return self
-        x = self
-        for _ in range(n - 1):
-            x *= self
-        return x
 
 
 def differentiate(func, position, order):
