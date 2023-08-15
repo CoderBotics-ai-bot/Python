@@ -236,6 +236,13 @@ def kg_v(number1: int, number2: int) -> int:
 
     return lcm(number1, number2)
 
+def get_primes_between(p_number_1: int, p_number_2: int) -> List[int]:
+    assert (
+        is_prime(p_number_1) and is_prime(p_number_2) and (p_number_1 < p_number_2)
+    ), "The arguments must be prime numbers and 'p_number_1' < 'p_number_2'"
+
+    return list(get_next_prime(num) for num in range(p_number_1 + 1, p_number_2))
+
 
 # ----------------------
 
@@ -251,6 +258,12 @@ def is_even(number):
     assert isinstance(number % 2 == 0, bool), "compare bust been from type bool"
 
     return number % 2 == 0
+
+
+def get_next_prime(number: int) -> int:
+    while not is_prime(number):
+        number += 1
+    return number
 
 
 def lcm(number1: int, number2: int) -> int:
@@ -401,51 +414,6 @@ def get_prime(n):
         ans
     ), "'ans' must been a prime number and from type int"
 
-    return ans
-
-
-# ---------------------------------------------------
-
-
-def get_primes_between(p_number_1, p_number_2):
-    """
-    input: prime numbers 'pNumber1' and 'pNumber2'
-            pNumber1 < pNumber2
-    returns a list of all prime numbers between 'pNumber1' (exclusive)
-            and 'pNumber2' (exclusive)
-    """
-
-    # precondition
-    assert (
-        is_prime(p_number_1) and is_prime(p_number_2) and (p_number_1 < p_number_2)
-    ), "The arguments must been prime numbers and 'pNumber1' < 'pNumber2'"
-
-    number = p_number_1 + 1  # jump to the next number
-
-    ans = []  # this list will be returns.
-
-    # if number is not prime then
-    # fetch the next prime number.
-    while not is_prime(number):
-        number += 1
-
-    while number < p_number_2:
-        ans.append(number)
-
-        number += 1
-
-        # fetch the next prime number.
-        while not is_prime(number):
-            number += 1
-
-    # precondition
-    assert (
-        isinstance(ans, list)
-        and ans[0] != p_number_1
-        and ans[len(ans) - 1] != p_number_2
-    ), "'ans' must been a list without the arguments"
-
-    # 'ans' contains not 'pNumber1' and 'pNumber2' !
     return ans
 
 
