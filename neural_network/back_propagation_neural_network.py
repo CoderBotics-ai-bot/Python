@@ -19,6 +19,7 @@ Date: 2017.11.23
 """
 import numpy as np
 from matplotlib import pyplot as plt
+from typing import Tuple
 
 
 def sigmoid(x):
@@ -94,10 +95,9 @@ class DenseLayer:
         return self.gradient
 
 
+
+
 class BPNN:
-    """
-    Back Propagation Neural Network model
-    """
 
     def __init__(self):
         self.layers = []
@@ -121,36 +121,18 @@ class BPNN:
             print("weight.shape ", np.shape(layer.weight))
             print("bias.shape ", np.shape(layer.bias))
 
-    def train(self, xdata, ydata, train_round, accuracy):
-        self.train_round = train_round
-        self.accuracy = accuracy
+    def train(
+        self, xdata: np.ndarray, ydata: np.ndarray, train_round: int, accuracy: float
+    ) -> float:
+        """
+        Trains the neural network with the provided training data.
+        """
+        self.ax_loss.hlines(accuracy, 0, train_round * 1.1)
 
-        self.ax_loss.hlines(self.accuracy, 0, self.train_round * 1.1)
-
-        x_shape = np.shape(xdata)
         for _ in range(train_round):
-            all_loss = 0
-            for row in range(x_shape[0]):
-                _xdata = np.asmatrix(xdata[row, :]).T
-                _ydata = np.asmatrix(ydata[row, :]).T
+            mse = self.train_one_round(xdata, ydata, accuracy)
 
-                # forward propagation
-                for layer in self.layers:
-                    _xdata = layer.forward_propagation(_xdata)
-
-                loss, gradient = self.cal_loss(_ydata, _xdata)
-                all_loss = all_loss + loss
-
-                # back propagation: the input_layer does not upgrade
-                for layer in self.layers[:0:-1]:
-                    gradient = layer.back_propagation(gradient)
-
-            mse = all_loss / x_shape[0]
-            self.train_mse.append(mse)
-
-            self.plot_loss()
-
-            if mse < self.accuracy:
+            if mse < accuracy:
                 print("----达到精度----")
                 return mse
         return None
@@ -160,6 +142,54 @@ class BPNN:
         self.loss_gradient = 2 * (ydata_ - ydata)
         # vector (shape is the same as _ydata.shape)
         return self.loss, self.loss_gradient
+
+    def train_one_round(
+        self, xdata: np.ndarray, ydata: np.ndarray, accuracy: float
+    ) -> float:
+        """
+        Trains the neural network for one round
+        """
+        all_loss = 0
+        for row in range(xdata.shape[0]):
+            _xdata = np.asmatrix(xdata[row, :]).T
+            _ydata = np.asmatrix(ydata[row, :]).T
+
+            _xdata = self.forward_propagation(_xdata)
+            all_loss, _xdata = self.calculate_loss(
+                ydata=_ydata, _xdata=_xdata, all_loss=all_loss
+            )
+            self.backward_propagation(_xdata)
+
+        mse = all_loss / x_shape[0]
+        self.train_mse.append(mse)
+
+        self.plot_loss()
+        return mse
+
+    def forward_propagation(self, _xdata: np.ndarray) -> np.ndarray:
+        """
+        Performs analysis of the input using forward propagation and the current neural network parameters
+        """
+        for layer in self.layers:
+            _xdata = layer.forward_propagation(_xdata)
+        return _xdata
+
+    def calculate_loss(
+        self, ydata: np.ndarray, _xdata: np.ndarray, all_loss: float
+    ) -> Tuple[float, np.ndarray]:
+        """
+        Calculates the loss and modifies _xdata accordingly
+        """
+        loss, gradient = self.cal_loss(ydata, _xdata)
+        all_loss = all_loss + loss
+        return all_loss, gradient
+
+    def backward_propagation(self, gradient: np.ndarray) -> None:
+        """
+        Adjusts the neural network parameters using back propagation
+        """
+        for layer in self.layers[:0:-1]:
+            gradient = layer.back_propagation(gradient)
 
     def plot_loss(self):
         if self.ax_loss.lines:
