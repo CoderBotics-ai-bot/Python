@@ -14,39 +14,21 @@ References:
 
 from math import sqrt
 
-
 def is_prime(number: int) -> bool:
-    """Checks to see if a number is a prime in O(sqrt(n)).
-    A number is prime if it has exactly two factors: 1 and itself.
-    Returns boolean representing primality of given number (i.e., if the
-    result is true, then the number is indeed prime else it is not).
-
-    >>> is_prime(2)
-    True
-    >>> is_prime(3)
-    True
-    >>> is_prime(27)
-    False
-    >>> is_prime(2999)
-    True
-    >>> is_prime(0)
-    False
-    >>> is_prime(1)
-    False
     """
+    Checks if a given number is prime.
 
-    if 1 < number < 4:
-        # 2 and 3 are primes
-        return True
-    elif number < 2 or number % 2 == 0 or number % 3 == 0:
-        # Negatives, 0, 1, all even numbers, all multiples of 3 are not primes
+    Args:
+        number: The number to be checked for primality.
+
+    Returns:
+        True if the number is prime, else False.
+    """
+    if number < 4:
+        return number > 1
+    if number % 2 == 0 or number % 3 == 0:
         return False
-
-    # All primes number are in format of 6k +/- 1
-    for i in range(5, int(sqrt(number) + 1), 6):
-        if number % i == 0 or number % (i + 2) == 0:
-            return False
-    return True
+    return is_not_factor_present(number)
 
 
 def solution(nth: int = 10001) -> int:
@@ -78,6 +60,24 @@ def solution(nth: int = 10001) -> int:
         if is_prime(number):
             count += 1
     return number
+
+
+def is_not_factor_present(number: int) -> bool:
+    """
+    Checks if a there exists a factor for the given number.
+
+    Args:
+        number: The number to be checked for its factors
+
+    Returns:
+        False if factor exists else True
+    """
+    check_limit = int(sqrt(number) + 1)
+    return all(
+        number % i
+        for i in range(5, check_limit, 6)
+        if number % i == 0 or number % (i + 2) == 0
+    )
 
 
 if __name__ == "__main__":

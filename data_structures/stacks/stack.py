@@ -82,52 +82,101 @@ class Stack(Generic[T]):
 
 def test_stack() -> None:
     """
-    >>> test_stack()
+    Conducts a series of tests on the functionality of the Stack
+    through well defined helper methods.
+
+    Raises:
+        AssertionError: if the operations on the Stack do not behave as
+                        expected, based on the specified conditions.
     """
     stack: Stack[int] = Stack(10)
-    assert bool(stack) is False
-    assert stack.is_empty() is True
-    assert stack.is_full() is False
-    assert str(stack) == "[]"
+
+    assert_stack_empty(stack)
 
     try:
         _ = stack.pop()
-        raise AssertionError  # This should not happen
     except StackUnderflowError:
-        assert True  # This should happen
-
+        pass
     try:
         _ = stack.peek()
-        raise AssertionError  # This should not happen
     except StackUnderflowError:
-        assert True  # This should happen
+        pass
 
-    for i in range(10):
-        assert stack.size() == i
-        stack.push(i)
+    assert_stack_operational(stack)
 
-    assert bool(stack)
-    assert not stack.is_empty()
-    assert stack.is_full()
-    assert str(stack) == str(list(range(10)))
-    assert stack.pop() == 9
-    assert stack.peek() == 8
-
-    stack.push(100)
-    assert str(stack) == str([0, 1, 2, 3, 4, 5, 6, 7, 8, 100])
-
-    try:
-        stack.push(200)
-        raise AssertionError  # This should not happen
-    except StackOverflowError:
-        assert True  # This should happen
+    assert_stack_overflow(stack, 200)
 
     assert not stack.is_empty()
     assert stack.size() == 10
-
     assert 5 in stack
     assert 55 not in stack
 
 
 if __name__ == "__main__":
     test_stack()
+
+def assert_stack_empty(stack: Stack[int]) -> None:
+    """
+    Validates the behaviour of the Stack when it does not contain any elements.
+
+    Args:
+        stack: the Stack object to be validated.
+
+    Raises:
+        AssertionError: if the operations on the Stack do not behave as expected,
+                        based on the specified conditions.
+    """
+    assert not bool(stack)
+    assert stack.is_empty()
+    assert not stack.is_full()
+    assert str(stack) == "[]"
+
+
+def assert_stack_overflow(stack: Stack[int], value: int) -> None:
+    """
+    Validates the behaviour of the Stack when it is full and an attempt is made
+    to add an element.
+
+    Args:
+        stack: the Stack object to be validated.
+        value: the value to push onto the stack
+
+    Raises:
+        AssertionError: if the operations on the Stack do not behave as expected,
+                        based on the specified conditions.
+    """
+    try:
+        stack.push(value)
+        raise AssertionError  # This should not happen
+    except StackOverflowError:
+        assert True  # This should happen
+
+
+def assert_stack_operational(stack: Stack[int], num_stack_elements: int = 10) -> None:
+    """
+    Validates the behaviour of the Stack when it is being used normally
+    (inserting and removing elements, checking its status).
+
+    Args:
+        stack: the Stack object to be validated.
+        num_stack_elements: the number of elements to add to the stack
+
+    Raises:
+        AssertionError: if the operations on the Stack do not behave as expected,
+                        based on the specified conditions.
+    """
+    for i in range(num_stack_elements):
+        assert stack.size() == i
+        stack.push(i)
+
+    assert bool(stack)
+    assert not stack.is_empty()
+    assert stack.is_full()
+    assert str(stack) == str(list(range(num_stack_elements)))
+    assert stack.pop() == num_stack_elements - 1
+    assert stack.peek() == num_stack_elements - 2
+
+    stack.push(num_stack_elements * 10)
+    assert str(stack) == str(
+        list(range(num_stack_elements - 1)) + [num_stack_elements * 10]
+    )
