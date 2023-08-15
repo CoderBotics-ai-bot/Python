@@ -9,6 +9,9 @@ from types import ModuleType
 import pytest
 import requests
 
+
+from typing import List
+
 PROJECT_EULER_DIR_PATH = pathlib.Path.cwd().joinpath("project_euler")
 PROJECT_EULER_ANSWERS_PATH = pathlib.Path.cwd().joinpath(
     "scripts", "project_euler_answers.json"
@@ -26,16 +29,25 @@ def convert_path_to_module(file_path: pathlib.Path) -> ModuleType:
     return module
 
 
-def all_solution_file_paths() -> list[pathlib.Path]:
-    """Collects all the solution file path in the Project Euler directory"""
+def all_solution_file_paths() -> List[pathlib.Path]:
+    """
+    Collects all the solution file paths in the Project Euler directory.
+
+    This function iterates over all the directories in the Project Euler directory
+    and extracts all solution files.
+
+    Returns:
+        A list of pathlib.Path instances representing the file paths of all solution files.
+    """
+    euler_content = PROJECT_EULER_DIR_PATH.iterdir()
+    solution_dirs = filter(
+        lambda p: p.is_dir() and not p.name.startswith("_"), euler_content
+    )
+
     solution_file_paths = []
-    for problem_dir_path in PROJECT_EULER_DIR_PATH.iterdir():
-        if problem_dir_path.is_file() or problem_dir_path.name.startswith("_"):
-            continue
-        for file_path in problem_dir_path.iterdir():
-            if file_path.suffix != ".py" or file_path.name.startswith(("_", "test")):
-                continue
-            solution_file_paths.append(file_path)
+    for dir_path in solution_dirs:
+        solution_file_paths.extend(extract_solution_file_paths_in_dir(dir_path))
+
     return solution_file_paths
 
 
@@ -44,6 +56,33 @@ def get_files_url() -> str:
     with open(os.environ["GITHUB_EVENT_PATH"]) as file:
         event = json.load(file)
     return event["pull_request"]["url"] + "/files"
+
+def is_valid_solution_file(file_path: pathlib.Path) -> bool:
+    """
+    Checks if a path represents a valid solution file.
+
+    Args:
+        file_path: A pathlib.Path instance representing a file path.
+
+    Returns:
+        True if the path is a valid solution file, else False.
+    """
+    return file_path.suffix == ".py" and not file_path.name.startswith(("_", "test"))
+
+
+def extract_solution_file_paths_in_dir(dir_path: pathlib.Path) -> List[pathlib.Path]:
+    """
+    Extracts all the solution file paths in a directory.
+
+    Args:
+        dir_path: A pathlib.Path instance representing a directory path.
+
+    Returns:
+        A list of pathlib.Path instances representing the file paths of all solution files in the directory.
+    """
+    dir_content = dir_path.iterdir()
+    solution_files = filter(is_valid_solution_file, dir_content)
+    return list(solution_files)
 
 
 def added_solution_file_path() -> list[pathlib.Path]:
