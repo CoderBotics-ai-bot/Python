@@ -110,54 +110,47 @@ def _validator(
 
 def _plugboard(pbstring: str) -> dict[str, str]:
     """
-    https://en.wikipedia.org/wiki/Enigma_machine#Plugboard
+    Converts a provided string into a dictionary representing the plugboard settings for an Enigma machine.
+    The function ensures that the string follows the correct format.
+    If the input string is empty, an empty dictionary is returned.
+
+    More about Enigma plugboard settings: https://en.wikipedia.org/wiki/Enigma_machine#Plugboard
+
+    Examples:
 
     >>> _plugboard('PICTURES')
     {'P': 'I', 'I': 'P', 'C': 'T', 'T': 'C', 'U': 'R', 'R': 'U', 'E': 'S', 'S': 'E'}
+
     >>> _plugboard('POLAND')
     {'P': 'O', 'O': 'P', 'L': 'A', 'A': 'L', 'N': 'D', 'D': 'N'}
 
-    In the code, 'pb' stands for 'plugboard'
+    Parameter:
+    pbstring: str
+        A string that represents the plugboard settings for the Enigma machine.
 
-    Pairs can be separated by spaces
-    :param pbstring: string containing plugboard setting for the Enigma machine
-    :return: dictionary containing converted pairs
+    Returns:
+    dict[str, str]
+        A dictionary representing the plugboard settings.
+
+    Raises:
+    TypeError
+        If pbstring is not a string.
+    Exception
+        If pbstring has an odd length or if all characters in the string are not unique.
     """
 
-    # tests the input string if it
-    # a) is type string
-    # b) has even length (so pairs can be made)
-    if not isinstance(pbstring, str):
-        msg = f"Plugboard setting isn't type string ({type(pbstring)})"
-        raise TypeError(msg)
-    elif len(pbstring) % 2 != 0:
-        msg = f"Odd number of symbols ({len(pbstring)})"
-        raise Exception(msg)
-    elif pbstring == "":
+    # Remove spaces
+    pbstring = pbstring.replace(" ", "")
+
+    # If the string is empty, return an empty dictionary
+    if pbstring == "":
         return {}
 
-    pbstring.replace(" ", "")
+    # Validate the input string
+    validate_pbstring(pbstring=pbstring)
 
-    # Checks if all characters are unique
-    tmppbl = set()
-    for i in pbstring:
-        if i not in abc:
-            msg = f"'{i}' not in list of symbols"
-            raise Exception(msg)
-        elif i in tmppbl:
-            msg = f"Duplicate symbol ({i})"
-            raise Exception(msg)
-        else:
-            tmppbl.add(i)
-    del tmppbl
-
-    # Created the dictionary
-    pb = {}
-    for j in range(0, len(pbstring) - 1, 2):
-        pb[pbstring[j]] = pbstring[j + 1]
-        pb[pbstring[j + 1]] = pbstring[j]
-
-    return pb
+    # Convert the input string to a plugboard dictionary
+    return pbstring_to_dict(pbstring=pbstring)
 
 
 def enigma(
@@ -281,6 +274,66 @@ def enigma(
         result.append(symbol)
 
     return "".join(result)
+
+def validate_pbstring(pbstring: str) -> None:
+    """
+    This function validates whether the input string for plugboard settings is valid or not.
+    If the string is not valid, it raises appropriate exceptions.
+
+    Parameters:
+    pbstring: str
+        The input string to be validated.
+
+    Returns:
+    None
+
+    Raises:
+    TypeError
+        If pbstring is not a string.
+    Exception
+        If pbstring has an odd length or if all characters in the string are not unique.
+    """
+
+    # a) Is the input a string?
+    if not isinstance(pbstring, str):
+        raise TypeError(f"Plugboard setting isn't type string ({type(pbstring)})")
+
+    # b) Does the input string have an even length?
+    elif len(pbstring) % 2 != 0:
+        raise Exception(f"Odd number of symbols ({len(pbstring)})")
+
+    # Check if all characters are unique and within a permitted alphabet (abc)
+    tmppbl = set()
+    for i in pbstring:
+        if i not in abc:
+            raise Exception(f"'{i}' not in list of symbols")
+        elif i in tmppbl:
+            raise Exception(f"Duplicate symbol ({i})")
+        else:
+            tmppbl.add(i)
+
+
+def pbstring_to_dict(pbstring: str) -> dict[str, str]:
+    """
+    This function converts a plugboard string to a dictionary.
+    Each pair of characters in the string will be a switch in the plugboard.
+
+    Parameters:
+    pbstring: str
+        The input string to be converted to a dictionary.
+
+    Returns:
+    dict[str, str]
+        The plugboard dictionary generated from the input string.
+    """
+
+    # Finally, create the dictionary
+    plugboard = {}
+    for j in range(0, len(pbstring) - 1, 2):
+        plugboard[pbstring[j]] = pbstring[j + 1]
+        plugboard[pbstring[j + 1]] = pbstring[j]
+
+    return plugboard
 
 
 if __name__ == "__main__":
