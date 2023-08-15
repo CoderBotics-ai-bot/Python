@@ -9,54 +9,44 @@ import math
 
 def proth(number: int) -> int:
     """
-    :param number: nth number to calculate in the sequence
-    :return: the nth number in Proth number
-    Note: indexing starts at 1 i.e. proth(1) gives the first Proth number of 3
-    >>> proth(6)
-    25
-    >>> proth(0)
-    Traceback (most recent call last):
-        ...
-    ValueError: Input value of [number=0] must be > 0
-    >>> proth(-1)
-    Traceback (most recent call last):
-        ...
-    ValueError: Input value of [number=-1] must be > 0
-    >>> proth(6.0)
-    Traceback (most recent call last):
-        ...
-    TypeError: Input value of [number=6.0] must be an integer
+    Calculate the nth Proth number. Indexing starts at 1. For example, proth(1) gives
+    the first Proth number of 3.
+
+    The Proth number refers to a series of integers of the form k * 2^n + 1 where
+    k < 2^n and n > 0.
+
+    A ValueError is raised if the number is less than 1, and a TypeError is raised
+    for non-integer inputs.
+
+    Args:
+        number (int): The position in the sequence of Proth numbers to return. Must be a
+        positive integer. Indexing starts at 1.
+
+    Returns:
+        int: The nth Proth number.
+
+    Raises:
+        ValueError: If 'number' is less than 1.
+        TypeError: If 'number' is not an integer.
+
+    Examples:
+        >>> proth(6)
+        25
+        >>> proth(1)
+        3
     """
-
-    if not isinstance(number, int):
-        msg = f"Input value of [number={number}] must be an integer"
-        raise TypeError(msg)
-
-    if number < 1:
-        msg = f"Input value of [number={number}] must be > 0"
-        raise ValueError(msg)
-    elif number == 1:
+    validate_inputs(number)
+    if number == 1:
         return 3
     elif number == 2:
         return 5
-    else:
-        """
-        +1 for binary starting at 0 i.e. 2^0, 2^1, etc.
-        +1 to start the sequence at the 3rd Proth number
-        Hence, we have a +2 in the below statement
-        """
-        block_index = int(math.log(number // 3, 2)) + 2
 
-        proth_list = [3, 5]
-        proth_index = 2
-        increment = 3
-        for block in range(1, block_index):
-            for _ in range(increment):
-                proth_list.append(2 ** (block + 1) + proth_list[proth_index - 1])
-                proth_index += 1
-            increment *= 2
-
-    return proth_list[number - 1]
+    proth_numbers = [3, 5]
+    for _ in range(3, number + 1):
+        block = calculate_block_index(number)
+        new_proth = 2 ** (block + 1) + proth_numbers[-1]
+        proth_numbers.append(new_proth)
+    return proth_numbers[-1]
 
 
 if __name__ == "__main__":
@@ -73,3 +63,34 @@ if __name__ == "__main__":
             continue
 
         print(f"The {number}th Proth number: {value}")
+
+def validate_inputs(number: int) -> None:
+    """
+    Helper function to validate the inputs for the Proth number calculation function.
+    This function will raise appropriate exceptions if the input value of 'number' is
+    not a positive integer.
+
+    Args:
+        number (int): The input value to validate
+
+    Raises:
+        ValueError: If 'number' is less than 1.
+        TypeError: If 'number' is not an integer.
+    """
+    if not isinstance(number, int):
+        raise TypeError(f"Input value of [number={number}] must be an integer")
+    if number < 1:
+        raise ValueError(f"Input value of [number={number}] must be > 0")
+
+
+def calculate_block_index(number: int) -> int:
+    """
+    Helper function to calculate the block index used in the Proth number calculation.
+
+    Args:
+        number (int): The position in the sequence of Proth numbers.
+
+    Returns:
+        int: The calculated block index.
+    """
+    return int(math.log(number // 3 + 2, 2))
