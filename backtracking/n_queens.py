@@ -14,30 +14,31 @@ solution = []
 
 def is_safe(board: list[list[int]], row: int, column: int) -> bool:
     """
-    This function returns a boolean value True if it is safe to place a queen there
-    considering the current state of the board.
+    Check if it is safe to place a queen at the given location on the board.
 
-    Parameters :
-    board(2D matrix) : board
-    row ,column : coordinates of the cell on a board
+    This function checks if there is any queen in the same row, column or diagonals
+    from the given location. If there is no queen in the same row, column or diagonals,
+    it returns True indicating it is safe to place a queen. Otherwise, it returns False.
 
-    Returns :
-    Boolean Value
+    Parameters:
+    board: A 2-D list representing the current state of the game.
+    row: The row index of the location (0-indexed).
+    column: The column index of the location (0-indexed).
 
+    Returns:
+    bool: True if it is safe to place a queen at the given location, False otherwise.
+
+    Exception:
+    None
+
+    Side effect:
+    This function does not change the state of the board.
     """
-    for i in range(len(board)):
-        if board[row][i] == 1:
-            return False
-    for i in range(len(board)):
-        if board[i][column] == 1:
-            return False
-    for i, j in zip(range(row, -1, -1), range(column, -1, -1)):
-        if board[i][j] == 1:
-            return False
-    for i, j in zip(range(row, -1, -1), range(column, len(board))):
-        if board[i][j] == 1:
-            return False
-    return True
+    return (
+        is_row_safe(board, row)
+        and is_column_safe(board, column)
+        and is_diag_safe(board, row, column)
+    )
 
 
 def solve(board: list[list[int]], row: int) -> bool:
@@ -68,6 +69,23 @@ def solve(board: list[list[int]], row: int) -> bool:
             solve(board, row + 1)
             board[row][i] = 0
     return False
+
+def is_row_safe(board: list[list[int]], row: int) -> bool:
+    return not any(board[row])
+
+
+def is_column_safe(board: list[list[int]], column: int) -> bool:
+    return not any(row[column] for row in board)
+
+
+def is_diag_safe(board: list[list[int]], row: int, column: int) -> bool:
+    for i, j in zip(range(row, -1, -1), range(column, -1, -1)):
+        if board[i][j] == 1:
+            return False
+    for i, j in zip(range(row, -1, -1), range(column, len(board))):
+        if board[i][j] == 1:
+            return False
+    return True
 
 
 def printboard(board: list[list[int]]) -> None:
