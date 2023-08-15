@@ -40,6 +40,9 @@ goldbach(number)  // Goldbach's assumption
 
 from math import sqrt
 
+
+from typing import List
+
 def is_prime(number: int) -> bool:
     """
     This function checks whether the input integer 'number' is a prime number. A prime number
@@ -67,41 +70,21 @@ def is_prime(number: int) -> bool:
 
     return True
 
-
-# ------------------------------------------
-
-
-def sieve_er(n):
+def sieve_er(n: int) -> List[int]:
     """
-    input: positive integer 'N' > 2
-    returns a list of prime numbers from 2 up to N.
+    Generate a list of prime numbers up to a given number.
 
-    This function implements the algorithm called
-    sieve of erathostenes.
+    Args:
+        n: An integer greater than 2. Defines the range of numbers to filter for primes.
 
+    Returns:
+        A list of prime numbers from 2 up to 'n'.
     """
+    validate_input(n)
+    prime_candidates = initial_prime_candidates(n)
+    filter_non_primes(prime_candidates)
 
-    # precondition
-    assert isinstance(n, int) and (n > 2), "'N' must been an int and > 2"
-
-    # beginList: contains all natural numbers from 2 up to N
-    begin_list = list(range(2, n + 1))
-
-    ans = []  # this list will be returns.
-
-    # actual sieve of erathostenes
-    for i in range(len(begin_list)):
-        for j in range(i + 1, len(begin_list)):
-            if (begin_list[i] != 0) and (begin_list[j] % begin_list[i] == 0):
-                begin_list[j] = 0
-
-    # filters actual prime numbers.
-    ans = [x for x in begin_list if x != 0]
-
-    # precondition
-    assert isinstance(ans, list), "'ans' must been from type list"
-
-    return ans
+    return build_prime_list(prime_candidates)
 
 
 # --------------------------------
@@ -129,6 +112,28 @@ def get_prime_numbers(n):
     assert isinstance(ans, list), "'ans' must been from type list"
 
     return ans
+
+
+def validate_input(n: int) -> None:
+    assert isinstance(n, int) and (n > 2), "'N' must be an int and > 2"
+
+
+def initial_prime_candidates(n: int) -> List[int]:
+    return list(range(2, n + 1))
+
+
+def filter_non_primes(candidates: List[int]) -> None:
+    for i in range(len(candidates)):
+        if candidates[i] != 0:
+            for j in range(i + 1, len(candidates)):
+                if candidates[j] % candidates[i] == 0:
+                    candidates[j] = 0
+
+
+def build_prime_list(candidates: List[int]) -> List[int]:
+    primes = [x for x in candidates if x != 0]
+    assert isinstance(primes, list), "'primes' must be of type list"
+    return primes
 
 
 # -----------------------------------------
