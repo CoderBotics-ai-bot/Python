@@ -41,70 +41,53 @@ goldbach(number)  // Goldbach's assumption
 from math import sqrt
 
 
+from typing import List
+
+
+from math import gcd
+
 def is_prime(number: int) -> bool:
     """
-    input: positive integer 'number'
-    returns true if 'number' is prime otherwise false.
+    This function checks whether the input integer 'number' is a prime number. A prime number
+    is a natural number greater than 1 that is not a product of two smaller natural numbers.
+
+    Args:
+        number: A positive integer to check if it is a prime number.
+
+    Returns:
+        bool: True if 'number' is a prime, otherwise False.
+
+    Raises:
+        ValueError: If 'number' is not a positive integer.
     """
 
-    # precondition
-    assert isinstance(number, int) and (
-        number >= 0
-    ), "'number' must been an int and positive"
+    if not isinstance(number, int) or number < 0:
+        raise ValueError("'number' must be an int and positive.")
 
-    status = True
-
-    # 0 and 1 are none primes.
     if number <= 1:
-        status = False
+        return False
 
-    for divisor in range(2, int(round(sqrt(number))) + 1):
-        # if 'number' divisible by 'divisor' then sets 'status'
-        # of false and break up the loop.
+    for divisor in range(2, int(sqrt(number)) + 1):
         if number % divisor == 0:
-            status = False
-            break
+            return False
 
-    # precondition
-    assert isinstance(status, bool), "'status' must been from type bool"
+    return True
 
-    return status
-
-
-# ------------------------------------------
-
-
-def sieve_er(n):
+def sieve_er(n: int) -> List[int]:
     """
-    input: positive integer 'N' > 2
-    returns a list of prime numbers from 2 up to N.
+    Generate a list of prime numbers up to a given number.
 
-    This function implements the algorithm called
-    sieve of erathostenes.
+    Args:
+        n: An integer greater than 2. Defines the range of numbers to filter for primes.
 
+    Returns:
+        A list of prime numbers from 2 up to 'n'.
     """
+    validate_input(n)
+    prime_candidates = initial_prime_candidates(n)
+    filter_non_primes(prime_candidates)
 
-    # precondition
-    assert isinstance(n, int) and (n > 2), "'N' must been an int and > 2"
-
-    # beginList: contains all natural numbers from 2 up to N
-    begin_list = list(range(2, n + 1))
-
-    ans = []  # this list will be returns.
-
-    # actual sieve of erathostenes
-    for i in range(len(begin_list)):
-        for j in range(i + 1, len(begin_list)):
-            if (begin_list[i] != 0) and (begin_list[j] % begin_list[i] == 0):
-                begin_list[j] = 0
-
-    # filters actual prime numbers.
-    ans = [x for x in begin_list if x != 0]
-
-    # precondition
-    assert isinstance(ans, list), "'ans' must been from type list"
-
-    return ans
+    return build_prime_list(prime_candidates)
 
 
 # --------------------------------
@@ -133,46 +116,57 @@ def get_prime_numbers(n):
 
     return ans
 
-
-# -----------------------------------------
-
-
-def prime_factorization(number):
+def prime_factorization(number: int) -> List[int]:
     """
-    input: positive integer 'number'
-    returns a list of the prime number factors of 'number'
+    Calculates the prime factorization of the input positive integer 'number'.
+    The function returns a list of the prime factors of 'number'.
+
+    Args:
+        number: A positive integer whose prime factors are to be calculated.
+
+    Returns:
+        List[int]: A list of the prime factors of 'number'.
+
+    Raises:
+        AssertionError: If 'number' is not a positive integer.
     """
 
-    # precondition
-    assert isinstance(number, int) and number >= 0, "'number' must been an int and >= 0"
+    assert isinstance(number, int) and number > 0, "'number' must be a positive integer"
 
-    ans = []  # this list will be returns of the function.
+    factors = []  # This list will be returned by the function.
 
-    # potential prime number factors.
+    # If 'number' is not prime then build the prime factorization of 'number'
+    for i in range(2, int(sqrt(number)) + 1):
+        while number % i == 0:
+            factors.append(i)
+            number //= i
 
-    factor = 2
+    if number > 1:
+        factors.append(number)
 
-    quotient = number
+    return factors
 
-    if number in {0, 1}:
-        ans.append(number)
 
-    # if 'number' not prime then builds the prime factorization of 'number'
-    elif not is_prime(number):
-        while quotient != 1:
-            if is_prime(factor) and (quotient % factor == 0):
-                ans.append(factor)
-                quotient /= factor
-            else:
-                factor += 1
+def validate_input(n: int) -> None:
+    assert isinstance(n, int) and (n > 2), "'N' must be an int and > 2"
 
-    else:
-        ans.append(number)
 
-    # precondition
-    assert isinstance(ans, list), "'ans' must been from type list"
+def initial_prime_candidates(n: int) -> List[int]:
+    return list(range(2, n + 1))
 
-    return ans
+
+def filter_non_primes(candidates: List[int]) -> None:
+    for i in range(len(candidates)):
+        if candidates[i] != 0:
+            for j in range(i + 1, len(candidates)):
+                if candidates[j] % candidates[i] == 0:
+                    candidates[j] = 0
+
+
+def build_prime_list(candidates: List[int]) -> List[int]:
+    primes = [x for x in candidates if x != 0]
+    assert isinstance(primes, list), "'primes' must be of type list"
+    return primes
 
 
 # -----------------------------------------
@@ -228,6 +222,27 @@ def smallest_prime_factor(number):
 
     return ans
 
+def kg_v(number1: int, number2: int) -> int:
+    assert isinstance(number1, int) and isinstance(
+        number2, int
+    ), "Inputs must be integers"
+    assert number1 > 0 and number2 > 0, "Inputs must be positive integers"
+
+    if number1 == 1 or number2 == 1:
+        return max(number1, number2)
+
+    if number1 == number2:
+        return number1
+
+    return lcm(number1, number2)
+
+def get_primes_between(p_number_1: int, p_number_2: int) -> List[int]:
+    assert (
+        is_prime(p_number_1) and is_prime(p_number_2) and (p_number_1 < p_number_2)
+    ), "The arguments must be prime numbers and 'p_number_1' < 'p_number_2'"
+
+    return list(get_next_prime(num) for num in range(p_number_1 + 1, p_number_2))
+
 
 # ----------------------
 
@@ -243,6 +258,27 @@ def is_even(number):
     assert isinstance(number % 2 == 0, bool), "compare bust been from type bool"
 
     return number % 2 == 0
+
+
+def get_next_prime(number: int) -> int:
+    while not is_prime(number):
+        number += 1
+    return number
+
+
+def lcm(number1: int, number2: int) -> int:
+    """
+    Calculate the least common multiple of two integers using the gcd function.
+
+    Args:
+        number1: first integer
+        number2: second integer
+
+    Returns:
+        least common multiple (lcm) of the two inputs
+    """
+    result = abs(number1 * number2) // gcd(number1, number2)
+    return result
 
 
 # ------------------------
@@ -347,78 +383,6 @@ def gcd(number1, number2):
     return number1
 
 
-# ----------------------------------------------------
-
-
-def kg_v(number1, number2):
-    """
-    Least common multiple
-    input: two positive integer 'number1' and 'number2'
-    returns the least common multiple of 'number1' and 'number2'
-    """
-
-    # precondition
-    assert (
-        isinstance(number1, int)
-        and isinstance(number2, int)
-        and (number1 >= 1)
-        and (number2 >= 1)
-    ), "'number1' and 'number2' must been positive integer."
-
-    ans = 1  # actual answer that will be return.
-
-    # for kgV (x,1)
-    if number1 > 1 and number2 > 1:
-        # builds the prime factorization of 'number1' and 'number2'
-        prime_fac_1 = prime_factorization(number1)
-        prime_fac_2 = prime_factorization(number2)
-
-    elif number1 == 1 or number2 == 1:
-        prime_fac_1 = []
-        prime_fac_2 = []
-        ans = max(number1, number2)
-
-    count1 = 0
-    count2 = 0
-
-    done = []  # captured numbers int both 'primeFac1' and 'primeFac2'
-
-    # iterates through primeFac1
-    for n in prime_fac_1:
-        if n not in done:
-            if n in prime_fac_2:
-                count1 = prime_fac_1.count(n)
-                count2 = prime_fac_2.count(n)
-
-                for _ in range(max(count1, count2)):
-                    ans *= n
-
-            else:
-                count1 = prime_fac_1.count(n)
-
-                for _ in range(count1):
-                    ans *= n
-
-            done.append(n)
-
-    # iterates through primeFac2
-    for n in prime_fac_2:
-        if n not in done:
-            count2 = prime_fac_2.count(n)
-
-            for _ in range(count2):
-                ans *= n
-
-            done.append(n)
-
-    # precondition
-    assert isinstance(ans, int) and (
-        ans >= 0
-    ), "'ans' must been from type int and positive"
-
-    return ans
-
-
 # ----------------------------------
 
 
@@ -450,51 +414,6 @@ def get_prime(n):
         ans
     ), "'ans' must been a prime number and from type int"
 
-    return ans
-
-
-# ---------------------------------------------------
-
-
-def get_primes_between(p_number_1, p_number_2):
-    """
-    input: prime numbers 'pNumber1' and 'pNumber2'
-            pNumber1 < pNumber2
-    returns a list of all prime numbers between 'pNumber1' (exclusive)
-            and 'pNumber2' (exclusive)
-    """
-
-    # precondition
-    assert (
-        is_prime(p_number_1) and is_prime(p_number_2) and (p_number_1 < p_number_2)
-    ), "The arguments must been prime numbers and 'pNumber1' < 'pNumber2'"
-
-    number = p_number_1 + 1  # jump to the next number
-
-    ans = []  # this list will be returns.
-
-    # if number is not prime then
-    # fetch the next prime number.
-    while not is_prime(number):
-        number += 1
-
-    while number < p_number_2:
-        ans.append(number)
-
-        number += 1
-
-        # fetch the next prime number.
-        while not is_prime(number):
-            number += 1
-
-    # precondition
-    assert (
-        isinstance(ans, list)
-        and ans[0] != p_number_1
-        and ans[len(ans) - 1] != p_number_2
-    ), "'ans' must been a list without the arguments"
-
-    # 'ans' contains not 'pNumber1' and 'pNumber2' !
     return ans
 
 

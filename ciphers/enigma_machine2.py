@@ -110,54 +110,48 @@ def _validator(
 
 def _plugboard(pbstring: str) -> dict[str, str]:
     """
-    https://en.wikipedia.org/wiki/Enigma_machine#Plugboard
+    Converts a provided string into a dictionary representing the plugboard settings for an Enigma machine.
+    The function ensures that the string follows the correct format.
+    If the input string is empty, an empty dictionary is returned.
+
+    More about Enigma plugboard settings: https://en.wikipedia.org/wiki/Enigma_machine#Plugboard
+
+    Examples:
 
     >>> _plugboard('PICTURES')
     {'P': 'I', 'I': 'P', 'C': 'T', 'T': 'C', 'U': 'R', 'R': 'U', 'E': 'S', 'S': 'E'}
+
     >>> _plugboard('POLAND')
     {'P': 'O', 'O': 'P', 'L': 'A', 'A': 'L', 'N': 'D', 'D': 'N'}
 
-    In the code, 'pb' stands for 'plugboard'
+    Parameter:
+    pbstring: str
+        A string that represents the plugboard settings for the Enigma machine.
 
-    Pairs can be separated by spaces
-    :param pbstring: string containing plugboard setting for the Enigma machine
-    :return: dictionary containing converted pairs
+    Returns:
+    dict[str, str]
+        A dictionary representing the plugboard settings.
+
+    Raises:
+    TypeError
+        If pbstring is not a string.
+    Exception
+        If pbstring has an odd length or if all characters in the string are not unique.
     """
 
-    # tests the input string if it
-    # a) is type string
-    # b) has even length (so pairs can be made)
-    if not isinstance(pbstring, str):
-        msg = f"Plugboard setting isn't type string ({type(pbstring)})"
-        raise TypeError(msg)
-    elif len(pbstring) % 2 != 0:
-        msg = f"Odd number of symbols ({len(pbstring)})"
-        raise Exception(msg)
-    elif pbstring == "":
+    # Remove spaces
+    pbstring = pbstring.replace(" ", "")
+
+    # If the string is empty, return an empty dictionary
+    if pbstring == "":
         return {}
 
-    pbstring.replace(" ", "")
+    # Validate the input string
+    validate_pbstring(pbstring=pbstring)
 
-    # Checks if all characters are unique
-    tmppbl = set()
-    for i in pbstring:
-        if i not in abc:
-            msg = f"'{i}' not in list of symbols"
-            raise Exception(msg)
-        elif i in tmppbl:
-            msg = f"Duplicate symbol ({i})"
-            raise Exception(msg)
-        else:
-            tmppbl.add(i)
-    del tmppbl
+    # Convert the input string to a plugboard dictionary
+    return pbstring_to_dict(pbstring=pbstring)
 
-    # Created the dictionary
-    pb = {}
-    for j in range(0, len(pbstring) - 1, 2):
-        pb[pbstring[j]] = pbstring[j + 1]
-        pb[pbstring[j + 1]] = pbstring[j]
-
-    return pb
 
 
 def enigma(
@@ -166,54 +160,8 @@ def enigma(
     rotor_selection: RotorSelectionT = (rotor1, rotor2, rotor3),
     plugb: str = "",
 ) -> str:
-    """
-    The only difference with real-world enigma is that I allowed string input.
-    All characters are converted to uppercase. (non-letter symbol are ignored)
-    How it works:
-    (for every letter in the message)
-
-    - Input letter goes into the plugboard.
-    If it is connected to another one, switch it.
-
-    - Letter goes through 3 rotors.
-    Each rotor can be represented as 2 sets of symbol, where one is shuffled.
-    Each symbol from the first set has corresponding symbol in
-    the second set and vice versa.
-
-    example:
-    | ABCDEFGHIJKLMNOPQRSTUVWXYZ | e.g. F=D and D=F
-    | VKLEPDBGRNWTFCJOHQAMUZYIXS |
-
-    - Symbol then goes through reflector (static rotor).
-    There it is switched with paired symbol
-    The reflector can be represented as2 sets, each with half of the alphanet.
-    There are usually 10 pairs of letters.
-
-    Example:
-    | ABCDEFGHIJKLM | e.g. E is paired to X
-    | ZYXWVUTSRQPON | so when E goes in X goes out and vice versa
-
-    - Letter then goes through the rotors again
-
-    - If the letter is connected to plugboard, it is switched.
-
-    - Return the letter
-
-    >>> enigma('Hello World!', (1, 2, 1), plugb='pictures')
-    'KORYH JUHHI!'
-    >>> enigma('KORYH, juhhi!', (1, 2, 1), plugb='pictures')
-    'HELLO, WORLD!'
-    >>> enigma('hello world!', (1, 1, 1), plugb='pictures')
-    'FPNCZ QWOBU!'
-    >>> enigma('FPNCZ QWOBU', (1, 1, 1), plugb='pictures')
-    'HELLO WORLD'
-
-
-    :param text: input message
-    :param rotor_position: tuple with 3 values in range 1..26
-    :param rotor_selection: tuple with 3 rotors ()
-    :param plugb: string containing plugboard configuration (default '')
-    :return: en/decrypted string
+    """Encrypts or decrypts given text based on the Enigma machine mechanism.
+    See Class Doc for more info
     """
 
     text = text.upper()
@@ -221,66 +169,70 @@ def enigma(
         rotor_position, rotor_selection, plugb.upper()
     )
 
-    rotorpos1, rotorpos2, rotorpos3 = rotor_position
-    rotor1, rotor2, rotor3 = rotor_selection
-    rotorpos1 -= 1
-    rotorpos2 -= 1
-    rotorpos3 -= 1
+    machine = Enigma(rotor_selection=rotor_selection, plugb=plugboard)
+    machine.set_rotor_position(rotor_position)
 
-    result = []
+    return machine.process_text(text)
 
-    # encryption/decryption process --------------------------
-    for symbol in text:
-        if symbol in abc:
-            # 1st plugboard --------------------------
-            if symbol in plugboard:
-                symbol = plugboard[symbol]
+def validate_pbstring(pbstring: str) -> None:
+    """
+    This function validates whether the input string for plugboard settings is valid or not.
+    If the string is not valid, it raises appropriate exceptions.
 
-            # rotor ra --------------------------
-            index = abc.index(symbol) + rotorpos1
-            symbol = rotor1[index % len(abc)]
+    Parameters:
+    pbstring: str
+        The input string to be validated.
 
-            # rotor rb --------------------------
-            index = abc.index(symbol) + rotorpos2
-            symbol = rotor2[index % len(abc)]
+    Returns:
+    None
 
-            # rotor rc --------------------------
-            index = abc.index(symbol) + rotorpos3
-            symbol = rotor3[index % len(abc)]
+    Raises:
+    TypeError
+        If pbstring is not a string.
+    Exception
+        If pbstring has an odd length or if all characters in the string are not unique.
+    """
 
-            # reflector --------------------------
-            # this is the reason you don't need another machine to decipher
+    # a) Is the input a string?
+    if not isinstance(pbstring, str):
+        raise TypeError(f"Plugboard setting isn't type string ({type(pbstring)})")
 
-            symbol = reflector[symbol]
+    # b) Does the input string have an even length?
+    elif len(pbstring) % 2 != 0:
+        raise Exception(f"Odd number of symbols ({len(pbstring)})")
 
-            # 2nd rotors
-            symbol = abc[rotor3.index(symbol) - rotorpos3]
-            symbol = abc[rotor2.index(symbol) - rotorpos2]
-            symbol = abc[rotor1.index(symbol) - rotorpos1]
+    # Check if all characters are unique and within a permitted alphabet (abc)
+    tmppbl = set()
+    for i in pbstring:
+        if i not in abc:
+            raise Exception(f"'{i}' not in list of symbols")
+        elif i in tmppbl:
+            raise Exception(f"Duplicate symbol ({i})")
+        else:
+            tmppbl.add(i)
 
-            # 2nd plugboard
-            if symbol in plugboard:
-                symbol = plugboard[symbol]
 
-            # moves/resets rotor positions
-            rotorpos1 += 1
-            if rotorpos1 >= len(abc):
-                rotorpos1 = 0
-                rotorpos2 += 1
-            if rotorpos2 >= len(abc):
-                rotorpos2 = 0
-                rotorpos3 += 1
-            if rotorpos3 >= len(abc):
-                rotorpos3 = 0
+def pbstring_to_dict(pbstring: str) -> dict[str, str]:
+    """
+    This function converts a plugboard string to a dictionary.
+    Each pair of characters in the string will be a switch in the plugboard.
 
-        # else:
-        #    pass
-        #    Error could be also raised
-        #    raise ValueError(
-        #       'Invalid symbol('+repr(symbol)+')')
-        result.append(symbol)
+    Parameters:
+    pbstring: str
+        The input string to be converted to a dictionary.
 
-    return "".join(result)
+    Returns:
+    dict[str, str]
+        The plugboard dictionary generated from the input string.
+    """
+
+    # Finally, create the dictionary
+    plugboard = {}
+    for j in range(0, len(pbstring) - 1, 2):
+        plugboard[pbstring[j]] = pbstring[j + 1]
+        plugboard[pbstring[j + 1]] = pbstring[j]
+
+    return plugboard
 
 
 if __name__ == "__main__":
