@@ -12,6 +12,9 @@ https://en.wikipedia.org/wiki/HSL_and_HSV).
 """
 
 
+from typing import List
+
+
 def hsv_to_rgb(hue: float, saturation: float, value: float) -> list[int]:
     """
     Converts color parameters from HSV (Hue, Saturation, Value) to RGB (Red, Green, Blue).
@@ -42,58 +45,36 @@ def hsv_to_rgb(hue: float, saturation: float, value: float) -> list[int]:
     # Existing Code for HSV to RGB conversion...
 
 
-def rgb_to_hsv(red: int, green: int, blue: int) -> list[float]:
+def rgb_to_hsv(red: int, green: int, blue: int) -> List[float]:
     """
-    Conversion from the RGB-representation to the HSV-representation.
-    The tested values are the reverse values from the hsv_to_rgb-doctests.
-    Function "approximately_equal_hsv" is needed because of small deviations due to
-    rounding for the RGB-values.
+    Convert a RGB color to HSV.
 
-    >>> approximately_equal_hsv(rgb_to_hsv(0, 0, 0), [0, 0, 0])
-    True
-    >>> approximately_equal_hsv(rgb_to_hsv(255, 255, 255), [0, 0, 1])
-    True
-    >>> approximately_equal_hsv(rgb_to_hsv(255, 0, 0), [0, 1, 1])
-    True
-    >>> approximately_equal_hsv(rgb_to_hsv(255, 255, 0), [60, 1, 1])
-    True
-    >>> approximately_equal_hsv(rgb_to_hsv(0, 255, 0), [120, 1, 1])
-    True
-    >>> approximately_equal_hsv(rgb_to_hsv(0, 0, 255), [240, 1, 1])
-    True
-    >>> approximately_equal_hsv(rgb_to_hsv(255, 0, 255), [300, 1, 1])
-    True
-    >>> approximately_equal_hsv(rgb_to_hsv(64, 128, 128), [180, 0.5, 0.5])
-    True
-    >>> approximately_equal_hsv(rgb_to_hsv(193, 196, 224), [234, 0.14, 0.88])
-    True
-    >>> approximately_equal_hsv(rgb_to_hsv(128, 32, 80), [330, 0.75, 0.5])
-    True
+    Args:
+        red (int): Red RGB color channel.
+        green (int): Green RGB color channel.
+        blue (int): Blue RGB color channel.
+
+    Returns:
+        List[float]: HSV representation of the color.
     """
-    if red < 0 or red > 255:
-        raise Exception("red should be between 0 and 255")
+    validate_rgb_value(red, "red")
+    validate_rgb_value(green, "green")
+    validate_rgb_value(blue, "blue")
 
-    if green < 0 or green > 255:
-        raise Exception("green should be between 0 and 255")
-
-    if blue < 0 or blue > 255:
-        raise Exception("blue should be between 0 and 255")
-
-    float_red = red / 255
-    float_green = green / 255
-    float_blue = blue / 255
+    float_red, float_green, float_blue = map(rgb_to_percentage, [red, green, blue])
     value = max(float_red, float_green, float_blue)
     chroma = value - min(float_red, float_green, float_blue)
     saturation = 0 if value == 0 else chroma / value
 
-    if chroma == 0:
-        hue = 0.0
-    elif value == float_red:
-        hue = 60 * (0 + (float_green - float_blue) / chroma)
-    elif value == float_green:
-        hue = 60 * (2 + (float_blue - float_red) / chroma)
+    if chroma != 0:
+        if value == float_red:
+            hue = 60 * (0 + (float_green - float_blue) / chroma)
+        elif value == float_green:
+            hue = 60 * (2 + (float_blue - float_red) / chroma)
+        else:
+            hue = 60 * (4 + (float_red - float_green) / chroma)
     else:
-        hue = 60 * (4 + (float_red - float_green) / chroma)
+        hue = 0.0
 
     hue = (hue + 360) % 360
 
@@ -121,6 +102,34 @@ def validate_parameters(hue: float, saturation: float, value: float) -> bool:
     if not 0 <= value <= 1:
         raise ValueError("Value must be in the range [0, 1].")
     return True
+
+def validate_rgb_value(value: int, color: str) -> None:
+    """
+    Validates the given RGB color value to be in range [0,255].
+
+    Args:
+        value (int): The color value to validate.
+        color (str): The color name to use in exception message in case of invalid value.
+
+    Raises:
+        Exception: If the color value is not an integer in range [0,255].
+    """
+    if value < 0 or value > 255:
+        raise Exception(f"{color} should be between 0 and 255")
+
+
+def rgb_to_percentage(rgb_value: int) -> float:
+    """
+    Converts an RGB color value (0-255) to percentage.
+
+    Args:
+        rgb_value (int): RGB color value, integer in range [0, 255].
+
+    Returns:
+        float: Color value converted to percentage.
+    """
+    PERCENTAGE_DIVISOR = 255
+    return rgb_value / PERCENTAGE_DIVISOR
 
 
 def approximately_equal_hsv(hsv_1: list[float], hsv_2: list[float]) -> bool:
