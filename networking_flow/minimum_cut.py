@@ -10,7 +10,22 @@ test_graph = [
 ]
 
 
-def bfs(graph, s, t, parent):
+from typing import List
+
+def bfs(graph: List[List[int]], s: int, t: int, parent: List[int]) -> bool:
+    """
+    Perform Breadth-First-Search (BFS) on the graph.
+
+    Args:
+        graph (List[List[int]]): The adjacency matrix representation of the graph.
+        s (int): The source vertex.
+        t (int): The target vertex.
+        parent (List[int]): List to save the parent of a given node.
+
+    Returns:
+        bool: True if there is a path from source to target. False otherwise.
+    """
+
     # Return True if there is node that has not iterated.
     visited = [False] * len(graph)
     queue = [s]
