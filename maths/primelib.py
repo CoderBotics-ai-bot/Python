@@ -113,6 +113,36 @@ def get_prime_numbers(n):
 
     return ans
 
+def prime_factorization(number: int) -> List[int]:
+    """
+    Calculates the prime factorization of the input positive integer 'number'.
+    The function returns a list of the prime factors of 'number'.
+
+    Args:
+        number: A positive integer whose prime factors are to be calculated.
+
+    Returns:
+        List[int]: A list of the prime factors of 'number'.
+
+    Raises:
+        AssertionError: If 'number' is not a positive integer.
+    """
+
+    assert isinstance(number, int) and number > 0, "'number' must be a positive integer"
+
+    factors = []  # This list will be returned by the function.
+
+    # If 'number' is not prime then build the prime factorization of 'number'
+    for i in range(2, int(sqrt(number)) + 1):
+        while number % i == 0:
+            factors.append(i)
+            number //= i
+
+    if number > 1:
+        factors.append(number)
+
+    return factors
+
 
 def validate_input(n: int) -> None:
     assert isinstance(n, int) and (n > 2), "'N' must be an int and > 2"
@@ -134,47 +164,6 @@ def build_prime_list(candidates: List[int]) -> List[int]:
     primes = [x for x in candidates if x != 0]
     assert isinstance(primes, list), "'primes' must be of type list"
     return primes
-
-
-# -----------------------------------------
-
-
-def prime_factorization(number):
-    """
-    input: positive integer 'number'
-    returns a list of the prime number factors of 'number'
-    """
-
-    # precondition
-    assert isinstance(number, int) and number >= 0, "'number' must been an int and >= 0"
-
-    ans = []  # this list will be returns of the function.
-
-    # potential prime number factors.
-
-    factor = 2
-
-    quotient = number
-
-    if number in {0, 1}:
-        ans.append(number)
-
-    # if 'number' not prime then builds the prime factorization of 'number'
-    elif not is_prime(number):
-        while quotient != 1:
-            if is_prime(factor) and (quotient % factor == 0):
-                ans.append(factor)
-                quotient /= factor
-            else:
-                factor += 1
-
-    else:
-        ans.append(number)
-
-    # precondition
-    assert isinstance(ans, list), "'ans' must been from type list"
-
-    return ans
 
 
 # -----------------------------------------
