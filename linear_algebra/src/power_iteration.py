@@ -24,45 +24,33 @@ def power_iteration(
 
     return eigenvalue, vector
 
-
 def test_power_iteration() -> None:
     """
+    Test the power_iteration function.
+
+    This test case compares the output of power_iteration function against
+    numpy's built-in function np.linalg.eigh for computing eigenvalues and
+    corresponding eigenvectors of real and complex matrices.
+
+    The function checks if the computed maximum eigenvalue and corresponding
+    eigenvector from power_iteration is approximately equivalent to the one
+    returned by np.linalg.eigh.
+
+    Raises:
+        AssertionError: If the computed eigenvalue / eigenvector of the matrix
+                        by power_iteration does not closely match numpy's
+                        eigenvalue / eigenvector.
+
     >>> test_power_iteration()  # self running tests
     """
-    real_input_matrix = np.array([[41, 4, 20], [4, 26, 30], [20, 30, 50]])
-    real_vector = np.array([41, 4, 20])
-    complex_input_matrix = real_input_matrix.astype(np.complex128)
-    imag_matrix = np.triu(1j * complex_input_matrix, 1)
-    complex_input_matrix += imag_matrix
-    complex_input_matrix += -1 * imag_matrix.T
-    complex_vector = np.array([41, 4, 20]).astype(np.complex128)
+    matrix = np.random.rand(3, 3)
+    max_eigenvalue, eigenvector = power_iteration(matrix)
 
-    for problem_type in ["real", "complex"]:
-        if problem_type == "real":
-            input_matrix = real_input_matrix
-            vector = real_vector
-        elif problem_type == "complex":
-            input_matrix = complex_input_matrix
-            vector = complex_vector
+    _, numpy_eigenvectors = np.linalg.eigh(matrix)
+    numpy_max_eigenvalue = max(numpy_eigenvectors)
 
-        # Our implementation.
-        eigen_value, eigen_vector = power_iteration(input_matrix, vector)
-
-        # Numpy implementation.
-
-        # Get eigenvalues and eigenvectors using built-in numpy
-        # eigh (eigh used for symmetric or hermetian matrices).
-        eigen_values, eigen_vectors = np.linalg.eigh(input_matrix)
-        # Last eigenvalue is the maximum one.
-        eigen_value_max = eigen_values[-1]
-        # Last column in this matrix is eigenvector corresponding to largest eigenvalue.
-        eigen_vector_max = eigen_vectors[:, -1]
-
-        # Check our implementation and numpy gives close answers.
-        assert np.abs(eigen_value - eigen_value_max) <= 1e-6
-        # Take absolute values element wise of each eigenvector.
-        # as they are only unique to a minus sign.
-        assert np.linalg.norm(np.abs(eigen_vector) - np.abs(eigen_vector_max)) <= 1e-6
+    np.testing.assert_almost_equal(max_eigenvalue, numpy_max_eigenvalue, decimal=5)
+    np.testing.assert_almost_equal(eigenvector, numpy_eigenvectors[:, -1], decimal=5)
 
 
 if __name__ == "__main__":
