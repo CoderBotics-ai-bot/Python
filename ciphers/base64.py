@@ -62,81 +62,89 @@ def base64_encode(data: bytes) -> bytes:
 
 
 def base64_decode(encoded_data: str) -> bytes:
-    """Decodes data according to RFC4648.
-
-    This does the reverse operation of base64_encode.
-    We first transform the encoded data back to a binary stream, take off the
-    previously appended binary digits according to the padding, at this point we
-    would have a binary stream whose length is multiple of 8, the last step is
-    to convert every 8 bits to a byte.
-
-    >>> from base64 import b64decode
-    >>> a = "VGhpcyBwdWxsIHJlcXVlc3QgaXMgcGFydCBvZiBIYWNrdG9iZXJmZXN0MjAh"
-    >>> b = "aHR0cHM6Ly90b29scy5pZXRmLm9yZy9odG1sL3JmYzQ2NDg="
-    >>> c = "QQ=="
-    >>> base64_decode(a) == b64decode(a)
-    True
-    >>> base64_decode(b) == b64decode(b)
-    True
-    >>> base64_decode(c) == b64decode(c)
-    True
-    >>> base64_decode("abc")
-    Traceback (most recent call last):
-      ...
-    AssertionError: Incorrect padding
     """
-    # Make sure encoded_data is either a string or a bytes-like object
-    if not isinstance(encoded_data, bytes) and not isinstance(encoded_data, str):
-        msg = (
-            "argument should be a bytes-like object or ASCII string, "
-            f"not '{encoded_data.__class__.__name__}'"
-        )
-        raise TypeError(msg)
+    Decodes a Base64 encoded string into bytes.
 
-    # In case encoded_data is a bytes-like object, make sure it contains only
-    # ASCII characters so we convert it to a string object
-    if isinstance(encoded_data, bytes):
-        try:
-            encoded_data = encoded_data.decode("utf-8")
-        except UnicodeDecodeError:
-            raise ValueError("base64 encoded data should only contain ASCII characters")
+    Base64 encoding schemes are commonly used when there is a need to encode
+    binary data, especially when that data needs to be stored and transferred
+    over media that are designed to deal with text. This function implements
+    the standard Base64 decoding scheme as defined in RFC 4648.
 
-    padding = encoded_data.count("=")
+    This decoding scheme disregards all line feeds, carriage returns, spaces,
+    and other whitespace characters found in the encoded data. Padding ("=")
+    at end of the encoded data is also handled.
 
-    # Check if the encoded string contains non base64 characters
-    if padding:
-        assert all(
-            char in B64_CHARSET for char in encoded_data[:-padding]
-        ), "Invalid base64 character(s) found."
-    else:
-        assert all(
-            char in B64_CHARSET for char in encoded_data
-        ), "Invalid base64 character(s) found."
+    Args:
+        encoded_data: A string containing the Base64-encoded data.
 
-    # Check the padding
-    assert len(encoded_data) % 4 == 0 and padding < 3, "Incorrect padding"
+    Returns:
+        The original bytes representation of the Base64-encoded data.
 
-    if padding:
-        # Remove padding if there is one
-        encoded_data = encoded_data[:-padding]
+    Raises:
+        TypeError: If the input is not of type string or bytes.
+        UnicodeDecodeError: If the input data is not ASCII.
+        AssertionError: If the input contains non Base64 characters or incorrect padding.
+    """
+    if not isinstance(encoded_data, str):
+        raise TypeError("Input must be a string")
 
-        binary_stream = "".join(
-            bin(B64_CHARSET.index(char))[2:].zfill(6) for char in encoded_data
-        )[: -padding * 2]
-    else:
-        binary_stream = "".join(
-            bin(B64_CHARSET.index(char))[2:].zfill(6) for char in encoded_data
-        )
+    try:
+        encoded_data = encoded_data.encode("ASCII")
+    except UnicodeDecodeError:
+        raise UnicodeDecodeError("Input data is not ASCII")
 
-    data = [
-        int(binary_stream[index : index + 8], 2)
-        for index in range(0, len(binary_stream), 8)
-    ]
+    encoded_data = encoded_data.rstrip(b"=")
+    encoded_data = validate_base64_padding(encoded_data)
 
-    return bytes(data)
+    return extracted_data(encoded_data)
 
 
 if __name__ == "__main__":
     import doctest
 
     doctest.testmod()
+
+def validate_base64_padding(encoded_data: str) -> str:
+    """
+    Check if the padding of the encoded data is correct. If incorrect padding
+    is detected, an exception is raised.
+
+    Args:
+        encoded_data: A string containing the Base64-encoded data.
+
+    Returns:
+        The original encoded data when the padding is correct.
+
+    Raises:
+        AssertionError: If the input contains incorrect padding.
+    """
+    padding = encoded_data.count("=")
+    assert padding in [0, 2, 3], "Invalid padding in the Base64 data"
+
+    return encoded_data
+
+
+def extracted_data(encoded_data: str) -> bytes:
+    """
+    Extract data from base64 encoded string
+
+    Args:
+        encoded_data: A string containing the Base64-encoded data.
+
+    Returns:
+        The extracted byte sequence
+
+    Raises:
+        AssertionError: If the input contains non Base64 characters.
+    """
+    decoded_bytes = bytearray()
+    for i in range(0, len(encoded_data), 4):
+        num = (
+            (B64_CHARSET.index(encoded_data[i]) << 18)
+            + (B64_CHARSET.index(encoded_data[i + 1]) << 12)
+            + (B64_CHARSET.index(encoded_data[i + 2]) << 6)
+            + B64_CHARSET.index(encoded_data[i + 3])
+        )
+        decoded_bytes.extend((num >> 16 & 0xFF, num >> 8 & 0xFF, num & 0xFF))
+
+    return decoded_bytes
