@@ -7,73 +7,64 @@ This problem has been solved through recursive way.
 """
 
 
-def check_matrix(matrix: list[list[int]]) -> bool:
-    # must be
-    matrix = [list(row) for row in matrix]
-    if matrix and isinstance(matrix, list):
-        if isinstance(matrix[0], list):
-            prev_len = 0
-            for row in matrix:
-                if prev_len == 0:
-                    prev_len = len(row)
-                    result = True
-                else:
-                    result = prev_len == len(row)
-        else:
-            result = True
-    else:
-        result = False
+from typing import List
 
-    return result
-
-
-def spiral_print_clockwise(a: list[list[int]]) -> None:
+def check_matrix(matrix: List[List[int]]) -> bool:
     """
-    >>> spiral_print_clockwise([[1, 2, 3, 4], [5, 6, 7, 8], [9, 10, 11, 12]])
-    1
-    2
-    3
-    4
-    8
-    12
-    11
-    10
-    9
-    5
-    6
-    7
-    """
-    if check_matrix(a) and len(a) > 0:
-        a = [list(row) for row in a]
-        mat_row = len(a)
-        if isinstance(a[0], list):
-            mat_col = len(a[0])
-        else:
-            for dat in a:
-                print(dat)
-            return
+    Check if a provided matrix is valid.
 
-        # horizotal printing increasing
-        for i in range(0, mat_col):
-            print(a[0][i])
-        # vertical printing down
-        for i in range(1, mat_row):
-            print(a[i][mat_col - 1])
-        # horizotal printing decreasing
-        if mat_row > 1:
-            for i in range(mat_col - 2, -1, -1):
-                print(a[mat_row - 1][i])
-        # vertical printing up
-        for i in range(mat_row - 2, 0, -1):
-            print(a[i][0])
-        remain_mat = [row[1 : mat_col - 1] for row in a[1 : mat_row - 1]]
-        if len(remain_mat) > 0:
-            spiral_print_clockwise(remain_mat)
-        else:
-            return
-    else:
-        print("Not a valid matrix")
+    This function considers a valid matrix to be a list of lists,
+    where each sub list (row) has the same number of elements.
+
+    Args:
+        matrix (List[List[int]]): The matrix to be checked.
+
+    Returns:
+        bool: True if the matrix is valid, False otherwise.
+    """
+    # Guard clause to check if matrix is None or not a list
+    if matrix is None or not isinstance(matrix, list):
+        return False
+
+    try:
+        # Check if all rows in matrix are lists and have the same length
+        matrix_length = len(matrix[0])
+        return all(
+            isinstance(row, list) and len(row) == matrix_length for row in matrix
+        )
+    except (TypeError, IndexError):
+        return False
+
+def spiral_print_clockwise(matrix: List[List[int]]) -> None:
+    """
+    Prints the elements of a given 2D matrix in a clockwise spiral pattern.
+
+    Args:
+        matrix (List[List[int]]): The 2D list (matrix) whose elements are to be printed.
+
+    Returns:
+        None
+    """
+    if not matrix or not all(len(row) == len(matrix[0]) for row in matrix):
+        print("Not a valid matrix.")
         return
+
+    while matrix:
+        # Print the first row
+        for element in matrix.pop(0):
+            print(element)
+        # Print right side
+        for row in matrix:
+            if row:
+                print(row.pop())
+        # If any row left, print it in reverse order
+        if matrix:
+            for element in matrix.pop()[::-1]:
+                print(element)
+        # Print the left side, if any row left
+        for row in matrix[::-1]:
+            if row:
+                print(row.pop(0))
 
 
 # Other Easy to understand Approach
