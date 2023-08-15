@@ -14,6 +14,14 @@ Note this only works for basic functions, f(x) where the power of x is positive.
 
 
 
+
+
+
+
+
+
+
+
 class Dual:
     def __init__(self, real, rank):
         self.real = real
@@ -120,9 +128,60 @@ class Dual:
     def multiply_with_real(self, other: float) -> "Dual":
         return Dual(self.real * other, [dual * other for dual in self.duals])
 
+    def __pow__(self, n: int) -> "Dual":
+        """
+        Overloads the power operator '**' for Dual numbers.
+
+        Args:
+            n (int): The power to raise the Dual number to. Must be a positive integer.
+
+        Returns:
+            Dual: The result of raising the Dual number to the power n.
+
+        Raises:
+            ValueError: If n is not a positive integer.
+
+        """
+        self._validate_power_parameter(n)
+
+        if n == 0:
+            return 1
+        if n == 1:
+            return self
+
+        return self._calculate_power(n)
+
     @staticmethod
     def initialize_new_duals(other: "Dual") -> list:
         return [0] * (len(self.duals) + len(other.duals) + 1)
+
+    def _validate_power_parameter(self, n: int) -> None:
+        """
+        Checks if n is a positive integer
+
+        Args:
+            n (int): The power to raise the Dual number to.
+
+        Raises:
+            ValueError: If n is not a positive integer.
+        """
+        if n < 0 or not isinstance(n, int):
+            raise ValueError("power must be a positive integer")
+
+    def _calculate_power(self, n: int) -> "Dual":
+        """
+        Calculates power operation
+
+        Args:
+            n (int): The power to raise the Dual number to.
+
+        Returns:
+            Dual: The result of raising the Dual number to the power n.
+        """
+        x = self
+        for _ in range(n - 1):
+            x *= self
+        return x
 
     @staticmethod
     def add_duales(first: "Dual", second: "Dual", new_duals: list) -> None:
@@ -144,18 +203,6 @@ class Dual:
                 new_duals.append(i // other)
             return Dual(self.real // other, new_duals)
         raise ValueError
-
-    def __pow__(self, n):
-        if n < 0 or isinstance(n, float):
-            raise ValueError("power must be a positive integer")
-        if n == 0:
-            return 1
-        if n == 1:
-            return self
-        x = self
-        for _ in range(n - 1):
-            x *= self
-        return x
 
 
 def differentiate(func, position, order):
