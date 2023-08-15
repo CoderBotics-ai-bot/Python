@@ -8,6 +8,8 @@ Note this only works for basic functions, f(x) where the power of x is positive.
 """
 
 
+
+
 class Dual:
     def __init__(self, real, rank):
         self.real = real
@@ -28,24 +30,66 @@ class Dual:
             cur.pop(-1)
         return Dual(self.real, cur)
 
-    def __add__(self, other):
-        if not isinstance(other, Dual):
-            return Dual(self.real + other, self.duals)
-        s_dual = self.duals.copy()
-        o_dual = other.duals.copy()
-        if len(s_dual) > len(o_dual):
-            o_dual.extend([1] * (len(s_dual) - len(o_dual)))
-        elif len(s_dual) < len(o_dual):
-            s_dual.extend([1] * (len(o_dual) - len(s_dual)))
-        new_duals = []
-        for i in range(len(s_dual)):
-            new_duals.append(s_dual[i] + o_dual[i])
-        return Dual(self.real + other.real, new_duals)
+    def __add__(self, other: "Dual") -> "Dual":
+        """
+        Overloads the addition operation for instances of the Dual class.
+        If the other operand is not a Dual instance, it is assumed to be of a numerical type
+        and only used for the real part calculation, while the existing dual numbers are retained.
 
-    __radd__ = __add__
+        Ensures the operand's dual parts are the same length before adding.
+
+        Args:
+            other (Dual): The other operand which may be a `Dual` instance or a numerical type.
+
+        Returns:
+            Dual: A new Dual instance with the summed real and dual numbers.
+        """
+        real_total = self.real + (other.real if isinstance(other, Dual) else other)
+        duals_total = (
+            self._combine_duals(other) if isinstance(other, Dual) else self.duals
+        )
+
+        return Dual(real_total, duals_total)
 
     def __sub__(self, other):
         return self + other * -1
+
+    def _combine_duals(self, other: "Dual") -> list:
+        """
+        Combines the dual parts of `self` and `other` into a new list. Fills in gaps
+        with 1s to make both lists of dual numbers the same length before combining.
+
+        Args:
+            other (Dual): The other operand which is a `Dual` instance.
+
+        Returns:
+            list: A new list of dual numbers.
+        """
+        s_dual, o_dual = self._level_duals(other)
+
+        return [s + o for s, o in zip(s_dual, o_dual)]
+
+    def _level_duals(self, other: "Dual") -> tuple:
+        """
+        Extends the shorter list of dual numbers with 1s until it is the same length as
+        the longer list.
+
+        Args:
+            other (Dual): The other operand which is a `Dual` instance.
+
+        Returns:
+            tuple: The leveled lists of dual numbers.
+        """
+        s_dual = self.duals.copy()
+        o_dual = other.duals.copy()
+
+        len_difference = len(s_dual) - len(o_dual)
+        if len_difference > 0:
+            o_dual.extend([1] * len_difference)
+        elif len_difference < 0:
+            s_dual.extend([1] * abs(len_difference))
+
+        return s_dual, o_dual
 
     def __mul__(self, other):
         if not isinstance(other, Dual):
@@ -62,8 +106,6 @@ class Dual:
         for index in range(len(other.duals)):
             new_duals[index] += other.duals[index] * self.real
         return Dual(self.real * other.real, new_duals)
-
-    __rmul__ = __mul__
 
     def __truediv__(self, other):
         if not isinstance(other, Dual):
