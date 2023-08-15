@@ -1,28 +1,24 @@
-def is_palindrome(head):
+
+
+from typing import Optional
+
+
+def is_palindrome(head: Optional[Node]) -> bool:
+    """
+    Check if a singly linked list is a palindrome.
+    Args:
+    head (Optional[Node]): The head node of the linked list.
+    Returns:
+    bool: True if the linked list is a palindrome, False otherwise.
+    Side Effects:
+    The original linked list will be modified. The second half will be reversed.
+    """
     if not head:
         return True
-    # split the list to two parts
-    fast, slow = head.next, head
-    while fast and fast.next:
-        fast = fast.next.next
-        slow = slow.next
-    second = slow.next
-    slow.next = None  # Don't forget here! But forget still works!
-    # reverse the second part
-    node = None
-    while second:
-        nxt = second.next
-        second.next = node
-        node = second
-        second = nxt
-    # compare two parts
-    # second part has the same or one less node
-    while node:
-        if node.val != head.val:
-            return False
-        node = node.next
-        head = head.next
-    return True
+    middle_node = get_middle_node(head)
+    second_list = reverse_linked_list(middle_node.next)
+    middle_node.next = None
+    return compare_linked_list(head, second_list)
 
 
 def is_palindrome_stack(head):
@@ -46,6 +42,41 @@ def is_palindrome_stack(head):
             return False
         cur = cur.next
 
+    return True
+
+def get_middle_node(head: Node) -> Node:
+    """
+    Function to get the middle of the linked list.
+    """
+    fast, slow = head.next, head
+    while fast and fast.next:
+        fast = fast.next.next
+        slow = slow.next
+    return slow
+
+
+def reverse_linked_list(head: Node) -> Node:
+    """
+    Function to reverse a linked list.
+    """
+    node = None
+    while head:
+        nxt = head.next
+        head.next = node
+        node = head
+        head = nxt
+    return node
+
+
+def compare_linked_list(head1: Node, head2: Node) -> bool:
+    """
+    Function to compare two linked lists.
+    """
+    while head1 and head2:
+        if head1.val != head2.val:
+            return False
+        head1 = head1.next
+        head2 = head2.next
     return True
 
 
