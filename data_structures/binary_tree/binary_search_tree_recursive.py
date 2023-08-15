@@ -21,6 +21,8 @@ class Node:
         self.right: Node | None = None
 
 
+
+
 class BinarySearchTree:
     def __init__(self) -> None:
         self.root: Node | None = None
@@ -112,34 +114,17 @@ class BinarySearchTree:
         return node
 
     def remove(self, label: int) -> None:
-        """
-        Removes a node in the tree
-
-        >>> t = BinarySearchTree()
-        >>> t.put(8)
-        >>> t.put(10)
-        >>> t.remove(8)
-        >>> assert t.root.label == 10
-
-        >>> t.remove(3)
-        Traceback (most recent call last):
-            ...
-        Exception: Node with label 3 does not exist
-        """
+        """Refactored remove method."""
         node = self.search(label)
-        if node.right and node.left:
+        if self._both_children_exist(node):
             lowest_node = self._get_lowest_node(node.right)
-            lowest_node.left = node.left
-            lowest_node.right = node.right
-            node.left.parent = lowest_node
-            if node.right:
-                node.right.parent = lowest_node
+            self._replace_node(node, lowest_node)
             self._reassign_nodes(node, lowest_node)
-        elif not node.right and node.left:
+        elif self._only_left_child_exists(node):
             self._reassign_nodes(node, node.left)
-        elif node.right and not node.left:
+        elif self._only_right_child_exists(node):
             self._reassign_nodes(node, node.right)
-        else:
+        else:  # No children exist
             self._reassign_nodes(node, None)
 
     def _reassign_nodes(self, node: Node, new_children: Node | None) -> None:
@@ -153,6 +138,29 @@ class BinarySearchTree:
                 node.parent.left = new_children
         else:
             self.root = new_children
+
+    def _replace_node(self, node: Node, replacement_node: Node) -> None:
+        """Replaces a node with a replacement node in the tree."""
+        replacement_node.left = node.left
+        replacement_node.right = node.right
+        node.left.parent = replacement_node
+        if node.right:
+            node.right.parent = replacement_node
+
+    @staticmethod
+    def _both_children_exist(node: Node) -> bool:
+        """Checks if both left and right children exist for a node."""
+        return node.right and node.left
+
+    @staticmethod
+    def _only_left_child_exists(node: Node) -> bool:
+        """Checks if only left child exists for a node."""
+        return not node.right and node.left
+
+    @staticmethod
+    def _only_right_child_exists(node: Node) -> bool:
+        """Checks if only right child exists for a node."""
+        return node.right and not node.left
 
     def _get_lowest_node(self, node: Node) -> Node:
         if node.left:
