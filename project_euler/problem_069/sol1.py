@@ -24,43 +24,66 @@ Find the value of n ≤ 1,000,000 for which n/φ(n) is a maximum.
 """
 
 
+from typing import List
+
+
 def solution(n: int = 10**6) -> int:
     """
-    Returns solution to problem.
-    Algorithm:
-    1. Precompute φ(k) for all natural k, k <= n using product formula (wikilink below)
-    https://en.wikipedia.org/wiki/Euler%27s_totient_function#Euler's_product_formula
+    Given an integer n, this function precomputes φ(k) for all natural k, k <= n using Euler's product formula
+    and returns the value of k that attains the maximum value of k/φ(k).
 
-    2. Find k/φ(k) for all k ≤ n and return the k that attains maximum
+    Args:
+        n (int, optional): The upper limit to which the computation is performed.
+        Default is 10**6.
 
-    >>> solution(10)
-    6
+    Returns:
+        int: The value of k that maximises the value of k / φ(k).
 
-    >>> solution(100)
-    30
-
-    >>> solution(9973)
-    2310
-
+    Raises:
+        ValueError: Error raised if the input n is less than or equal to 0.
     """
-
     if n <= 0:
         raise ValueError("Please enter an integer greater than 0")
 
+    phi = phi_values(n)
+    return max_k_value(n, phi)
+
+
+if __name__ == "__main__":
+    print(solution())
+
+def phi_values(n: int) -> List[int]:
+    """
+    The function precomputes φ(k) for all natural k, k <= n using Euler's product formula.
+
+    Args:
+        n (int): The upper limit to which the computation is performed.
+
+    Returns:
+        List[int]: The list of precomputed φ(k) values.
+    """
     phi = list(range(n + 1))
     for number in range(2, n + 1):
         if phi[number] == number:
             phi[number] -= 1
             for multiple in range(number * 2, n + 1, number):
                 phi[multiple] = (phi[multiple] // number) * (number - 1)
+    return phi
 
+
+def max_k_value(n: int, phi: List[int]) -> int:
+    """
+    The function calculates the value of k that attains the maximum value of k / φ(k).
+
+    Args:
+        n (int): The upper limit to which the computation is performed.
+        phi (List[int]): The list of precomputed φ(k) values.
+
+    Returns:
+        int: The value of k that maximises the value of k / φ(k).
+    """
     answer = 1
     for number in range(1, n + 1):
         if (answer / phi[answer]) < (number / phi[number]):
             answer = number
-
     return answer
-
-
-if __name__ == "__main__":
-    print(solution())

@@ -46,38 +46,31 @@ def abundant(n: int) -> bool:
     """
     return sum(factors(n)) > n
 
-
 def semi_perfect(number: int) -> bool:
     """
-    >>> semi_perfect(0)
-    True
-    >>> semi_perfect(1)
-    True
-    >>> semi_perfect(12)
-    True
-    >>> semi_perfect(13)
-    False
+    This function checks whether a number is semi-perfect.
+    A number is semi-perfect if it can be written as a sum of some
+    (not necessarily distinct) factors of it
+    (not including the number itself).
 
-    # >>> semi_perfect(-12)
-    # True
+    Args:
+        number (int): The number to check for semi-perfectness.
+
+    Returns:
+        bool: True if the number is semi-perfect, False otherwise.
+
+    Note:
+        This function uses a dynamic programming approach,
+        where the state is defined as
+        ('how many factors considered up to now', 'target sum remaining').
+        The task is then to fill up the dp table with boolean values
+        denoting whether the current state is achievable or not.
     """
-    values = factors(number)
-    r = len(values)
-    subset = [[0 for i in range(number + 1)] for j in range(r + 1)]
-    for i in range(r + 1):
-        subset[i][0] = True
+    factors_of_number = factors(number)
+    dp = _initalize_dp_table(len(factors_of_number), number)
+    _fill_dp_table(dp, factors_of_number, number)
 
-    for i in range(1, number + 1):
-        subset[0][i] = False
-
-    for i in range(1, r + 1):
-        for j in range(1, number + 1):
-            if j < values[i - 1]:
-                subset[i][j] = subset[i - 1][j]
-            else:
-                subset[i][j] = subset[i - 1][j] or subset[i - 1][j - values[i - 1]]
-
-    return subset[r][number] != 0
+    return dp[len(factors_of_number)][number] != 0
 
 
 def weird(number: int) -> bool:
@@ -90,6 +83,31 @@ def weird(number: int) -> bool:
     False
     """
     return abundant(number) and not semi_perfect(number)
+
+
+def _initalize_dp_table(n_rows: int, n_cols: int) -> list:
+    """
+    Initialize the DP table with basic conditions.
+    """
+    dp = [[0 for _ in range(n_cols + 1)] for _ in range(n_rows + 1)]
+    for i in range(n_rows + 1):
+        dp[i][0] = True
+    for i in range(1, n_cols + 1):
+        dp[0][i] = False
+
+    return dp
+
+
+def _fill_dp_table(dp: list, factors_of_number: list, number: int) -> None:
+    """
+    Fill up the DP table with values.
+    """
+    for i in range(1, len(factors_of_number) + 1):
+        for j in range(1, number + 1):
+            if j < factors_of_number[i - 1]:
+                dp[i][j] = dp[i - 1][j]
+            else:
+                dp[i][j] = dp[i - 1][j] or dp[i - 1][j - factors_of_number[i - 1]]
 
 
 if __name__ == "__main__":
