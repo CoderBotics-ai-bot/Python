@@ -5,42 +5,52 @@
 
 import math
 
-
 def is_prime(number: int) -> bool:
-    """Checks to see if a number is a prime in O(sqrt(n)).
-
-    A number is prime if it has exactly two factors: 1 and itself.
-
-    >>> is_prime(0)
-    False
-    >>> is_prime(1)
-    False
-    >>> is_prime(2)
-    True
-    >>> is_prime(3)
-    True
-    >>> is_prime(27)
-    False
-    >>> is_prime(87)
-    False
-    >>> is_prime(563)
-    True
-    >>> is_prime(2999)
-    True
-    >>> is_prime(67483)
-    False
     """
+    Check if the provided number is a prime number.
 
-    # precondition
+    A prime number (or a prime) is a natural number greater
+    than 1 that is not a product of two smaller natural numbers.
+    In other words, it is a number that has exactly two distinct
+    natural number divisors: 1 and itself.
+
+    Args:
+        number (int): The number to check.
+
+    Returns:
+        bool: True if the number is a prime number, otherwise False.
+
+    Raises:
+        AssertionError: If the input is not a positive integer.
+
+    Examples:
+        >>> is_prime(0)
+        False
+        >>> is_prime(1)
+        False
+        >>> is_prime(2)
+        True
+        >>> is_prime(3)
+        True
+        >>> is_prime(27)
+        False
+        >>> is_prime(87)
+        False
+        >>> is_prime(563)
+        True
+        >>> is_prime(2999)
+        True
+        >>> is_prime(67483)
+        False
+
+    """
     assert isinstance(number, int) and (
         number >= 0
     ), "'number' must been an int and positive"
 
     if 1 < number < 4:
-        # 2 and 3 are primes
         return True
     elif number < 2 or not number % 2:
-        # Negatives, 0, 1 and all even numbers are not primes
         return False
 
     odd_numbers = range(3, int(math.sqrt(number) + 1), 2)
