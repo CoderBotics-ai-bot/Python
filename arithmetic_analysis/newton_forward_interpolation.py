@@ -19,8 +19,26 @@ def ucal(u: float, p: int) -> float:
         temp = temp * (u - i)
     return temp
 
-
 def main() -> None:
+    """
+    Prompts user to provide inputs to calculate the interpolated value using Newton's Forward Difference Formula.
+    First, it asks user to enter the number of values. Then it takes parameters in the list form.
+    Next step is to take corresponding values for the parameters.
+    Lastly, it takes input from user the value to interpolate.
+
+    Upon receiving all required input, it calculates the forward difference table and then it
+    calculates the interpolated value. Finally, it prints the interpolated value.
+
+    No Arguments.
+
+    Returns:
+    None.
+
+    Side-effects:
+    Reads input from user.
+    Prints the interpolated value.
+
+    """
     n = int(input("enter the numbers of values: "))
     y: list[list[float]] = []
     for _ in range(n):
