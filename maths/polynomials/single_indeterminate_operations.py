@@ -12,6 +12,8 @@ from __future__ import annotations
 from collections.abc import MutableSequence
 
 
+
+
 class Polynomial:
     def __init__(self, degree: int, coefficients: MutableSequence[float]) -> None:
         """
@@ -101,28 +103,36 @@ class Polynomial:
 
     def __str__(self) -> str:
         """
+        Return a string representation of a polynomial.
+
+        The polynomial coefficients are represented in decreasing order of powers. For example, a polynomial
+        with degree 2 and coefficients [1, 2, 3] will be represented as  "3x^2 + 2x + 1". Coefficients with a
+        value of 0 are omitted in the representation.
+
+        Returns:
+        -------
+        str
+            A string representation of the polynomial.
+
+        Example:
+        -------
         >>> p = Polynomial(2, [1, 2, 3])
         >>> print(p)
-        3x^2 + 2x + 1
+        '3x^2 + 2x + 1'
         """
-        polynomial = ""
-        for i in range(self.degree, -1, -1):
-            if self.coefficients[i] == 0:
-                continue
-            elif self.coefficients[i] > 0:
-                if polynomial:
-                    polynomial += " + "
-            else:
-                polynomial += " - "
+        terms = [
+            (coeff, power)
+            for power, coeff in enumerate(reversed(self.coefficients))
+            if coeff != 0
+        ]
 
-            if i == 0:
-                polynomial += str(abs(self.coefficients[i]))
-            elif i == 1:
-                polynomial += str(abs(self.coefficients[i])) + "x"
-            else:
-                polynomial += str(abs(self.coefficients[i])) + "x^" + str(i)
+        polynomial = [
+            (" - " if coeff < 0 else (" + " if polynomial else ""))
+            + self.__format_term(coeff, power)
+            for polynomial, (coeff, power) in enumerate(terms)
+        ]
 
-        return polynomial
+        return "".join(polynomial)
 
     def __repr__(self) -> str:
         """
@@ -131,6 +141,31 @@ class Polynomial:
         3x^2 + 2x + 1
         """
         return self.__str__()
+
+    def __format_term(self, coeff: int, power: int) -> str:
+        """
+        Format a single term of the polynomial as a string.
+
+        Parameters:
+        ----------
+        coeff : int
+            The coefficient of the term.
+        power : int
+            The power of the term.
+
+        Returns:
+        -------
+        str
+            The term as a string.
+        """
+        abs_coeff = abs(coeff)
+
+        if power == 0:
+            return str(abs_coeff)
+        elif power == 1:
+            return f"{abs_coeff}x"
+        else:
+            return f"{abs_coeff}x^{power}"
 
     def derivative(self) -> Polynomial:
         """
