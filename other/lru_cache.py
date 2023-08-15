@@ -143,6 +143,8 @@ class DoubleLinkedList(Generic[T, U]):
         return node
 
 
+
+
 class LRUCache(Generic[T, U]):
     """
     LRU Cache to store a given capacity of data. Can be used as a stand-alone object
@@ -209,9 +211,6 @@ class LRUCache(Generic[T, U]):
     CacheInfo(hits=194, misses=99, capacity=100, current size=99)
     """
 
-    # class variable to map the decorator functions to their respective instance
-    decorator_function_to_instance_map: dict[Callable[[T], U], LRUCache[T, U]] = {}
-
     def __init__(self, capacity: int):
         self.list: DoubleLinkedList[T, U] = DoubleLinkedList()
         self.capacity = capacity
@@ -268,32 +267,28 @@ class LRUCache(Generic[T, U]):
 
     def put(self, key: T, value: U) -> None:
         """
-        Sets the value for the input key and updates the Double Linked List
-        """
+        Set the value for the input key in the cache. If the cache capacity is exceeded, this function
+        first deletes the oldest (i.e., least recently used) item before adding the new item.
+        Additionally, the double linked list (DLL) is updated to track the order of item usage.
 
+        Args:
+            key (T): The key to add to the cache.
+            value (U): The value to associate with the key.
+
+        Raises:
+            AssertionError: If a node that should exist in the DLL does not.
+        """
         if key not in self.cache:
             if self.num_keys >= self.capacity:
-                # delete first node (oldest) when over capacity
-                first_node = self.list.head.next
+                self.delete_oldest()
 
-                # guaranteed to have a non-None first node when num_keys > 0
-                # explain to type checker via assertions
-                assert first_node is not None
-                assert first_node.key is not None
-                assert (
-                    self.list.remove(first_node) is not None
-                )  # node guaranteed to be in list assert node.key is not None
-
-                del self.cache[first_node.key]
-                self.num_keys -= 1
-            self.cache[key] = DoubleLinkedListNode(key, value)
-            self.list.add(self.cache[key])
+            node = DoubleLinkedListNode(key, value)
+            self.cache[key] = node
+            self.list.add(node)
             self.num_keys += 1
-
         else:
-            # bump node to the end of the list, update value
             node = self.list.remove(self.cache[key])
-            assert node is not None  # node guaranteed to be in list
+            assert node is not None
             node.val = value
             self.list.add(node)
 
@@ -326,6 +321,17 @@ class LRUCache(Generic[T, U]):
             return cache_decorator_wrapper
 
         return cache_decorator_inner
+
+    def delete_oldest(self) -> None:
+        """
+        Delete the oldest (i.e., least recently used) item in the cache
+        """
+        first_node = self.list.head.next
+        assert first_node is not None
+        assert first_node.key is not None
+        assert self.list.remove(first_node) is not None
+        del self.cache[first_node.key]
+        self.num_keys -= 1
 
 
 if __name__ == "__main__":
