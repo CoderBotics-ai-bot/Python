@@ -1,5 +1,3 @@
-
-
 from typing import Optional
 
 
@@ -21,27 +19,46 @@ def is_palindrome(head: Optional[Node]) -> bool:
     return compare_linked_list(head, second_list)
 
 
-def is_palindrome_stack(head):
+def is_palindrome_stack(head: Optional[Node]) -> bool:
+    """Check if a singly linked list is a palindrome using a stack."""
+
     if not head or not head.next:
         return True
 
-    # 1. Get the midpoint (slow)
-    slow = fast = cur = head
-    while fast and fast.next:
-        fast, slow = fast.next.next, slow.next
+    middle_node = get_middle_node(head)
+    stack = populate_stack(middle_node)
+    return compare_stack_linked_list(stack, head)
 
-    # 2. Push the second half into the stack
-    stack = [slow.val]
-    while slow.next:
-        slow = slow.next
-        stack.append(slow.val)
 
-    # 3. Comparison
+
+def populate_stack(node: Optional[Node]) -> list:
+    """
+    Populate a stack with the values of linked list nodes.
+    Args:
+        node (Optional[Node]): The start node of the linked list.
+    Returns:
+        list: A stack populated with node values.
+    """
+    stack = []
+    while node:
+        stack.append(node.val)
+        node = node.next
+    return stack
+
+
+def compare_stack_linked_list(stack: list, head: Optional[Node]) -> bool:
+    """
+    Compare the values in a stack with the values in a linked list.
+    Args:
+        stack (list): A stack populated with node values.
+        head (Optional[Node]): The head of the linked list.
+    Returns:
+        bool: True if the stack and linked list contain the same values, False otherwise.
+    """
     while stack:
-        if stack.pop() != cur.val:
+        if stack.pop() != head.val:
             return False
-        cur = cur.next
-
+        head = head.next
     return True
 
 def get_middle_node(head: Node) -> Node:
