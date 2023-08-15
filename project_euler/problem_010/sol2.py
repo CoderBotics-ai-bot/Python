@@ -14,38 +14,19 @@ import math
 from collections.abc import Iterator
 from itertools import takewhile
 
-
 def is_prime(number: int) -> bool:
-    """Checks to see if a number is a prime in O(sqrt(n)).
-    A number is prime if it has exactly two factors: 1 and itself.
-    Returns boolean representing primality of given number num (i.e., if the
-    result is true, then the number is indeed prime else it is not).
-
-    >>> is_prime(2)
-    True
-    >>> is_prime(3)
-    True
-    >>> is_prime(27)
-    False
-    >>> is_prime(2999)
-    True
-    >>> is_prime(0)
-    False
-    >>> is_prime(1)
-    False
     """
+    Checks if a given number is a prime number. A prime number is a natural number greater
+    than 1 that is not a product of two smaller natural numbers.
 
-    if 1 < number < 4:
-        # 2 and 3 are primes
-        return True
-    elif number < 2 or number % 2 == 0 or number % 3 == 0:
-        # Negatives, 0, 1, all even numbers, all multiples of 3 are not primes
+    Args:
+        number(int): The number to check for primality.
+
+    Returns:
+        bool: True if the number is a prime number, False if not.
+    """
+    if number < 2 or any(number % i == 0 for i in range(2, int(math.sqrt(number) + 1))):
         return False
-
-    # All primes number are in format of 6k +/- 1
-    for i in range(5, int(math.sqrt(number) + 1), 6):
-        if number % i == 0 or number % (i + 2) == 0:
-            return False
     return True
 
 
