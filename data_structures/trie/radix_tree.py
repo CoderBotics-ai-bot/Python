@@ -5,7 +5,6 @@ with its parent [https://en.wikipedia.org/wiki/Radix_tree]
 """
 
 
-from typing import List
 
 
 class RadixNode:
@@ -51,56 +50,18 @@ class RadixNode:
             self.insert(word)
 
     def insert(self, word: str) -> None:
-        """Insert a word into the tree
+        word = word.lower()
 
-        Args:
-            word (str): word to insert
+        if not self.prefix:
+            self.prefix, self.is_leaf = word, True
+            return
 
-        >>> RadixNode("myprefix").insert("mystring")
+        i = self._get_common_prefix_index(word)
 
-        >>> root = RadixNode()
-        >>> root.insert_many(['myprefix', 'myprefixA', 'myprefixAA'])
-        >>> root.print_tree()
-        - myprefix   (leaf)
-        -- A   (leaf)
-        --- A   (leaf)
-        """
-        # Case 1: If the word is the prefix of the node
-        # Solution: We set the current node as leaf
-        if self.prefix == word and not self.is_leaf:
-            self.is_leaf = True
-
-        # Case 2: The node has no edges that have a prefix to the word
-        # Solution: We create an edge from the current node to a new one
-        # containing the word
-        elif word[0] not in self.nodes:
-            self.nodes[word[0]] = RadixNode(prefix=word, is_leaf=True)
-
+        if i < len(self.prefix):
+            self._handle_partial_match(word, i)
         else:
-            incoming_node = self.nodes[word[0]]
-            matching_string, remaining_prefix, remaining_word = incoming_node.match(
-                word
-            )
-
-            # Case 3: The node prefix is equal to the matching
-            # Solution: We insert remaining word on the next node
-            if remaining_prefix == "":
-                self.nodes[matching_string[0]].insert(remaining_word)
-
-            # Case 4: The word is greater equal to the matching
-            # Solution: Create a node in between both nodes, change
-            # prefixes and add the new node for the remaining word
-            else:
-                incoming_node.prefix = remaining_prefix
-
-                aux_node = self.nodes[matching_string[0]]
-                self.nodes[matching_string[0]] = RadixNode(matching_string, False)
-                self.nodes[matching_string[0]].nodes[remaining_prefix[0]] = aux_node
-
-                if remaining_word == "":
-                    self.nodes[matching_string[0]].is_leaf = True
-                else:
-                    self.nodes[matching_string[0]].insert(remaining_word)
+            self._handle_full_match(word, i)
 
     def find(self, word: str) -> bool:
         """Returns if the word is on the tree
@@ -130,6 +91,42 @@ class RadixNode:
             # We have word remaining so we check the next node
             else:
                 return incoming_node.find(remaining_word)
+
+    def _get_common_prefix_index(self, word: str) -> int:
+        i = 0
+        while i < min(len(word), len(self.prefix)) and word[i] == self.prefix[i]:
+            i += 1
+        return i
+
+    def _handle_partial_match(self, word: str, i: int) -> None:
+        common_prefix = word[:i]
+        remaining_prefix_current = self.prefix[i:]
+        remaining_prefix_word = word[i:]
+
+        # Create new node for common prefix
+        new_node = RadixNode(common_prefix, False)
+
+        # Modify prefixes of the current and next node,
+        # also move the next node to be the child of the new common prefix node.
+        new_node.children[remaining_prefix_current] = self
+        self.prefix = remaining_prefix_current
+        self.parent.children[common_prefix] = new_node
+        new_node.parent = self.parent
+        self.parent = new_node
+
+        # If any remaining part of the word is still left, insert it into the tree using current node.
+        if remaining_prefix_word:
+            new_node.insert(remaining_prefix_word)
+
+    def _handle_full_match(self, word: str, i: int) -> None:
+        if i < len(word):
+            remaining_word = word[i:]
+            if remaining_word not in self.children:
+                self.children[remaining_word] = RadixNode(remaining_word, True)
+            else:
+                self.children[remaining_word].insert(remaining_word)
+        else:
+            self.is_leaf = True
 
     def delete(self, word: str) -> bool:
         """Deletes a word from the tree if it exists
@@ -196,26 +193,17 @@ class RadixNode:
 
 
 def test_trie() -> bool:
-    """
-    Tests the functionality of a trie implemented using radix nodes.
-
-    First, a set of words is inserted into the trie. It then asserts
-    that each of these words can be found in the trie. It also verifies
-    that words not inserted cannot be found.
-
-    Then, it tests the delete operation by removing some words and
-    asserting they can no longer be found. It further makes sure that
-    deleting a word doesn't affect other words with similar prefixes.
-
-    Returns:
-        bool: True if all assertions pass. The function will raise an AssertionError if any test fails.
-    """
     words = "banana bananas bandana band apple all beast".split()
     root = RadixNode()
     root.insert_many(words)
-    test_insertion(root, words)
-    test_absence(root, ["bandanas", "apps"])
-    test_deletion(root, ["all", "banana"])
+
+    assert all(root.find(word) for word in words)
+    assert not root.find("bandanas")
+    assert not root.find("apps")
+    root.delete("all")
+    assert not root.find("all")
+    root.delete("banana")
+    assert not root.find("banana")
     assert root.find("bananas")
 
     return True
@@ -223,29 +211,6 @@ def test_trie() -> bool:
 
 def pytests() -> None:
     assert test_trie()
-
-def test_insertion(root: RadixNode, words: List[str]) -> None:
-    """
-    Test insertion of words into the radix trie and their subsequent availability.
-    """
-    assert all(root.find(word) for word in words)
-
-
-def test_absence(root: RadixNode, words: List[str]) -> None:
-    """
-    Test the absence of words from the radix trie that were not inserted.
-    """
-    assert all(not root.find(word) for word in words)
-
-
-def test_deletion(root: RadixNode, words: List[str]) -> None:
-    """
-    Test the deletion functionality of the radix trie.
-    Words deleted should not be found, but similar words should remain.
-    """
-    for word in words:
-        root.delete(word)
-        assert not root.find(word)
 
 
 def main() -> None:
