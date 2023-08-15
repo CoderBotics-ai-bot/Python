@@ -6,6 +6,9 @@ from __future__ import annotations
 from queue import Queue
 
 
+from typing import List
+
+
 def swap(a: int, b: int) -> tuple[int, int]:
     """
     Return a tuple (b, a) when given two integers a and b
@@ -34,26 +37,18 @@ def create_sparse(max_node: int, parent: list[list[int]]) -> list[list[int]]:
     return parent
 
 
-# returns lca of node u,v
 def lowest_common_ancestor(
     u: int, v: int, level: list[int], parent: list[list[int]]
 ) -> int:
-    # u must be deeper in the tree than v
     if level[u] < level[v]:
         u, v = swap(u, v)
-    # making depth of u same as depth of v
-    for i in range(18, -1, -1):
-        if level[u] - (1 << i) >= level[v]:
-            u = parent[i][u]
-    # at the same depth if u==v that mean lca is found
+
+    u = adjust_node_depth(u, v, level, parent)
+
     if u == v:
         return u
-    # moving both nodes upwards till lca in found
-    for i in range(18, -1, -1):
-        if parent[i][u] not in [0, parent[i][v]]:
-            u, v = parent[i][u], parent[i][v]
-    # returning longest common ancestor of u,v
-    return parent[0][u]
+
+    return find_common_ancestor(u, v, parent)
 
 
 # runs a breadth first search from root node of the tree
@@ -80,6 +75,57 @@ def breadth_first_search(
                 q.put(v)
                 parent[0][v] = u
     return level, parent
+
+def adjust_node_depth(u: int, v: int, level: list[int], parent: list[list[int]]) -> int:
+    """
+    Adjust the depth of node 'u' to be the same as the depth of node 'v'.
+
+    Parameters
+    ----------
+    u : int
+        The first node as integer.
+    v : int
+        The second node as integer.
+    level : list[int]
+        A list contains the levels of each node.
+    parent : list[list[int]]
+        List of node lists where each sublist is representing the parent level.
+
+    Returns
+    -------
+    int
+        The new node 'u' after adjusting the depth.
+
+    """
+    for i in range(18, -1, -1):
+        if level[u] - (1 << i) >= level[v]:
+            u = parent[i][u]
+    return u
+
+
+def find_common_ancestor(u: int, v: int, parent: list[list[int]]) -> int:
+    """
+    Find the common ancestor of two nodes.
+
+    Parameters
+    ----------
+    u : int
+        The first node as integer.
+    v : int
+        The second node as integer.
+    parent : list[list[int]]
+        List of node lists where each sublist is representing the parent level.
+
+    Returns
+    -------
+    int
+        The common ancestor of two nodes.
+
+    """
+    for i in range(18, -1, -1):
+        if parent[i][u] not in [0, parent[i][v]]:
+            u, v = parent[i][u], parent[i][v]
+    return parent[0][u]
 
 
 def main() -> None:

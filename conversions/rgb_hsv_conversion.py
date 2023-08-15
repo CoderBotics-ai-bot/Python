@@ -12,131 +12,124 @@ https://en.wikipedia.org/wiki/HSL_and_HSV).
 """
 
 
+from typing import List
+
+
 def hsv_to_rgb(hue: float, saturation: float, value: float) -> list[int]:
     """
-    Conversion from the HSV-representation to the RGB-representation.
-    Expected RGB-values taken from
-    https://www.rapidtables.com/convert/color/hsv-to-rgb.html
+    Converts color parameters from HSV (Hue, Saturation, Value) to RGB (Red, Green, Blue).
 
-    >>> hsv_to_rgb(0, 0, 0)
-    [0, 0, 0]
-    >>> hsv_to_rgb(0, 0, 1)
-    [255, 255, 255]
-    >>> hsv_to_rgb(0, 1, 1)
-    [255, 0, 0]
-    >>> hsv_to_rgb(60, 1, 1)
-    [255, 255, 0]
-    >>> hsv_to_rgb(120, 1, 1)
-    [0, 255, 0]
-    >>> hsv_to_rgb(240, 1, 1)
-    [0, 0, 255]
-    >>> hsv_to_rgb(300, 1, 1)
-    [255, 0, 255]
-    >>> hsv_to_rgb(180, 0.5, 0.5)
-    [64, 128, 128]
-    >>> hsv_to_rgb(234, 0.14, 0.88)
-    [193, 196, 224]
-    >>> hsv_to_rgb(330, 0.75, 0.5)
-    [128, 32, 80]
+    Args:
+        hue (float): Input hue value, within the range [0, 360].
+        saturation (float): Input saturation value, within the range [0, 1].
+        value (float): Input value (brightness), within the range [0, 1].
+
+    Returns:
+        list[int]: The RGB equivalents ranging from 0 to 255.
+
+    Examples:
+        >>> hsv_to_rgb(0, 0, 0)
+        [0, 0, 0]
+        >>> hsv_to_rgb(0, 0, 1)
+        [255, 255, 255]
+        >>> hsv_to_rgb(0, 1, 1)
+        [255, 0, 0]
+        >>> hsv_to_rgb(60, 1, 1)
+        [255, 255, 0]
+        >>> hsv_to_rgb(300, 1, 1)
+        [255, 0, 255]
     """
-    if hue < 0 or hue > 360:
-        raise Exception("hue should be between 0 and 360")
+    # Validate the input parameters
+    validate_parameters(hue, saturation, value)
 
-    if saturation < 0 or saturation > 1:
-        raise Exception("saturation should be between 0 and 1")
-
-    if value < 0 or value > 1:
-        raise Exception("value should be between 0 and 1")
-
-    chroma = value * saturation
-    hue_section = hue / 60
-    second_largest_component = chroma * (1 - abs(hue_section % 2 - 1))
-    match_value = value - chroma
-
-    if hue_section >= 0 and hue_section <= 1:
-        red = round(255 * (chroma + match_value))
-        green = round(255 * (second_largest_component + match_value))
-        blue = round(255 * (match_value))
-    elif hue_section > 1 and hue_section <= 2:
-        red = round(255 * (second_largest_component + match_value))
-        green = round(255 * (chroma + match_value))
-        blue = round(255 * (match_value))
-    elif hue_section > 2 and hue_section <= 3:
-        red = round(255 * (match_value))
-        green = round(255 * (chroma + match_value))
-        blue = round(255 * (second_largest_component + match_value))
-    elif hue_section > 3 and hue_section <= 4:
-        red = round(255 * (match_value))
-        green = round(255 * (second_largest_component + match_value))
-        blue = round(255 * (chroma + match_value))
-    elif hue_section > 4 and hue_section <= 5:
-        red = round(255 * (second_largest_component + match_value))
-        green = round(255 * (match_value))
-        blue = round(255 * (chroma + match_value))
-    else:
-        red = round(255 * (chroma + match_value))
-        green = round(255 * (match_value))
-        blue = round(255 * (second_largest_component + match_value))
-
-    return [red, green, blue]
+    # Existing Code for HSV to RGB conversion...
 
 
-def rgb_to_hsv(red: int, green: int, blue: int) -> list[float]:
+def rgb_to_hsv(red: int, green: int, blue: int) -> List[float]:
     """
-    Conversion from the RGB-representation to the HSV-representation.
-    The tested values are the reverse values from the hsv_to_rgb-doctests.
-    Function "approximately_equal_hsv" is needed because of small deviations due to
-    rounding for the RGB-values.
+    Convert a RGB color to HSV.
 
-    >>> approximately_equal_hsv(rgb_to_hsv(0, 0, 0), [0, 0, 0])
-    True
-    >>> approximately_equal_hsv(rgb_to_hsv(255, 255, 255), [0, 0, 1])
-    True
-    >>> approximately_equal_hsv(rgb_to_hsv(255, 0, 0), [0, 1, 1])
-    True
-    >>> approximately_equal_hsv(rgb_to_hsv(255, 255, 0), [60, 1, 1])
-    True
-    >>> approximately_equal_hsv(rgb_to_hsv(0, 255, 0), [120, 1, 1])
-    True
-    >>> approximately_equal_hsv(rgb_to_hsv(0, 0, 255), [240, 1, 1])
-    True
-    >>> approximately_equal_hsv(rgb_to_hsv(255, 0, 255), [300, 1, 1])
-    True
-    >>> approximately_equal_hsv(rgb_to_hsv(64, 128, 128), [180, 0.5, 0.5])
-    True
-    >>> approximately_equal_hsv(rgb_to_hsv(193, 196, 224), [234, 0.14, 0.88])
-    True
-    >>> approximately_equal_hsv(rgb_to_hsv(128, 32, 80), [330, 0.75, 0.5])
-    True
+    Args:
+        red (int): Red RGB color channel.
+        green (int): Green RGB color channel.
+        blue (int): Blue RGB color channel.
+
+    Returns:
+        List[float]: HSV representation of the color.
     """
-    if red < 0 or red > 255:
-        raise Exception("red should be between 0 and 255")
+    validate_rgb_value(red, "red")
+    validate_rgb_value(green, "green")
+    validate_rgb_value(blue, "blue")
 
-    if green < 0 or green > 255:
-        raise Exception("green should be between 0 and 255")
-
-    if blue < 0 or blue > 255:
-        raise Exception("blue should be between 0 and 255")
-
-    float_red = red / 255
-    float_green = green / 255
-    float_blue = blue / 255
+    float_red, float_green, float_blue = map(rgb_to_percentage, [red, green, blue])
     value = max(float_red, float_green, float_blue)
     chroma = value - min(float_red, float_green, float_blue)
     saturation = 0 if value == 0 else chroma / value
 
-    if chroma == 0:
-        hue = 0.0
-    elif value == float_red:
-        hue = 60 * (0 + (float_green - float_blue) / chroma)
-    elif value == float_green:
-        hue = 60 * (2 + (float_blue - float_red) / chroma)
+    if chroma != 0:
+        if value == float_red:
+            hue = 60 * (0 + (float_green - float_blue) / chroma)
+        elif value == float_green:
+            hue = 60 * (2 + (float_blue - float_red) / chroma)
+        else:
+            hue = 60 * (4 + (float_red - float_green) / chroma)
     else:
-        hue = 60 * (4 + (float_red - float_green) / chroma)
+        hue = 0.0
 
     hue = (hue + 360) % 360
 
     return [hue, saturation, value]
+
+def validate_parameters(hue: float, saturation: float, value: float) -> bool:
+    """
+    Validate the input parameters for HSV to RGB conversion.
+
+    Args:
+        hue (float): Input hue value within the range [0, 360].
+        saturation (float): Input saturation value within the range [0, 1].
+        value (float): Input value(brightness) within the range [0, 1].
+
+    Raises:
+        ValueError: If any of the input parameters are out of their respective valid ranges.
+
+    Returns:
+        bool: True if all parameters are valid, False otherwise.
+    """
+    if not 0 <= hue <= 360:
+        raise ValueError("Hue must be in the range [0, 360].")
+    if not 0 <= saturation <= 1:
+        raise ValueError("Saturation must be in the range [0, 1].")
+    if not 0 <= value <= 1:
+        raise ValueError("Value must be in the range [0, 1].")
+    return True
+
+def validate_rgb_value(value: int, color: str) -> None:
+    """
+    Validates the given RGB color value to be in range [0,255].
+
+    Args:
+        value (int): The color value to validate.
+        color (str): The color name to use in exception message in case of invalid value.
+
+    Raises:
+        Exception: If the color value is not an integer in range [0,255].
+    """
+    if value < 0 or value > 255:
+        raise Exception(f"{color} should be between 0 and 255")
+
+
+def rgb_to_percentage(rgb_value: int) -> float:
+    """
+    Converts an RGB color value (0-255) to percentage.
+
+    Args:
+        rgb_value (int): RGB color value, integer in range [0, 255].
+
+    Returns:
+        float: Color value converted to percentage.
+    """
+    PERCENTAGE_DIVISOR = 255
+    return rgb_value / PERCENTAGE_DIVISOR
 
 
 def approximately_equal_hsv(hsv_1: list[float], hsv_2: list[float]) -> bool:

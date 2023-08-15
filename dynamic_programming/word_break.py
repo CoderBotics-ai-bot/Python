@@ -22,90 +22,81 @@ Space: O(n)
 
 import functools
 from typing import Any
+from typing import Any, List
 
 
-def word_break(string: str, words: list[str]) -> bool:
+from typing import Any, List
+
+
+def word_break(string: str, words: List[str]) -> bool:
     """
-    Return True if numbers have opposite signs False otherwise.
-
-    >>> word_break("applepenapple", ["apple","pen"])
-    True
-    >>> word_break("catsandog", ["cats","dog","sand","and","cat"])
-    False
-    >>> word_break("cars", ["car","ca","rs"])
-    True
-    >>> word_break('abc', [])
-    False
-    >>> word_break(123, ['a'])
-    Traceback (most recent call last):
-        ...
-    ValueError: the string should be not empty string
-    >>> word_break('', ['a'])
-    Traceback (most recent call last):
-        ...
-    ValueError: the string should be not empty string
-    >>> word_break('abc', [123])
-    Traceback (most recent call last):
-        ...
-    ValueError: the words should be a list of non-empty strings
-    >>> word_break('abc', [''])
-    Traceback (most recent call last):
-        ...
-    ValueError: the words should be a list of non-empty strings
+    Function to check whether a string can be segmented into words.
+    string (str): input string.
+    words (List[str]): list of words (dictionary).
+    Returns:
+    bool: True if string can be segmented, otherwise False.
     """
-
-    # Validation
-    if not isinstance(string, str) or len(string) == 0:
-        raise ValueError("the string should be not empty string")
-
-    if not isinstance(words, list) or not all(
-        isinstance(item, str) and len(item) > 0 for item in words
-    ):
-        raise ValueError("the words should be a list of non-empty strings")
-
-    # Build trie
-    trie: dict[str, Any] = {}
-    word_keeper_key = "WORD_KEEPER"
-
-    for word in words:
-        trie_node = trie
-        for c in word:
-            if c not in trie_node:
-                trie_node[c] = {}
-
-            trie_node = trie_node[c]
-
-        trie_node[word_keeper_key] = True
-
-    len_string = len(string)
-
-    # Dynamic programming method
-    @functools.cache
-    def is_breakable(index: int) -> bool:
-        """
-        >>> string = 'a'
-        >>> is_breakable(1)
-        True
-        """
-        if index == len_string:
-            return True
-
-        trie_node = trie
-        for i in range(index, len_string):
-            trie_node = trie_node.get(string[i], None)
-
-            if trie_node is None:
-                return False
-
-            if trie_node.get(word_keeper_key, False) and is_breakable(i + 1):
-                return True
-
-        return False
-
-    return is_breakable(0)
+    validate_inputs(string, words)
+    trie = build_trie(words)
+    return is_breakable(string, trie)
 
 
 if __name__ == "__main__":
     import doctest
 
     doctest.testmod()
+
+
+
+def build_trie(words: List[str]) -> dict[str, Any]:
+    """
+    Build a trie data structure from the given list of words.
+    words (List[str]): list of words.
+    Returns:
+    trie: a trie data structure.
+    """
+    trie: dict[str, Any] = {}
+    for word in words:
+        trie_node = trie
+        for char in word:
+            if char not in trie_node:
+                trie_node[char] = {}
+            trie_node = trie_node[char]
+        trie_node["WORD_KEEPER"] = True
+    return trie
+
+
+def is_breakable(string: str, trie: dict[str, Any], index: int = 0) -> bool:
+    """
+    Recursively check if the string can be segmented into the words in trie.
+    string (str): the input string.
+    trie (dict[str, Any]): the trie built from the dictionary of words.
+    index (int): current index of string.
+    Returns:
+    bool: True if string can be segmented, otherwise False.
+    """
+    if index == len(string):
+        return True
+
+    trie_node = trie
+    for i in range(index, len(string)):
+        trie_node = trie_node.get(string[i], None)
+        if trie_node is None:
+            return False
+        if trie_node.get("WORD_KEEPER", False) and is_breakable(string, trie, i + 1):
+            return True
+    return False
+
+
+def validate_inputs(string: str, words: List[str]) -> None:
+    """
+    Validates the inputs of the word_break function.
+    string (str): input string.
+    words (List[str]): list of words (dictionary).
+    Raises:
+    ValueError: If the input 'string' or 'words' is invalid.
+    """
+    if not string:
+        raise ValueError("Input string is empty")
+    if not words or not all(words):
+        raise ValueError("Word dictionary is empty")

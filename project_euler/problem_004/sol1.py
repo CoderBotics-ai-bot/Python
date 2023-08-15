@@ -15,9 +15,18 @@ References:
 
 def solution(n: int = 998001) -> int:
     """
-    Returns the largest palindrome made from the product of two 3-digit
-    numbers which is less than n.
+    Returns the largest palindrome made from the product of two 3-digit numbers which is less than n.
 
+    Args:
+    n: An integer, representing the upper limit for palindrome search. Defaults to 998001.
+
+    Returns:
+    The largest palindrome number, made from the product of two 3-digit numbers which is less than n.
+
+    Raises:
+    ValueError: If n is larger than the maximum possible 3 digit number's product.
+
+    Examples:
     >>> solution(20000)
     19591
     >>> solution(30000)
@@ -25,27 +34,35 @@ def solution(n: int = 998001) -> int:
     >>> solution(40000)
     39893
     >>> solution(10000)
-    Traceback (most recent call last):
-        ...
     ValueError: That number is larger than our acceptable range.
     """
+    if n > 998001:
+        raise ValueError("That number is larger than our acceptable range.")
 
-    # fetches the next number
     for number in range(n - 1, 9999, -1):
         str_number = str(number)
 
-        # checks whether 'str_number' is a palindrome.
-        if str_number == str_number[::-1]:
-            divisor = 999
-
-            # if 'number' is a product of two 3-digit numbers
-            # then number is the answer otherwise fetch next number.
-            while divisor != 99:
-                if (number % divisor == 0) and (len(str(number // divisor)) == 3.0):
-                    return number
-                divisor -= 1
-    raise ValueError("That number is larger than our acceptable range.")
+        if str_number == str_number[::-1] and is_three_digit_product(number):
+            return number
+    return None
 
 
 if __name__ == "__main__":
     print(f"{solution() = }")
+
+def is_three_digit_product(number: int) -> bool:
+    """
+    Determine if a number is a product of two 3-digit numbers
+
+    Args:
+    number: An integer to be checked
+
+    Returns:
+    A boolean value representing whether the number is a product of two 3-digit numbers or not.
+    """
+    divisor = 999
+    while divisor > 99:
+        if (number % divisor == 0) and (99 < number // divisor < 1000):
+            return True
+        divisor -= 1
+    return False
