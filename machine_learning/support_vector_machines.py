@@ -24,32 +24,9 @@ def norm_squared(vector: ndarray) -> float:
     return np.dot(vector, vector)
 
 
+
+
 class SVC:
-    """
-    Support Vector Classifier
-
-    Args:
-        kernel (str): kernel to use. Default: linear
-            Possible choices:
-                - linear
-        regularization: constraint for soft margin (data not linearly separable)
-            Default: unbound
-
-    >>> SVC(kernel="asdf")
-    Traceback (most recent call last):
-        ...
-    ValueError: Unknown kernel: asdf
-
-    >>> SVC(kernel="rbf")
-    Traceback (most recent call last):
-        ...
-    ValueError: rbf kernel requires gamma
-
-    >>> SVC(kernel="rbf", gamma=-1)
-    Traceback (most recent call last):
-        ...
-    ValueError: gamma must be > 0
-    """
 
     def __init__(
         self,
@@ -58,29 +35,67 @@ class SVC:
         kernel: str = "linear",
         gamma: float = 0.0,
     ) -> None:
+        """
+        Initialize the SVC with the provided parameters.
+
+        Parameters
+        ----------
+        regularization : float, (default: np.inf)
+            The regularization parameter. For an infinite regularization
+            parameter, the algorithm will not tolerate any misclassification.
+
+        kernel : str, {'linear', 'rbf'}, (default: 'linear')
+            Specifies the kernel type to be used in the algorithm.
+            'linear': a linear kernel.
+            'rbf': a radial basis function kernel.
+            If non-linear it will add a non-linear transformation to
+            the feature vector.
+
+        gamma : float, (default: 0.0)
+            Kernel coefficient for 'rbf', ignored by other kernels.
+
+        Raises
+        ------
+        ValueError: If any of the parameters are not as expected.
+
+        Returns
+        -------
+        None
+
+        """
         self.regularization = regularization
         self.gamma = gamma
-        if kernel == "linear":
-            self.kernel = self.__linear
-        elif kernel == "rbf":
-            if self.gamma == 0:
-                raise ValueError("rbf kernel requires gamma")
-            if not isinstance(self.gamma, (float, int)):
-                raise ValueError("gamma must be float or int")
-            if not self.gamma > 0:
-                raise ValueError("gamma must be > 0")
-            self.kernel = self.__rbf
-            # in the future, there could be a default value like in sklearn
-            # sklear: def_gamma = 1/(n_features * X.var()) (wiki)
-            # previously it was 1/(n_features)
-        else:
+
+        kernel_mapping = {"linear": self.__linear, "rbf": self.__rbf}
+        try:
+            self.kernel = kernel_mapping[kernel]
+        except KeyError:
             msg = f"Unknown kernel: {kernel}"
             raise ValueError(msg)
+
+        if kernel == "rbf":
+            self.kernel_specific_validation()
 
     # kernels
     def __linear(self, vector1: ndarray, vector2: ndarray) -> float:
         """Linear kernel (as if no kernel used at all)"""
         return np.dot(vector1, vector2)
+
+    def kernel_specific_validation(self) -> None:
+        """
+        Function for validating kernel specific parameters.
+        Raises
+        ------
+        ValueError: If gamma for 'rbf' kernel is not as per requirements.
+        """
+        if self.gamma == 0:
+            raise ValueError("rbf kernel requires gamma")
+
+        if not isinstance(self.gamma, (float, int)):
+            raise ValueError("gamma must be float or int")
+
+        if not self.gamma > 0:
+            raise ValueError("gamma must be > 0")
 
     def __rbf(self, vector1: ndarray, vector2: ndarray) -> float:
         """
