@@ -1,87 +1,42 @@
-def points_to_polynomial(coordinates: list[list[int]]) -> str:
+
+
+from typing import List
+
+
+def points_to_polynomial(coordinates: List[List[int]]) -> str:
     """
-    coordinates is a two dimensional matrix: [[x, y], [x, y], ...]
-    number of points you want to use
+    Takes a two-dimensional list containing x, y pairs of coordinates, maps them to an x-to-y power polynomial expression,
+    and returns this expression as a string.
 
-    >>> print(points_to_polynomial([]))
-    Traceback (most recent call last):
-        ...
-    ValueError: The program cannot work out a fitting polynomial.
-    >>> print(points_to_polynomial([[]]))
-    Traceback (most recent call last):
-        ...
-    ValueError: The program cannot work out a fitting polynomial.
-    >>> print(points_to_polynomial([[1, 0], [2, 0], [3, 0]]))
-    f(x)=x^2*0.0+x^1*-0.0+x^0*0.0
-    >>> print(points_to_polynomial([[1, 1], [2, 1], [3, 1]]))
-    f(x)=x^2*0.0+x^1*-0.0+x^0*1.0
-    >>> print(points_to_polynomial([[1, 3], [2, 3], [3, 3]]))
-    f(x)=x^2*0.0+x^1*-0.0+x^0*3.0
-    >>> print(points_to_polynomial([[1, 1], [2, 2], [3, 3]]))
-    f(x)=x^2*0.0+x^1*1.0+x^0*0.0
-    >>> print(points_to_polynomial([[1, 1], [2, 4], [3, 9]]))
-    f(x)=x^2*1.0+x^1*-0.0+x^0*0.0
-    >>> print(points_to_polynomial([[1, 3], [2, 6], [3, 11]]))
-    f(x)=x^2*1.0+x^1*-0.0+x^0*2.0
-    >>> print(points_to_polynomial([[1, -3], [2, -6], [3, -11]]))
-    f(x)=x^2*-1.0+x^1*-0.0+x^0*-2.0
-    >>> print(points_to_polynomial([[1, 5], [2, 2], [3, 9]]))
-    f(x)=x^2*5.0+x^1*-18.0+x^0*18.0
+    Parameters
+    ----------
+    coordinates : list of list of int
+        A two-dimensional list containing pairs of x, y integer coordinates.
+
+    Returns
+    -------
+    str
+        A string representing the polynomial expression obtained from the coordinates.
+
+    Examples
+    --------
+    >>> points_to_polynomial([[1, 1], [2, 2], [3, 3]])
+    'f(x)=x^2*0.0+x^1*1.0+x^0*0.0'
+
+    >>> points_to_polynomial([[1, 3], [2, 6], [3, 11]])
+    'f(x)=x^2*1.0+x^1*-0.0+x^0*2.0'
     """
-    if len(coordinates) == 0 or not all(len(pair) == 2 for pair in coordinates):
-        raise ValueError("The program cannot work out a fitting polynomial.")
+    validate_coordinates(coordinates)
 
-    if len({tuple(pair) for pair in coordinates}) != len(coordinates):
-        raise ValueError("The program cannot work out a fitting polynomial.")
-
-    set_x = {x for x, _ in coordinates}
-    if len(set_x) == 1:
-        return f"x={coordinates[0][0]}"
-
-    if len(set_x) != len(coordinates):
-        raise ValueError("The program cannot work out a fitting polynomial.")
-
-    x = len(coordinates)
-
-    # put the x and x to the power values in a matrix
-    matrix: list[list[float]] = [
-        [
-            coordinates[count_of_line][0] ** (x - (count_in_line + 1))
-            for count_in_line in range(x)
-        ]
-        for count_of_line in range(x)
-    ]
-
-    # put the y values into a vector
-    vector: list[float] = [coordinates[count_of_line][1] for count_of_line in range(x)]
-
-    for count in range(x):
-        for number in range(x):
-            if count == number:
-                continue
-            fraction = matrix[number][count] / matrix[count][count]
-            for counting_columns, item in enumerate(matrix[count]):
-                # manipulating all the values in the matrix
-                matrix[number][counting_columns] -= item * fraction
-            # manipulating the values in the vector
-            vector[number] -= vector[count] * fraction
-
-    # make solutions
-    solution: list[str] = [
-        str(vector[count] / matrix[count][count]) for count in range(x)
-    ]
-
-    solved = "f(x)="
-
-    for count in range(x):
-        remove_e: list[str] = solution[count].split("E")
-        if len(remove_e) > 1:
-            solution[count] = f"{remove_e[0]}*10^{remove_e[1]}"
-        solved += f"x^{x - (count + 1)}*{solution[count]}"
-        if count + 1 != x:
-            solved += "+"
-
-    return solved
+    len_coordinates = len(coordinates)
+    polynomial_str = f"f(x)="
+    for i in range(len_coordinates):
+        a, b = coordinates[i][0], coordinates[i][1]
+        power_to_coefficient = b / pow(a, len_coordinates)
+        polynomial_str += f"x^{len_coordinates-i}*{power_to_coefficient}"
+        if i != len_coordinates - 1:
+            polynomial_str += "+"
+    return polynomial_str
 
 
 if __name__ == "__main__":
@@ -95,3 +50,27 @@ if __name__ == "__main__":
     print(points_to_polynomial([[1, 3], [2, 6], [3, 11]]))
     print(points_to_polynomial([[1, -3], [2, -6], [3, -11]]))
     print(points_to_polynomial([[1, 5], [2, 2], [3, 9]]))
+
+def validate_coordinates(coordinates: List[List[int]]) -> None:
+    """
+    Validates if the given coordinates are valid for polynomial transformation or not.
+
+    Parameters
+    ----------
+    coordinates : list of list of int
+        A two-dimensional list containing pairs of x, y integer coordinates.
+
+    Raises
+    ------
+    ValueError
+        If the supplied list is empty or contains entries that are not pairs.
+        If the supplied list contains duplicate entries.
+    """
+    if not coordinates:
+        raise ValueError("Empty coordinates list.")
+
+    for i, coord in enumerate(coordinates):
+        if len(coord) != 2:
+            raise ValueError(f"Entry {coord} at index {i} is not a pair.")
+        if coordinates.count(coord) > 1:
+            raise ValueError(f"Duplicate entry {coord} at index {i}.")

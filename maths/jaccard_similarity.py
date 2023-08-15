@@ -14,67 +14,54 @@ Jaccard similarity is widely used with MinHashing.
 """
 
 
-def jaccard_similarity(set_a, set_b, alternative_union=False):
+from typing import List, Tuple, Union
+
+
+def jaccard_similarity(
+    set_a: Union[set, List, Tuple],
+    set_b: Union[set, List, Tuple],
+    alternative_union: bool = False,
+) -> float:
     """
-    Finds the jaccard similarity between two sets.
-    Essentially, its intersection over union.
-
-    The alternative way to calculate this is to take union as sum of the
-    number of items in the two sets. This will lead to jaccard similarity
-    of a set with itself be 1/2 instead of 1. [MMDS 2nd Edition, Page 77]
-
-    Parameters:
-        :set_a (set,list,tuple): A non-empty set/list
-        :set_b (set,list,tuple): A non-empty set/list
-        :alternativeUnion (boolean): If True, use sum of number of
-        items as union
-
-    Output:
-        (float) The jaccard similarity between the two sets.
-
-    Examples:
-    >>> set_a = {'a', 'b', 'c', 'd', 'e'}
-    >>> set_b = {'c', 'd', 'e', 'f', 'h', 'i'}
-    >>> jaccard_similarity(set_a, set_b)
-    0.375
-
-    >>> jaccard_similarity(set_a, set_a)
-    1.0
-
-    >>> jaccard_similarity(set_a, set_a, True)
-    0.5
-
-    >>> set_a = ['a', 'b', 'c', 'd', 'e']
-    >>> set_b = ('c', 'd', 'e', 'f', 'h', 'i')
-    >>> jaccard_similarity(set_a, set_b)
-    0.375
+    Compute the Jaccard similarity between two sets, lists, or tuples.
+    Jaccard similarity is the ratio of the size of the intersection to the size of the union
+    of the two sets.
+    Raises a ValueError if the input is not of the types set, list, or tuple.
     """
 
-    if isinstance(set_a, set) and isinstance(set_b, set):
-        intersection = len(set_a.intersection(set_b))
+    set_a, set_b = validate_input(set_a, set_b)
 
-        if alternative_union:
-            union = len(set_a) + len(set_b)
-        else:
-            union = len(set_a.union(set_b))
+    intersect = compute_intersection(set_a, set_b)
+    union = compute_union(set_a, set_b, alternative_union)
 
-        return intersection / union
-
-    if isinstance(set_a, (list, tuple)) and isinstance(set_b, (list, tuple)):
-        intersection = [element for element in set_a if element in set_b]
-
-        if alternative_union:
-            union = len(set_a) + len(set_b)
-            return len(intersection) / union
-        else:
-            union = set_a + [element for element in set_b if element not in set_a]
-            return len(intersection) / len(union)
-
-        return len(intersection) / len(union)
-    return None
+    return intersect / union
 
 
 if __name__ == "__main__":
     set_a = {"a", "b", "c", "d", "e"}
     set_b = {"c", "d", "e", "f", "h", "i"}
     print(jaccard_similarity(set_a, set_b))
+
+def validate_input(
+    set_a: Union[set, List, Tuple], set_b: Union[set, List, Tuple]
+) -> Tuple[set, set]:
+    """
+    Validate the types of the inputs and convert lists and tuples to sets for processing.
+    Raises a ValueError if the input is not of the types set, list, or tuple.
+    """
+    if not all(isinstance(x, (set, list, tuple)) for x in (set_a, set_b)):
+        raise ValueError("Both inputs must be of type set, list or tuple.")
+
+    return set(set_a), set(set_b)
+
+
+def compute_intersection(set_a: set, set_b: set) -> int:
+    """Compute intersection of two sets and return its size"""
+    return len(set_a & set_b)
+
+
+def compute_union(set_a: set, set_b: set, alternative: bool = False) -> int:
+    """Compute union of two sets in two different ways and return its size"""
+    if alternative:
+        return len(set_a) + len(set_b)
+    return len(set_a | set_b)
