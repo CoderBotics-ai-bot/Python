@@ -21,6 +21,10 @@ from __future__ import annotations
 
 
 
+
+
+
+
 class XORCipher:
     def __init__(self, key: int = 0):
         """
@@ -61,25 +65,30 @@ class XORCipher:
 
     def decrypt(self, content: str, key: int) -> list[str]:
         """
-        input: 'content' of type list and 'key' of type int
-        output: decrypted string 'content' as a list of chars
-        if key not passed the method uses the key by the constructor.
-        otherwise key = 1
+        Decrypts a string of characters using XOR cipher.
+
+        Args:
+        content (str): The string to be decrypted.
+        key (int): The key used for decryption; defaults to class key or 1.
+
+        Returns:
+        list[str]: A list of characters representing the decrypted string.
         """
+        # Preconditions
+        assert isinstance(key, int) and isinstance(content, str)
 
-        # precondition
-        assert isinstance(key, int) and isinstance(content, list)
-
-        key = key or self.__key or 1
-
-        # make sure key is an appropriate size
-        key %= 255
+        key = self._get_valid_key(key)
 
         return [chr(ord(ch) ^ key) for ch in content]
 
     def normalize_key(self, key: int) -> int:
         """Ensures that key is within the acceptable range."""
         return (key or self.__key or 1) % 255
+
+    def _get_valid_key(self, key: int) -> int:
+        """Ensures the supplied key is non-zero and less than 255."""
+        default_key = self.__key if hasattr(self, "__key") else 1
+        return key or default_key % 255
 
     def apply_xor_operation(self, content: str, key: int) -> list[str]:
         """Applies XOR operation to the content using the key."""
