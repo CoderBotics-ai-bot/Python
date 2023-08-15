@@ -16,6 +16,9 @@ Find a(10^15)
 from typing import List, Tuple, Optional
 
 
+from typing import List, Tuple
+
+
 ks = range(2, 20 + 1)
 base = [10**k for k in range(ks[-1] + 1)]
 memo: dict[int, dict[int, list[list[int]]]] = {}
@@ -53,26 +56,55 @@ def next_term(a_i: List[int], k: int, i: int, n: int) -> Tuple[int, int]:
     return a_i[-1] - a_i[i], ct - i
 
 
-def compute(a_i, k, i, n):
-    """
-    same as next_term(a_i, k, i, n) but computes terms without memoizing results.
-    """
+def compute(a_i: List[int], k: int, i: int, n: int) -> Tuple[int, int]:
     if i >= n:
-        return 0, i
-    if k > len(a_i):
-        a_i.extend([0 for _ in range(k - len(a_i))])
+        raise ValueError("i cannot be more than total terms n")
+    update_a_i_len_for_k(a_i, k)
+    ds_b, ds_c = calculate_ds(a_i, k)
+    diff, i = compute_sum_and_index(a_i, k, i, n, ds_b, ds_c)
+    return diff, i - start_i
 
-    # note: a_i -> b * 10^k + c
-    # ds_b -> digitsum(b)
-    # ds_c -> digitsum(c)
-    start_i = i
-    ds_b, ds_c, diff = 0, 0, 0
+def calculate_ds(a_i: List[int], k: int) -> Tuple[int, int]:
+    """Calculate the ds_b and ds_c values from a_i and k.
+
+    Args:
+        a_i: A list of integers representing the ith term in decimal form.
+        k: The base to which the adding should start.
+
+    Returns:
+        A tuple containing ds_b and ds_c.
+    """
+    ds_b, ds_c = 0, 0
     for j in range(len(a_i)):
         if j >= k:
             ds_b += a_i[j]
         else:
             ds_c += a_i[j]
+    return ds_b, ds_c
 
+
+def compute_sum_and_index(
+    a_i: List[int], k: int, i: int, n: int, ds_b: int, ds_c: int
+) -> Tuple[int, int]:
+    """Compute the sum and index i while processing the sum of terms.
+
+    This function is the main computation part of the original `compute`
+    function. It handles the computation within the while loop, including
+    the index increment, addend calculation, diff increment etc.
+
+    Args:
+        a_i: A list of integers representing the ith term in decimal form.
+        k: The base to which the adding should start.
+        i: The starting index.
+        n: The total number of terms.
+        ds_b: An integer obtained from calculate_ds function.
+        ds_c: An integer obtained from calculate_ds function.
+
+    Returns:
+        A tuple containing the sum(diff) and index i. The index i
+        is updated depending on the computation and could be less than n.
+    """
+    diff = 0
     while i < n:
         i += 1
         addend = ds_c + ds_b
@@ -81,15 +113,25 @@ def compute(a_i, k, i, n):
         for j in range(k):
             s = a_i[j] + addend
             addend, a_i[j] = divmod(s, 10)
-
             ds_c += a_i[j]
-
         if addend > 0:
             break
-
     if addend > 0:
         add(a_i, k, addend)
-    return diff, i - start_i
+    return diff, i - 1
+
+
+def update_a_i_len_for_k(a_i: List[int], k: int) -> None:
+    """Update a_i length if k is greater than the length.
+
+    This function extends a_i with zeros, such that its length equals k.
+
+    Args:
+        a_i: A list of integers representing the ith term in decimal form.
+        k: The base to which the adding should start.
+    """
+    if k > len(a_i):
+        a_i.extend([0 for _ in range(k - len(a_i))])
 
 
 def get_difference_and_ct(a_i: List[int], k: int, i: int) -> Tuple[Optional[int], int]:
