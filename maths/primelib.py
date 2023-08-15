@@ -40,35 +40,32 @@ goldbach(number)  // Goldbach's assumption
 
 from math import sqrt
 
-
 def is_prime(number: int) -> bool:
     """
-    input: positive integer 'number'
-    returns true if 'number' is prime otherwise false.
+    This function checks whether the input integer 'number' is a prime number. A prime number
+    is a natural number greater than 1 that is not a product of two smaller natural numbers.
+
+    Args:
+        number: A positive integer to check if it is a prime number.
+
+    Returns:
+        bool: True if 'number' is a prime, otherwise False.
+
+    Raises:
+        ValueError: If 'number' is not a positive integer.
     """
 
-    # precondition
-    assert isinstance(number, int) and (
-        number >= 0
-    ), "'number' must been an int and positive"
+    if not isinstance(number, int) or number < 0:
+        raise ValueError("'number' must be an int and positive.")
 
-    status = True
-
-    # 0 and 1 are none primes.
     if number <= 1:
-        status = False
+        return False
 
-    for divisor in range(2, int(round(sqrt(number))) + 1):
-        # if 'number' divisible by 'divisor' then sets 'status'
-        # of false and break up the loop.
+    for divisor in range(2, int(sqrt(number)) + 1):
         if number % divisor == 0:
-            status = False
-            break
+            return False
 
-    # precondition
-    assert isinstance(status, bool), "'status' must been from type bool"
-
-    return status
+    return True
 
 
 # ------------------------------------------
