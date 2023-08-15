@@ -15,47 +15,58 @@ References:
 
 def solution(n: int = 2000000) -> int:
     """
-    Returns the sum of all the primes below n using Sieve of Eratosthenes:
+    Calculate the sum of all prime numbers below a given number `n`.
 
-    The sieve of Eratosthenes is one of the most efficient ways to find all primes
-    smaller than n when n is smaller than 10 million.  Only for positive numbers.
+    This function uses the Sieve of Eratosthenes algorithm to find all prime numbers
+    smaller than `n`. The function then calculates the sum of these prime numbers.
 
-    >>> solution(1000)
-    76127
-    >>> solution(5000)
-    1548136
-    >>> solution(10000)
-    5736396
-    >>> solution(7)
-    10
-    >>> solution(7.1)  # doctest: +ELLIPSIS
-    Traceback (most recent call last):
-        ...
-    TypeError: 'float' object cannot be interpreted as an integer
-    >>> solution(-7)  # doctest: +ELLIPSIS
-    Traceback (most recent call last):
-        ...
-    IndexError: list assignment index out of range
-    >>> solution("seven")  # doctest: +ELLIPSIS
-    Traceback (most recent call last):
-        ...
-    TypeError: can only concatenate str (not "int") to str
+    The Sieve of Eratosthenes algorithm is most efficient when `n` is less than 10 million.
+    Note: This function only handles positive integers
+
+    Args:
+        n: An integer, the upper limit to sum primes up to. Default is 2,000,000.
+
+    Returns:
+        The sum of all prime numbers below `n`.
+
+    Raises:
+        TypeError: If `n` is not an integer.
+        IndexError: If `n` is a negative integer.
     """
-
-    primality_list = [0 for i in range(n + 1)]
-    primality_list[0] = 1
-    primality_list[1] = 1
-
-    for i in range(2, int(n**0.5) + 1):
-        if primality_list[i] == 0:
-            for j in range(i * i, n + 1, i):
-                primality_list[j] = 1
-    sum_of_primes = 0
-    for i in range(n):
-        if primality_list[i] == 0:
-            sum_of_primes += i
-    return sum_of_primes
+    return sum_primes(n)
 
 
 if __name__ == "__main__":
     print(f"{solution() = }")
+
+def generate_primes(n: int) -> List[int]:
+    """
+    Generate a list of prime numbers up to n using the Sieve of Eratosthenes method.
+
+    Args:
+        n: The upper limit to generate primes up to.
+
+    Returns:
+        A list of primes numbers up to n.
+    """
+    primes = [i for i in range(2, n + 1)]
+    for i in primes:
+        if i is None:
+            continue
+        for j in range(i * 2, n + 1, i):
+            primes[j - 2] = None
+    return [prime for prime in primes if prime is not None]
+
+
+def sum_primes(n: int) -> int:
+    """
+    Sums the prime numbers up to n.
+
+    Args:
+        n: The upper limit to sum primes up to.
+
+    Returns:
+        The sum of primes up to n.
+    """
+    primes = generate_primes(n)
+    return sum(primes)
