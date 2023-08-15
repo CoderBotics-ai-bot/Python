@@ -13,65 +13,54 @@ https://mmds.org
 Jaccard similarity is widely used with MinHashing.
 """
 
-
-def jaccard_similarity(set_a, set_b, alternative_union=False):
+def jaccard_similarity(
+    set_a: set, set_b: set, alternative_union: Optional[bool] = False
+) -> Union[float, None]:
     """
-    Finds the jaccard similarity between two sets.
-    Essentially, its intersection over union.
+    Compute the Jaccard similarity coefficient between two sets.
 
-    The alternative way to calculate this is to take union as sum of the
-    number of items in the two sets. This will lead to jaccard similarity
-    of a set with itself be 1/2 instead of 1. [MMDS 2nd Edition, Page 77]
+    The Jaccard coefficient measures similarity between finite sample sets, and
+    is defined as the size of the intersection divided by the size of the union
+    of the sample sets.
+
+    An alternative way to calculate this, which could be enabled by setting alternative_union=True,
+    is to take the union as the sum of the number of items in the two sets. This results in a Jaccard
+    similarity of a set with itself being 1/2 instead of 1.
 
     Parameters:
-        :set_a (set,list,tuple): A non-empty set/list
-        :set_b (set,list,tuple): A non-empty set/list
-        :alternativeUnion (boolean): If True, use sum of number of
-        items as union
+        set_a (set): A set of hashable items.
+        set_b (set): A set of hashable items.
+        alternative_union (Optional[bool]=False): If set to True, use the alternative way
+            of calculating the union. Defaults to False.
 
-    Output:
-        (float) The jaccard similarity between the two sets.
+    Returns:
+        float: The Jaccard similarity coefficient between the two sets if successful.
+        None: If the inputs are not of correct types.
+
+    Raises:
+        ValueError: If the inputs are not sets.
 
     Examples:
-    >>> set_a = {'a', 'b', 'c', 'd', 'e'}
-    >>> set_b = {'c', 'd', 'e', 'f', 'h', 'i'}
-    >>> jaccard_similarity(set_a, set_b)
-    0.375
+        >>> set_a = {'a', 'b', 'c', 'd', 'e'}
+        >>> set_b = {'c', 'd', 'e', 'f', 'h', 'i'}
+        >>> jaccard_similarity(set_a, set_b)
+        0.375
 
-    >>> jaccard_similarity(set_a, set_a)
-    1.0
+        >>> jaccard_similarity(set_a, set_a)
+        1.0
 
-    >>> jaccard_similarity(set_a, set_a, True)
-    0.5
-
-    >>> set_a = ['a', 'b', 'c', 'd', 'e']
-    >>> set_b = ('c', 'd', 'e', 'f', 'h', 'i')
-    >>> jaccard_similarity(set_a, set_b)
-    0.375
+        >>> jaccard_similarity(set_a, set_a, True)
+        0.5
     """
+    if not isinstance(set_a, set) or not isinstance(set_b, set):
+        raise ValueError("Inputs should be of set type")
 
-    if isinstance(set_a, set) and isinstance(set_b, set):
-        intersection = len(set_a.intersection(set_b))
-
-        if alternative_union:
-            union = len(set_a) + len(set_b)
-        else:
-            union = len(set_a.union(set_b))
-
-        return intersection / union
-
-    if isinstance(set_a, (list, tuple)) and isinstance(set_b, (list, tuple)):
-        intersection = [element for element in set_a if element in set_b]
-
-        if alternative_union:
-            union = len(set_a) + len(set_b)
-            return len(intersection) / union
-        else:
-            union = set_a + [element for element in set_b if element not in set_a]
-            return len(intersection) / len(union)
-
-        return len(intersection) / len(union)
-    return None
+    intersection_cardinality = len(set_a.intersection(set_b))
+    if alternative_union:
+        union_cardinality = len(set_a) + len(set_b)
+    else:
+        union_cardinality = len(set_a.union(set_b))
+    return intersection_cardinality / union_cardinality
 
 
 if __name__ == "__main__":
