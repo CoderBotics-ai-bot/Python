@@ -7,24 +7,33 @@ This problem has been solved through recursive way.
 """
 
 
-def check_matrix(matrix: list[list[int]]) -> bool:
-    # must be
-    matrix = [list(row) for row in matrix]
-    if matrix and isinstance(matrix, list):
-        if isinstance(matrix[0], list):
-            prev_len = 0
-            for row in matrix:
-                if prev_len == 0:
-                    prev_len = len(row)
-                    result = True
-                else:
-                    result = prev_len == len(row)
-        else:
-            result = True
-    else:
-        result = False
+from typing import List
 
-    return result
+def check_matrix(matrix: List[List[int]]) -> bool:
+    """
+    Check if a provided matrix is valid.
+
+    This function considers a valid matrix to be a list of lists,
+    where each sub list (row) has the same number of elements.
+
+    Args:
+        matrix (List[List[int]]): The matrix to be checked.
+
+    Returns:
+        bool: True if the matrix is valid, False otherwise.
+    """
+    # Guard clause to check if matrix is None or not a list
+    if matrix is None or not isinstance(matrix, list):
+        return False
+
+    try:
+        # Check if all rows in matrix are lists and have the same length
+        matrix_length = len(matrix[0])
+        return all(
+            isinstance(row, list) and len(row) == matrix_length for row in matrix
+        )
+    except (TypeError, IndexError):
+        return False
 
 
 def spiral_print_clockwise(a: list[list[int]]) -> None:
