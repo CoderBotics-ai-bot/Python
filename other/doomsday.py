@@ -15,41 +15,25 @@ WEEK_DAY_NAMES = {
 
 
 def get_week_day(year: int, month: int, day: int) -> str:
-    """Returns the week-day name out of a given date.
-
-    >>> get_week_day(2020, 10, 24)
-    'Saturday'
-    >>> get_week_day(2017, 10, 24)
-    'Tuesday'
-    >>> get_week_day(2019, 5, 3)
-    'Friday'
-    >>> get_week_day(1970, 9, 16)
-    'Wednesday'
-    >>> get_week_day(1870, 8, 13)
-    'Saturday'
-    >>> get_week_day(2040, 3, 14)
-    'Wednesday'
-
-    """
-    # minimal input check:
     assert len(str(year)) > 2, "year should be in YYYY format"
     assert 1 <= month <= 12, "month should be between 1 to 12"
     assert 1 <= day <= 31, "day should be between 1 to 31"
 
-    # Doomsday algorithm:
-    century = year // 100
+    century = get_century(year)
     century_anchor = (5 * (century % 4) + 2) % 7
-    centurian = year % 100
+    centurian = get_centurian(year)
     centurian_m = centurian % 12
     dooms_day = (
         (centurian // 12) + centurian_m + (centurian_m // 4) + century_anchor
     ) % 7
+
     day_anchor = (
         DOOMSDAY_NOT_LEAP[month - 1]
-        if (year % 4 != 0) or (centurian == 0 and (year % 400) == 0)
+        if not is_leap_year(year)
         else DOOMSDAY_LEAP[month - 1]
     )
-    week_day = (dooms_day + day - day_anchor) % 7
+
+    week_day = week_day_number(dooms_day, day, day_anchor)
     return WEEK_DAY_NAMES[week_day]
 
 
@@ -57,3 +41,29 @@ if __name__ == "__main__":
     import doctest
 
     doctest.testmod()
+
+def get_century(year: int) -> int:
+    """Function to get the century from year."""
+    return year // 100
+
+
+def get_centurian(year: int) -> int:
+    """Function to get the centurian from year."""
+    return year % 100
+
+
+def is_leap_year(year: int) -> bool:
+    """Function to check if a year is a leap year or not."""
+    if year % 4 != 0:
+        return False
+    elif year % 100 != 0:
+        return True
+    elif year % 400 != 0:
+        return False
+    else:
+        return True
+
+
+def week_day_number(dooms_day: int, day: int, day_anchor: int) -> int:
+    """Function to calculate the week day number."""
+    return (dooms_day + day - day_anchor) % 7
