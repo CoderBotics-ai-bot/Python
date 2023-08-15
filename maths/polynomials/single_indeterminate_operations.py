@@ -14,6 +14,10 @@ from collections.abc import MutableSequence
 
 
 
+
+
+
+
 class Polynomial:
     def __init__(self, degree: int, coefficients: MutableSequence[float]) -> None:
         """
@@ -192,25 +196,27 @@ class Polynomial:
             coefficients[i + 1] = self.coefficients[i] / (i + 1)
         return Polynomial(self.degree + 1, coefficients)
 
-    def __eq__(self, polynomial_2: object) -> bool:
+    def __eq__(self, other: object) -> bool:
         """
-        Checks if two polynomials are equal.
+        Checks if two Polynomial instances are equal.
+
+        Args:
+            other (Polynomial): Another polynomial instance to compare with.
+
+        Returns:
+            bool: True if the two polynomial instances are equal, False otherwise.
+
+        Example:
+
         >>> p = Polynomial(2, [1, 2, 3])
         >>> q = Polynomial(2, [1, 2, 3])
         >>> p == q
         True
         """
-        if not isinstance(polynomial_2, Polynomial):
+        if not isinstance(other, Polynomial):
             return False
 
-        if self.degree != polynomial_2.degree:
-            return False
-
-        for i in range(self.degree + 1):
-            if self.coefficients[i] != polynomial_2.coefficients[i]:
-                return False
-
-        return True
+        return self.degree == other.degree and self.coefficients == other.coefficients
 
     def __ne__(self, polynomial_2: object) -> bool:
         """
