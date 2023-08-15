@@ -10,6 +10,10 @@ Note this only works for basic functions, f(x) where the power of x is positive.
 
 
 
+
+
+
+
 class Dual:
     def __init__(self, real, rank):
         self.real = real
@@ -69,6 +73,28 @@ class Dual:
 
         return [s + o for s, o in zip(s_dual, o_dual)]
 
+    def __mul__(self, other: "Dual") -> "Dual":
+        """
+        Multiply a Dual by another Dual or a real number.
+
+        Args:
+            other (Dual or int or float): The Dual object or real number to multiply with.
+
+        Returns:
+            Dual: The result of the multiplication.
+
+        Raises:
+            TypeError: If other is not a Dual object or a real number.
+        """
+        if not isinstance(other, Dual):
+            return self.multiply_with_real(other)
+
+        new_duals = self.initialize_new_duals(other)
+        self.add_duales(self, other, new_duals)
+        self.add_duales(other, self, new_duals)
+
+        return Dual(self.real * other.real, new_duals)
+
     def _level_duals(self, other: "Dual") -> tuple:
         """
         Extends the shorter list of dual numbers with 1s until it is the same length as
@@ -91,21 +117,17 @@ class Dual:
 
         return s_dual, o_dual
 
-    def __mul__(self, other):
-        if not isinstance(other, Dual):
-            new_duals = []
-            for i in self.duals:
-                new_duals.append(i * other)
-            return Dual(self.real * other, new_duals)
-        new_duals = [0] * (len(self.duals) + len(other.duals) + 1)
-        for i, item in enumerate(self.duals):
-            for j, jtem in enumerate(other.duals):
-                new_duals[i + j + 1] += item * jtem
-        for k in range(len(self.duals)):
-            new_duals[k] += self.duals[k] * other.real
-        for index in range(len(other.duals)):
-            new_duals[index] += other.duals[index] * self.real
-        return Dual(self.real * other.real, new_duals)
+    def multiply_with_real(self, other: float) -> "Dual":
+        return Dual(self.real * other, [dual * other for dual in self.duals])
+
+    @staticmethod
+    def initialize_new_duals(other: "Dual") -> list:
+        return [0] * (len(self.duals) + len(other.duals) + 1)
+
+    @staticmethod
+    def add_duales(first: "Dual", second: "Dual", new_duals: list) -> None:
+        for i in range(len(first.duals)):
+            new_duals[i] += first.duals[i] * second.real
 
     def __truediv__(self, other):
         if not isinstance(other, Dual):
