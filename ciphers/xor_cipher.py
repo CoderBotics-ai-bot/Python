@@ -19,6 +19,8 @@
 from __future__ import annotations
 
 
+
+
 class XORCipher:
     def __init__(self, key: int = 0):
         """
@@ -31,21 +33,31 @@ class XORCipher:
 
     def encrypt(self, content: str, key: int) -> list[str]:
         """
-        input: 'content' of type string and 'key' of type int
-        output: encrypted string 'content' as a list of chars
-        if key not passed the method uses the key by the constructor.
-        otherwise key = 1
-        """
+        Encrypts the given string content with the XOR operation using the provided key.
 
+        The key is first modulo 255 to ensure it's an appropriate size.
+        For each character in the given content string,
+        it calculates the XOR of the ASCII value of the character and the key,
+        and converts the result back into a character.
+        If key is not provided, it uses the key available in the constructor,
+        and if that isn't available too, it defaults to 1.
+
+        Args:
+            content (str): The string contents to encrypt.
+            key (int): The integer key to use for XOR encryption.
+
+        Returns:
+            list[str]: The encrypted content represented as a list of characters.
+
+        Raises:
+            AssertionError: If key isn't an int or content isn't a str.
+        """
         # precondition
         assert isinstance(key, int) and isinstance(content, str)
 
-        key = key or self.__key or 1
+        key = self.normalize_key(key)
 
-        # make sure key is an appropriate size
-        key %= 255
-
-        return [chr(ord(ch) ^ key) for ch in content]
+        return self.apply_xor_operation(content, key)
 
     def decrypt(self, content: str, key: int) -> list[str]:
         """
@@ -63,6 +75,14 @@ class XORCipher:
         # make sure key is an appropriate size
         key %= 255
 
+        return [chr(ord(ch) ^ key) for ch in content]
+
+    def normalize_key(self, key: int) -> int:
+        """Ensures that key is within the acceptable range."""
+        return (key or self.__key or 1) % 255
+
+    def apply_xor_operation(self, content: str, key: int) -> list[str]:
+        """Applies XOR operation to the content using the key."""
         return [chr(ord(ch) ^ key) for ch in content]
 
     def encrypt_string(self, content: str, key: int = 0) -> str:
