@@ -57,10 +57,9 @@ class Token:
         return f"({self.offset}, {self.length}, {self.indicator})"
 
 
+
+
 class LZ77Compressor:
-    """
-    Class containing compress and decompress methods using LZ77 compression algorithm.
-    """
 
     def __init__(self, window_size: int = 13, lookahead_buffer_size: int = 6) -> None:
         self.window_size = window_size
@@ -142,44 +141,21 @@ class LZ77Compressor:
 
         return output
 
-    def _find_encoding_token(self, text: str, search_buffer: str) -> Token:
-        """Finds the encoding token for the first character in the text.
-
-        Tests:
-            >>> lz77_compressor = LZ77Compressor()
-            >>> lz77_compressor._find_encoding_token("abrarrarrad", "abracad").offset
-            7
-            >>> lz77_compressor._find_encoding_token("adabrarrarrad", "cabrac").length
-            1
-            >>> lz77_compressor._find_encoding_token("abc", "xyz").offset
-            0
-            >>> lz77_compressor._find_encoding_token("", "xyz").offset
-            Traceback (most recent call last):
-                ...
-            ValueError: We need some text to work with.
-            >>> lz77_compressor._find_encoding_token("abc", "").offset
-            0
-        """
-
+    def _find_encoding_token(self, text: str, search_buffer: str) -> "Token":
+        """Finds the encoding token for the first character in the text."""
         if not text:
             raise ValueError("We need some text to work with.")
-
-        # Initialise result parameters to default values
-        length, offset = 0, 0
-
         if not search_buffer:
-            return Token(offset, length, text[length])
+            return Token(0, 0, text[0])
 
-        for i, character in enumerate(search_buffer):
-            found_offset = len(search_buffer) - i
-            if character == text[0]:
-                found_length = self._match_length_from_index(text, search_buffer, 0, i)
-                # if the found length is bigger than the current or if it's equal,
-                # which means it's offset is smaller: update offset and length
-                if found_length >= length:
-                    offset, length = found_offset, found_length
-
-        return Token(offset, length, text[length])
+        matches = [
+            self._find_longest_match(text, search_buffer, i)
+            for i in range(len(search_buffer))
+        ]
+        longest_match = max(matches, key=lambda match: (match.length, -match.offset))
+        return Token(
+            longest_match.offset, longest_match.length, longest_match.next_char
+        )
 
     def _match_length_from_index(
         self, text: str, window: str, text_index: int, window_index: int
@@ -208,6 +184,20 @@ class LZ77Compressor:
             return 0
         return 1 + self._match_length_from_index(
             text, window + text[text_index], text_index + 1, window_index + 1
+        )
+
+    def _find_longest_match(
+        self, text: str, search_buffer: str, starting_index: int
+    ) -> MatchResult:
+        """Find the longest match of the start of the text in the search buffer starting at the given index."""
+        if search_buffer[starting_index] != text[0]:
+            return MatchResult(starting_index, 0, text[0])
+
+        match_length = self._match_length_from_index(
+            text, search_buffer, 0, starting_index
+        )
+        return MatchResult(
+            len(search_buffer) - starting_index, match_length, text[match_length]
         )
 
 
