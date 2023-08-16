@@ -3,11 +3,9 @@ from __future__ import annotations
 from typing import Any
 
 
+
+
 class Matrix:
-    """
-    <class Matrix>
-    Matrix structure.
-    """
 
     def __init__(self, row: int, column: int, default_value: float = 0) -> None:
         """
@@ -56,14 +54,28 @@ class Matrix:
 
     def validate_indices(self, loc: tuple[int, int]) -> bool:
         """
-        <method Matrix.validate_indicies>
-        Check if given indices are valid to pick element from matrix.
+        Validate the indices of the given location within the matrix.
+
+        This method checks if the provided location (a tuple of row and
+        column indices) is within the bounds of the matrix. The method
+        expects a tuple/list of length 2, where the first element represents
+        the row index and the second element represents the column index.
+
+        Args:
+            loc (tuple[int, int]): A tuple containing two integers, the first
+            is the row index and the second is the column index.
+
+        Returns:
+            bool: Returns True if the location is valid (i.e., it lies within
+            the bounds of the matrix), else returns False.
+
         Example:
-        >>> a = Matrix(2, 6, 0)
-        >>> a.validate_indices((2, 7))
-        False
-        >>> a.validate_indices((0, 0))
-        True
+
+            >>> a = Matrix(2, 6, 0)
+            >>> a.validate_indices((2, 7))
+            False
+            >>> a.validate_indices((0, 0))
+            True
         """
         if not (isinstance(loc, (list, tuple)) and len(loc) == 2):
             return False
