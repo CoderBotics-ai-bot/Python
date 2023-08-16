@@ -67,17 +67,38 @@ def is_prime(number: int) -> bool:
             return False
     return True
 
-
 def solution(n: int = 7) -> int:
     """
     Returns the maximum pandigital prime number of length n.
-    If there are none, then it will return 0.
-    >>> solution(2)
-    0
-    >>> solution(4)
-    4231
-    >>> solution(7)
-    7652413
+
+    A pandigital number is one that makes use of all the
+    digits 1 to n exactly once. For example, 2143
+    is a 4-digit pandigital number and is also a prime number.
+
+    The implementation of the solution is as follows:
+    1. Generate a string of digits from 1 to n in ascending order.
+    2. Generate all permutations of the string to create a list
+       of all possible pandigital numbers.
+    3. Filter out the non-prime numbers using the is_prime()
+       helper function.
+    4. If there are any pandigital primes, return the maximum,
+       otherwise return 0.
+
+    Args:
+        n (int): The length of the pandigital number to search
+        for. Defaults to 7.
+
+    Returns:
+        int: The maximum pandigital prime of length n. Returns
+        0 if no pandigital prime of length n is found.
+
+    Examples:
+        >>> solution(2)
+        0
+        >>> solution(4)
+        4231
+        >>> solution(7)
+        7652413
     """
     pandigital_str = "".join(str(i) for i in range(1, n + 1))
     perm_list = [int("".join(i)) for i in permutations(pandigital_str, n)]
