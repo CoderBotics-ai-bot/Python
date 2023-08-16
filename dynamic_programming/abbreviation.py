@@ -11,9 +11,21 @@ a=daBcd and b="ABC"
 daBcd -> capitalize a and c(dABCd) -> remove d (ABC)
 """
 
-
 def abbr(a: str, b: str) -> bool:
     """
+    Checks if string `a` can be abbreviated to string `b`.
+
+    This function uses a dynamic programming approach to determine if string `a` can be abbreviated to string `b`
+    by deleting zero or more characters from `a`.
+
+    Arguments:
+    a: str - The first string.
+    b: str - The string we want to abbreviate to.
+
+    Returns:
+    bool: True if string `a` can be abbreviated to string `b`, otherwise False.
+
+    Examples:
     >>> abbr("daBcd", "ABC")
     True
     >>> abbr("dBcd", "ABC")
