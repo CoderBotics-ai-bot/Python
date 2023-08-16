@@ -11,12 +11,9 @@ A = B. The permitted operations are removal,  insertion, and substitution.
 """
 
 
+
+
 class EditDistance:
-    """
-    Use :
-    solver              = EditDistance()
-    editDistanceResult  = solver.solve(firstString, secondString)
-    """
 
     def __init__(self):
         self.word1 = ""
@@ -24,6 +21,27 @@ class EditDistance:
         self.dp = []
 
     def __min_dist_top_down_dp(self, m: int, n: int) -> int:
+        """
+        A private method to calculate the minimum distance (edit distance) between two words using top-down dynamic programming.
+
+        Args:
+            m (int): The length of the first word.
+            n (int): The length of the second word.
+
+        Returns:
+            int: The minimum distance between the two words.
+
+        This method uses a top-down approach for dynamic programming. It begins at the top and breaks the problem
+        down into subproblems. It uses a 2D tabulation table, where dp[i][j] indicates the edit distance
+        between the substrings of the first word of length i and the second word of length j.
+
+        When the characters at the given indices in both words are equal, the function moves diagonally left in
+        the tabulation table; otherwise, it finds the minimum among the cells to the left, top, and diagonally left
+        (corresponding to insertion, deletion, and replacement) and adds 1.
+
+        The memoized values in the table avoid repeated computation of the same subproblems, hence improving the
+        time efficiency of the solution.
+        """
         if m == -1:
             return n + 1
         elif n == -1:
