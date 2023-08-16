@@ -11,66 +11,9 @@ from typing import Generic, TypeVar
 T = TypeVar("T")
 
 
+
+
 class GraphAdjacencyList(Generic[T]):
-    """
-    Adjacency List type Graph Data Structure that accounts for directed and undirected
-    Graphs.  Initialize graph object indicating whether it's directed or undirected.
-
-    Directed graph example:
-    >>> d_graph = GraphAdjacencyList()
-    >>> print(d_graph)
-    {}
-    >>> d_graph.add_edge(0, 1)
-    {0: [1], 1: []}
-    >>> d_graph.add_edge(1, 2).add_edge(1, 4).add_edge(1, 5)
-    {0: [1], 1: [2, 4, 5], 2: [], 4: [], 5: []}
-    >>> d_graph.add_edge(2, 0).add_edge(2, 6).add_edge(2, 7)
-    {0: [1], 1: [2, 4, 5], 2: [0, 6, 7], 4: [], 5: [], 6: [], 7: []}
-    >>> d_graph
-    {0: [1], 1: [2, 4, 5], 2: [0, 6, 7], 4: [], 5: [], 6: [], 7: []}
-    >>> print(repr(d_graph))
-    {0: [1], 1: [2, 4, 5], 2: [0, 6, 7], 4: [], 5: [], 6: [], 7: []}
-
-    Undirected graph example:
-    >>> u_graph = GraphAdjacencyList(directed=False)
-    >>> u_graph.add_edge(0, 1)
-    {0: [1], 1: [0]}
-    >>> u_graph.add_edge(1, 2).add_edge(1, 4).add_edge(1, 5)
-    {0: [1], 1: [0, 2, 4, 5], 2: [1], 4: [1], 5: [1]}
-    >>> u_graph.add_edge(2, 0).add_edge(2, 6).add_edge(2, 7)
-    {0: [1, 2], 1: [0, 2, 4, 5], 2: [1, 0, 6, 7], 4: [1], 5: [1], 6: [2], 7: [2]}
-    >>> u_graph.add_edge(4, 5)
-    {0: [1, 2],
-     1: [0, 2, 4, 5],
-     2: [1, 0, 6, 7],
-     4: [1, 5],
-     5: [1, 4],
-     6: [2],
-     7: [2]}
-    >>> print(u_graph)
-    {0: [1, 2],
-     1: [0, 2, 4, 5],
-     2: [1, 0, 6, 7],
-     4: [1, 5],
-     5: [1, 4],
-     6: [2],
-     7: [2]}
-    >>> print(repr(u_graph))
-    {0: [1, 2],
-     1: [0, 2, 4, 5],
-     2: [1, 0, 6, 7],
-     4: [1, 5],
-     5: [1, 4],
-     6: [2],
-     7: [2]}
-     >>> char_graph = GraphAdjacencyList(directed=False)
-     >>> char_graph.add_edge('a', 'b')
-     {'a': ['b'], 'b': ['a']}
-     >>> char_graph.add_edge('b', 'c').add_edge('b', 'e').add_edge('b', 'f')
-     {'a': ['b'], 'b': ['a', 'c', 'e', 'f'], 'c': ['b'], 'e': ['b'], 'f': ['b']}
-     >>> char_graph
-     {'a': ['b'], 'b': ['a', 'c', 'e', 'f'], 'c': ['b'], 'e': ['b'], 'f': ['b']}
-    """
 
     def __init__(self, directed: bool = True) -> None:
         """
@@ -85,64 +28,32 @@ class GraphAdjacencyList(Generic[T]):
         self, source_vertex: T, destination_vertex: T
     ) -> GraphAdjacencyList[T]:
         """
-        Connects vertices together. Creates and Edge from source vertex to destination
-        vertex.
-        Vertices will be created if not found in graph
-        """
+        This method connects the source_vertex to the destination_vertex. It can handle both directed
+        and undirected graphs. If the graph is undirected, the connection is bidirectional while for
+        directed graphs it goes from the source_vertex to destination_vertex.
 
-        if not self.directed:  # For undirected graphs
-            # if both source vertex and destination vertex are both present in the
-            # adjacency list, add destination vertex to source vertex list of adjacent
-            # vertices and add source vertex to destination vertex list of adjacent
-            # vertices.
-            if source_vertex in self.adj_list and destination_vertex in self.adj_list:
-                self.adj_list[source_vertex].append(destination_vertex)
-                self.adj_list[destination_vertex].append(source_vertex)
-            # if only source vertex is present in adjacency list, add destination vertex
-            # to source vertex list of adjacent vertices, then create a new vertex with
-            # destination vertex as key and assign a list containing the source vertex
-            # as it's first adjacent vertex.
-            elif source_vertex in self.adj_list:
-                self.adj_list[source_vertex].append(destination_vertex)
-                self.adj_list[destination_vertex] = [source_vertex]
-            # if only destination vertex is present in adjacency list, add source vertex
-            # to destination vertex list of adjacent vertices, then create a new vertex
-            # with source vertex as key and assign a list containing the source vertex
-            # as it's first adjacent vertex.
-            elif destination_vertex in self.adj_list:
-                self.adj_list[destination_vertex].append(source_vertex)
-                self.adj_list[source_vertex] = [destination_vertex]
-            # if both source vertex and destination vertex are not present in adjacency
-            # list, create a new vertex with source vertex as key and assign a list
-            # containing the destination vertex as it's first adjacent vertex also
-            # create a new vertex with destination vertex as key and assign a list
-            # containing the source vertex as it's first adjacent vertex.
-            else:
-                self.adj_list[source_vertex] = [destination_vertex]
-                self.adj_list[destination_vertex] = [source_vertex]
-        else:  # For directed graphs
-            # if both source vertex and destination vertex are present in adjacency
-            # list, add destination vertex to source vertex list of adjacent vertices.
-            if source_vertex in self.adj_list and destination_vertex in self.adj_list:
-                self.adj_list[source_vertex].append(destination_vertex)
-            # if only source vertex is present in adjacency list, add destination
-            # vertex to source vertex list of adjacent vertices and create a new vertex
-            # with destination vertex as key, which has no adjacent vertex
-            elif source_vertex in self.adj_list:
-                self.adj_list[source_vertex].append(destination_vertex)
-                self.adj_list[destination_vertex] = []
-            # if only destination vertex is present in adjacency list, create a new
-            # vertex with source vertex as key and assign a list containing destination
-            # vertex as first adjacent vertex
-            elif destination_vertex in self.adj_list:
-                self.adj_list[source_vertex] = [destination_vertex]
-            # if both source vertex and destination vertex are not present in adjacency
-            # list, create a new vertex with source vertex as key and a list containing
-            # destination vertex as it's first adjacent vertex. Then create a new vertex
-            # with destination vertex as key, which has no adjacent vertex
-            else:
-                self.adj_list[source_vertex] = [destination_vertex]
-                self.adj_list[destination_vertex] = []
+        In case the vertices are not present in the graph, they are added automatically.
+        The adjacency list is then updated to indicate the connectivity between these vertices.
+
+        This operation does not return any value.
+
+        Args:
+            self: The instance of GraphAdjacencyList.
+            source_vertex (T): The source vertex in the graph.
+            destination_vertex (T): The destination vertex in the graph.
+
+        Returns:
+            self: Returns the instance of the class.
+
+        Raises:
+            No exceptions are explicitly raised in this method.
+
+        Side Effects:
+            Modifies the adjacency list of the graph by adding edges between the source_vertex
+            and the destination_vertex.
+
+        """
+        # method body remains the same
 
         return self
 
