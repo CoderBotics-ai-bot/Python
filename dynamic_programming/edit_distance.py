@@ -13,6 +13,10 @@ A = B. The permitted operations are removal,  insertion, and substitution.
 
 
 
+
+
+
+
 class EditDistance:
 
     def __init__(self):
@@ -76,12 +80,29 @@ class EditDistance:
 
     def min_dist_bottom_up(self, word1: str, word2: str) -> int:
         """
-        >>> EditDistance().min_dist_bottom_up("intention", "execution")
-        5
-        >>> EditDistance().min_dist_bottom_up("intention", "")
-        9
-        >>> EditDistance().min_dist_bottom_up("", "")
-        0
+        Calculate the minimum edit distance between two given words using dynamic programming.
+        This method uses bottom-up approach which iteratively fills up a 2D DP table.
+
+        Args:
+            word1 (str): The first word as a string.
+            word2 (str): The second word as a string.
+
+        Returns:
+            int: The minimum edit distance between word1 and word2.
+
+        Examples:
+            >>> EditDistance().min_dist_bottom_up("intention", "execution")
+            5
+            >>> EditDistance().min_dist_bottom_up("intention", "")
+            9
+            >>> EditDistance().min_dist_bottom_up("", "")
+            0
+
+        Note:
+            Edit distance, also known as Levenshtein distance, is a measure of similarity between two strings.
+            The distance is the minimum number of operations (insertions, deletions, and substitutions)
+            required to transform one string into another.
+            This implementation uses dynamic programming to reduce the time complexity.
         """
         self.word1 = word1
         self.word2 = word2
