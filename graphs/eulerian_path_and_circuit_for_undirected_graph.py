@@ -1,3 +1,6 @@
+
+
+from typing import Dict, List, Tuple
 # Eulerian Path is a path in graph that visits every edge exactly once.
 # Eulerian Circuit is an Eulerian Path which starts and ends on the same
 # vertex.
@@ -14,9 +17,31 @@ def dfs(u, graph, visited_edge, path=None):
             path = dfs(v, graph, visited_edge, path)
     return path
 
+def check_circuit_or_path(
+    graph: Dict[int, List[int]], max_node: int
+) -> Tuple[int, int]:
+    """
+    Check if a given graph has an Eulerian circuit or path.
 
-# for checking in graph has euler path or circuit
-def check_circuit_or_path(graph, max_node):
+    This function checks the graph for the presence of an Eulerian circuit or path
+    based on the degrees (number of edges) of each node.
+    An Eulerian circuit exists if all nodes have an even degree.
+    An Eulerian path exists if exactly 2 nodes have an odd degree, while the others
+    have an even degree.
+
+    Arguments:
+    graph -- a dictionary representing the graph, where keys are node numbers,
+             and values are lists of nodes that are directly connected to the key node.
+    max_node -- the maximum node number in the graph.
+
+    Returns a tuple:
+    - The first element is an integer that represents the presence of an Eulerian circuit
+      or path:
+         1 -- Eulerian circuit
+         2 -- Eulerian path
+         3 -- neither Eulerian circuit nor path.
+    - The second element is the number of a node with an odd degree (-1 if none exists).
+    """
     odd_degree_nodes = 0
     odd_node = -1
     for i in range(max_node):
