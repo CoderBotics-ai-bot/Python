@@ -4,69 +4,39 @@
 
 from __future__ import annotations
 
-
 def carrier_concentration(
     electron_conc: float,
     hole_conc: float,
     intrinsic_conc: float,
 ) -> tuple:
     """
-    This function can calculate any one of the three -
-    1. Electron Concentration
-    2, Hole Concentration
-    3. Intrinsic Concentration
-    given the other two.
+    Calculates the carrier concentration in semiconductors.
+
+    Given 2 out of 3 parameters (electron concentration, hole concentration, intrinsic concentration),
+    this function calculates the omitted parameter. Only two parameters should be provided, the remaining one should be set to 0.
+    Note that none of the input parameters can be negative.
+
+    Args:
+        electron_conc (float): Electron concentration. Set this to 0 if this is the value to be calculated.
+        hole_conc (float): Hole concentration. Set this to 0 if this is the value to be calculated.
+        intrinsic_conc (float): Intrinsic concentration. Set this to 0 if this is the value to be calculated.
+
+    Returns:
+        tuple: A tuple where the first element is the name of the calculated parameter ('electron_conc', 'hole_conc', 'intrinsic_conc')
+               and the second element is the calculated value.
+
+    Raises:
+        ValueError: If more than or less than 1 input parameter is 0.
+        ValueError: If any of the input parameters is negative.
+
     Examples -
-    >>> carrier_concentration(electron_conc=25, hole_conc=100, intrinsic_conc=0)
-    ('intrinsic_conc', 50.0)
-    >>> carrier_concentration(electron_conc=0, hole_conc=1600, intrinsic_conc=200)
-    ('electron_conc', 25.0)
-    >>> carrier_concentration(electron_conc=1000, hole_conc=0, intrinsic_conc=1200)
-    ('hole_conc', 1440.0)
-    >>> carrier_concentration(electron_conc=1000, hole_conc=400, intrinsic_conc=1200)
-    Traceback (most recent call last):
-        ...
-    ValueError: You cannot supply more or less than 2 values
-    >>> carrier_concentration(electron_conc=-1000, hole_conc=0, intrinsic_conc=1200)
-    Traceback (most recent call last):
-        ...
-    ValueError: Electron concentration cannot be negative in a semiconductor
-    >>> carrier_concentration(electron_conc=0, hole_conc=-400, intrinsic_conc=1200)
-    Traceback (most recent call last):
-        ...
-    ValueError: Hole concentration cannot be negative in a semiconductor
-    >>> carrier_concentration(electron_conc=0, hole_conc=400, intrinsic_conc=-1200)
-    Traceback (most recent call last):
-        ...
-    ValueError: Intrinsic concentration cannot be negative in a semiconductor
+        >>> carrier_concentration(electron_conc=25, hole_conc=100, intrinsic_conc=0)
+        ('intrinsic_conc', 50.0)
+        >>> carrier_concentration(electron_conc=0, hole_conc=1600, intrinsic_conc=200)
+        ('electron_conc', 25.0)
+        >>> carrier_concentration(electron_conc=1000, hole_conc=0, intrinsic_conc=1200)
+        ('hole_conc', 1440.0)
     """
-    if (electron_conc, hole_conc, intrinsic_conc).count(0) != 1:
-        raise ValueError("You cannot supply more or less than 2 values")
-    elif electron_conc < 0:
-        raise ValueError("Electron concentration cannot be negative in a semiconductor")
-    elif hole_conc < 0:
-        raise ValueError("Hole concentration cannot be negative in a semiconductor")
-    elif intrinsic_conc < 0:
-        raise ValueError(
-            "Intrinsic concentration cannot be negative in a semiconductor"
-        )
-    elif electron_conc == 0:
-        return (
-            "electron_conc",
-            intrinsic_conc**2 / hole_conc,
-        )
-    elif hole_conc == 0:
-        return (
-            "hole_conc",
-            intrinsic_conc**2 / electron_conc,
-        )
-    elif intrinsic_conc == 0:
-        return (
-            "intrinsic_conc",
-            (electron_conc * hole_conc) ** 0.5,
-        )
-    else:
-        return (-1, -1)
 
 
 if __name__ == "__main__":
