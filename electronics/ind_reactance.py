@@ -2,68 +2,56 @@
 from __future__ import annotations
 
 from math import pi
+from typing import Dict
+PARAM_NAME_MAP = {
+    "inductance": "Inductance",
+    "frequency": "Frequency",
+    "reactance": "Inductive reactance",
+}
 
 
 def ind_reactance(
     inductance: float, frequency: float, reactance: float
 ) -> dict[str, float]:
-    """
-    Calculate inductive reactance, frequency or inductance from two given electrical
-    properties then return name/value pair of the zero value in a Python dict.
+    params = {
+        "inductance": inductance,
+        "frequency": frequency,
+        "reactance": reactance,
+    }
 
-    Parameters
-    ----------
-    inductance : float with units in Henries
-
-    frequency : float with units in Hertz
-
-    reactance : float with units in Ohms
-
-    >>> ind_reactance(-35e-6, 1e3, 0)
-    Traceback (most recent call last):
-        ...
-    ValueError: Inductance cannot be negative
-
-    >>> ind_reactance(35e-6, -1e3, 0)
-    Traceback (most recent call last):
-        ...
-    ValueError: Frequency cannot be negative
-
-    >>> ind_reactance(35e-6, 0, -1)
-    Traceback (most recent call last):
-        ...
-    ValueError: Inductive reactance cannot be negative
-
-    >>> ind_reactance(0, 10e3, 50)
-    {'inductance': 0.0007957747154594767}
-
-    >>> ind_reactance(35e-3, 0, 50)
-    {'frequency': 227.36420441699332}
-
-    >>> ind_reactance(35e-6, 1e3, 0)
-    {'reactance': 0.2199114857512855}
-
-    """
-
-    if (inductance, frequency, reactance).count(0) != 1:
+    missing_param_name = get_zero_param(params)
+    negative_param_name = get_negative_param(params)
+    if missing_param_name is None:
         raise ValueError("One and only one argument must be 0")
-    if inductance < 0:
-        raise ValueError("Inductance cannot be negative")
-    if frequency < 0:
-        raise ValueError("Frequency cannot be negative")
-    if reactance < 0:
-        raise ValueError("Inductive reactance cannot be negative")
-    if inductance == 0:
-        return {"inductance": reactance / (2 * pi * frequency)}
-    elif frequency == 0:
-        return {"frequency": reactance / (2 * pi * inductance)}
-    elif reactance == 0:
-        return {"reactance": 2 * pi * frequency * inductance}
-    else:
-        raise ValueError("Exactly one argument must be 0")
+    if negative_param_name is not None:
+        raise ValueError(f"{PARAM_NAME_MAP[negative_param_name]} cannot be negative")
+
+    result = calculate_missing_param(params, missing_param_name)
+
+    return {missing_param_name: result}
 
 
 if __name__ == "__main__":
     import doctest
 
     doctest.testmod()
+
+
+
+def get_zero_param(params: dict) -> str:
+    zero_param_names = [param for param, value in params.items() if value == 0]
+    return zero_param_names[0] if len(zero_param_names) == 1 else None
+
+
+def get_negative_param(params: dict) -> str:
+    negative_param_names = [param for param, value in params.items() if value < 0]
+    return negative_param_names[0] if negative_param_names else None
+
+
+def calculate_missing_param(params: dict, missing_param_name: str) -> float:
+    if missing_param_name == "inductance":
+        return params["reactance"] / (2 * pi * params["frequency"])
+    elif missing_param_name == "frequency":
+        return params["reactance"] / (2 * pi * params["inductance"])
+    else:  # missing_param_name == "reactance"
+        return 2 * pi * params["frequency"] * params["inductance"]
