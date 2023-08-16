@@ -75,12 +75,25 @@ def get_avg(number_1: int, number_2: int) -> int:
     """
     return int((number_1 + number_2) / 2)
 
-
 def guess_the_number(lower: int, higher: int, to_guess: int) -> None:
     """
-    The `guess_the_number` function that guess the number by some operations
-    and using inner functions
+    The method takes three integers, lower, higher and to_guess.
+    It checks if a randomly chosen number between lower and higher is equal to the 'to_guess' parameter.
+    If not, it adjusts the range and tries again, until the number is found.
 
+    Arguments:
+    lower: The lower bound of the range within which to guess the number.
+    higher: The upper bound of the range within which to guess the number.
+    to_guess: The number to be guessed.
+
+    Raises:
+    AssertionError: If the types of the arguments are not integers.
+    ValueError: If 'lower' is higher than 'higher' or if 'to_guess' is not within the 'lower' to 'higher' range.
+
+    Returns:
+    None
+
+    Examples:
     >>> guess_the_number(10, 1000, 17)
     started...
     guess the number : 17
@@ -120,7 +133,15 @@ def guess_the_number(lower: int, higher: int, to_guess: int) -> None:
 
     def answer(number: int) -> str:
         """
-        Returns value by comparing with entered `to_guess` number
+        Returns a string based on comparison of 'number' with 'to_guess'.
+
+        Args:
+        number: An integer to compare with 'to_guess'.
+
+        Returns:
+        'high' if 'number' is more than 'to_guess'.
+        'low' if 'number' is less than 'to_guess'.
+        'same' if 'number' equals 'to_guess'.
         """
         if number > to_guess:
             return "high"
@@ -140,9 +161,9 @@ def guess_the_number(lower: int, higher: int, to_guess: int) -> None:
         number = get_avg(last_lowest, last_highest)
         last_numbers.append(number)
 
-        if answer(number) == "low":
+        if answer(number) == str("low"):
             last_lowest = number
-        elif answer(number) == "high":
+        elif answer(number) == str("high"):
             last_highest = number
         else:
             break
