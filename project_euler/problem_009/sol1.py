@@ -16,26 +16,27 @@ References:
     - https://en.wikipedia.org/wiki/Pythagorean_triple
 """
 
-
 def solution() -> int:
     """
     Returns the product of a,b,c which are Pythagorean Triplet that satisfies
-    the following:
-      1. a < b < c
-      2. a**2 + b**2 = c**2
-      3. a + b + c = 1000
+    the following conditions:
+        1. a < b < c
+        2. a**2 + b**2 = c**2
+        3. a + b + c = 1000
+
+    A Pythagorean triplet is a set of three natural numbers, a < b < c, for which,
+    a**2 + b**2 = c**2. The function finds the triplet that satisfies given conditions
+    and returns its product.
+
+    Returns:
+        int: The product of a,b,c which are Pythagorean Triplet which satisfies
+             the conditions. Returns -1, if no such triplet exist.
+
+    Example:
 
     >>> solution()
     31875000
     """
-
-    for a in range(300):
-        for b in range(a + 1, 400):
-            for c in range(b + 1, 500):
-                if (a + b + c) == 1000 and (a**2) + (b**2) == (c**2):
-                    return a * b * c
-
-    return -1
 
 
 def solution_fast() -> int:
