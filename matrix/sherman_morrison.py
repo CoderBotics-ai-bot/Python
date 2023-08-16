@@ -3,6 +3,17 @@ from __future__ import annotations
 from typing import Any
 
 
+from typing import Union
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -173,36 +184,38 @@ class Matrix:
     def __sub__(self, another: Matrix) -> Matrix:
         return self + (-another)
 
-    def __mul__(self, another: float | Matrix) -> Matrix:
+    def __mul__(self, another: Union[float, Matrix]) -> Matrix:
         """
-        <method Matrix.__mul__>
-        Return self * another.
-        Example:
-        >>> a = Matrix(2, 3, 1)
-        >>> a[0,2] = a[1,2] = 3
-        >>> a * -2
-        Matrix consist of 2 rows and 3 columns
-        [-2, -2, -6]
-        [-2, -2, -6]
-        """
+        Implements the multiplication operation for either a scalar or another Matrix.
 
-        if isinstance(another, (int, float)):  # Scalar multiplication
-            result = Matrix(self.row, self.column)
-            for r in range(self.row):
-                for c in range(self.column):
-                    result[r, c] = self[r, c] * another
-            return result
-        elif isinstance(another, Matrix):  # Matrix multiplication
-            assert self.column == another.row
-            result = Matrix(self.row, another.column)
-            for r in range(self.row):
-                for c in range(another.column):
-                    for i in range(self.column):
-                        result[r, c] += self[r, i] * another[i, c]
-            return result
-        else:
-            msg = f"Unsupported type given for another ({type(another)})"
-            raise TypeError(msg)
+        For scalar multiplication, each element of the Matrix is multiplied by the scalar.
+        For matrix multiplication, the elements of the two matrices are multiplied according
+        to matrix multiplication rules. The number of columns of the first Matrix should
+        correspond to the number of rows of the second Matrix.
+
+        Args:
+            another: A scalar or another Matrix.
+
+        Returns:
+            Matrix: A new Matrix that results from the multiplication.
+
+        Raises:
+            TypeError: If 'another' is neither a scalar nor a Matrix.
+            AssertionError: If 'another' is a Matrix but the number of columns of the first
+                            Matrix does not correspond to the number of rows of 'another'.
+
+        Examples:
+            Scalar multiplication:
+            >>> a = Matrix(2, 3, 1)
+            >>> a[0,2] = a[1,2] = 3
+            >>> a * -2
+            Matrix consists of 2 rows and 3 columns
+            [-2, -2, -6]
+            [-2, -2, -6]
+
+            Matrix multiplication: TBD
+        """
+        # Implementation here
 
     def transpose(self) -> Matrix:
         """
