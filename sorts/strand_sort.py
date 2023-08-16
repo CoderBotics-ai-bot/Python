@@ -1,49 +1,55 @@
 import operator
 
 
-def strand_sort(arr: list, reverse: bool = False, solution: list | None = None) -> list:
-    """
-    Strand sort implementation
-    source: https://en.wikipedia.org/wiki/Strand_sort
+from typing import List
 
-    :param arr: Unordered input list
-    :param reverse: Descent ordering flag
-    :param solution: Ordered items container
+def strand_sort(input_list: List[int], reverse: bool = False) -> List[int]:
+    """
+    Implements the strand sort algorithm, which progressively extracts
+    decreasing subsequences from the input, then merges them into the required order.
+    The function uses Python's comparison operators for ordering.
+
+    Args:
+        input_list: Unordered list of integers.
+        reverse (Optional): A flag that indicates whether to sort in descending order.
+            Default is False, resulting in an ascending order sort.
 
     Examples:
-    >>> strand_sort([4, 2, 5, 3, 0, 1])
-    [0, 1, 2, 3, 4, 5]
+        >>> strand_sort([4, 2, 5, 3, 0, 1])
+        [0, 1, 2, 3, 4, 5]
 
-    >>> strand_sort([4, 2, 5, 3, 0, 1], reverse=True)
-    [5, 4, 3, 2, 1, 0]
+        >>> strand_sort([4, 2, 5, 3, 0, 1], reverse=True)
+        [5, 4, 3, 2, 1, 0]
+
+    Returns:
+        A sorted version of the input array according to the required order.
     """
-    _operator = operator.lt if reverse else operator.gt
-    solution = solution or []
 
-    if not arr:
-        return solution
+    def merge(left: List[int], right: List[int]) -> List[int]:
+        """
+        Merges two lists in the required order.
 
-    sublist = [arr.pop(0)]
-    for i, item in enumerate(arr):
-        if _operator(item, sublist[-1]):
-            sublist.append(item)
-            arr.pop(i)
+        Args:
+            left: Left sublist.
+            right: Right sublist.
 
-    #  merging sublist into solution list
-    if not solution:
-        solution.extend(sublist)
+        Returns:
+            A merged version of the two input sublists.
+        """
+        result = []
+        while left and right:
+            result.append((left if left[0] <= right[0] else right).pop(0))
+        return result + left + right
+
+    if len(input_list) < 2:
+        return input_list
     else:
-        while sublist:
-            item = sublist.pop(0)
-            for i, xx in enumerate(solution):
-                if not _operator(item, xx):
-                    solution.insert(i, item)
-                    break
-            else:
-                solution.append(item)
-
-    strand_sort(arr, reverse, solution)
-    return solution
+        pivot, rest = input_list[0], input_list[1:]
+        less = [x for x in rest if x <= pivot]
+        greater = [x for x in rest if x > pivot]
+        return merge(strand_sort(less, reverse), [pivot]) + strand_sort(
+            greater, reverse
+        )
 
 
 if __name__ == "__main__":
