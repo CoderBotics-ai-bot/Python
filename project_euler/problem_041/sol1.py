@@ -15,32 +15,45 @@ from __future__ import annotations
 import math
 from itertools import permutations
 
-
 def is_prime(number: int) -> bool:
-    """Checks to see if a number is a prime in O(sqrt(n)).
-
-    A number is prime if it has exactly two factors: 1 and itself.
-
-    >>> is_prime(0)
-    False
-    >>> is_prime(1)
-    False
-    >>> is_prime(2)
-    True
-    >>> is_prime(3)
-    True
-    >>> is_prime(27)
-    False
-    >>> is_prime(87)
-    False
-    >>> is_prime(563)
-    True
-    >>> is_prime(2999)
-    True
-    >>> is_prime(67483)
-    False
     """
+    Check if a number is prime using the 6k ± 1 optimization.
 
+    This function implements the mathematical property that all primes are
+    of the form 6k ± 1. This is used to reduce the number of checks to
+    approximately 1/3 of the given number, improving the efficiency over
+    traditional methods.
+
+    Args:
+        number (int): The number to verify.
+
+    Returns:
+        bool: True if the number is prime; False otherwise.
+
+    Examples:
+        >>> is_prime(0)
+        False
+        >>> is_prime(1)
+        False
+        >>> is_prime(2)
+        True
+        >>> is_prime(3)
+        True
+        >>> is_prime(27)
+        False
+        >>> is_prime(87)
+        False
+        >>> is_prime(563)
+        True
+        >>> is_prime(2999)
+        True
+        >>> is_prime(67483)
+        False
+
+    Note:
+        This function considers only positive integers. It will return
+        False for all negative integers, zero and one.
+    """
     if 1 < number < 4:
         # 2 and 3 are primes
         return True
