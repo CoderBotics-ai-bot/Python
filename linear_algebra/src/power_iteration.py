@@ -1,6 +1,5 @@
 import numpy as np
 
-
 def power_iteration(
     input_matrix: np.ndarray,
     vector: np.ndarray,
@@ -8,24 +7,30 @@ def power_iteration(
     max_iterations: int = 100,
 ) -> tuple[float, np.ndarray]:
     """
-    Power Iteration.
-    Find the largest eigenvalue and corresponding eigenvector
-    of matrix input_matrix given a random vector in the same space.
-    Will work so long as vector has component of largest eigenvector.
-    input_matrix must be either real or Hermitian.
+    Implements the Power Iteration algorithm to find the largest eigenvalue and corresponding eigenvector of a given matrix.
 
-    Input
-    input_matrix: input matrix whose largest eigenvalue we will find.
-    Numpy array. np.shape(input_matrix) == (N,N).
-    vector: random initial vector in same space as matrix.
-    Numpy array. np.shape(vector) == (N,) or (N,1)
+    The Power Iteration method starts with a random vector to eventually converge to the principal eigenvector. Thus the input_matrix is multiplied by this vector iteratively.
+    Convergence is determined by either the change in eigenvalue of successive iterations falling below the error_tolerance or exceeding the maximum number of iterations.
+    The input matrix must either be a real or a Hermitian matrix.
 
-    Output
-    largest_eigenvalue: largest eigenvalue of the matrix input_matrix.
-    Float. Scalar.
-    largest_eigenvector: eigenvector corresponding to largest_eigenvalue.
-    Numpy array. np.shape(largest_eigenvector) == (N,) or (N,1).
+    Args:
+    input_matrix (np.ndarray): The input matrix, must be square and either real or Hermitian. Shape (N,N).
+    vector (np.ndarray): The initial random vector in the same space as the matrix. Shape (N,)
+    error_tol (float, optional): The error tolerance for the change in the eigenvalue of each iteration. Default is 1e-12.
+    max_iterations (int, optional): The maximum number of iterations the algorithm will run. Default is 100.
 
+    Returns:
+    tuple: A tuple containing two elements.
+            The first element is the largest eigenvalue of the input_matrix as a float.
+            The second element is the corresponding eigenvector as a numpy array.
+
+    Raises:
+    AssertionError: If input_matrix is not square.
+                     If the dimensions of the input_matrix and vector do not match.
+                     If the input_matrix and the vector are not both complex or both real.
+                     If the complex input_matrix is not a Hermitian matrix.
+
+    Example:
     >>> import numpy as np
     >>> input_matrix = np.array([
     ... [41,  4, 20],
@@ -36,49 +41,6 @@ def power_iteration(
     >>> power_iteration(input_matrix,vector)
     (79.66086378788381, array([0.44472726, 0.46209842, 0.76725662]))
     """
-
-    # Ensure matrix is square.
-    assert np.shape(input_matrix)[0] == np.shape(input_matrix)[1]
-    # Ensure proper dimensionality.
-    assert np.shape(input_matrix)[0] == np.shape(vector)[0]
-    # Ensure inputs are either both complex or both real
-    assert np.iscomplexobj(input_matrix) == np.iscomplexobj(vector)
-    is_complex = np.iscomplexobj(input_matrix)
-    if is_complex:
-        # Ensure complex input_matrix is Hermitian
-        assert np.array_equal(input_matrix, input_matrix.conj().T)
-
-    # Set convergence to False. Will define convergence when we exceed max_iterations
-    # or when we have small changes from one iteration to next.
-
-    convergence = False
-    lambda_previous = 0
-    iterations = 0
-    error = 1e12
-
-    while not convergence:
-        # Multiple matrix by the vector.
-        w = np.dot(input_matrix, vector)
-        # Normalize the resulting output vector.
-        vector = w / np.linalg.norm(w)
-        # Find rayleigh quotient
-        # (faster than usual b/c we know vector is normalized already)
-        vector_h = vector.conj().T if is_complex else vector.T
-        lambda_ = np.dot(vector_h, np.dot(input_matrix, vector))
-
-        # Check convergence.
-        error = np.abs(lambda_ - lambda_previous) / lambda_
-        iterations += 1
-
-        if error <= error_tol or iterations >= max_iterations:
-            convergence = True
-
-        lambda_previous = lambda_
-
-    if is_complex:
-        lambda_ = np.real(lambda_)
-
-    return lambda_, vector
 
 
 def test_power_iteration() -> None:
