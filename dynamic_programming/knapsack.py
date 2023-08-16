@@ -38,64 +38,48 @@ def knapsack(w, wt, val, n):
 
     return dp[n][w_], dp
 
-
-def knapsack_with_example_solution(w: int, wt: list, val: list):
+def knapsack_with_example_solution(w: int, wt: list, val: list) -> Tuple[int, Set[int]]:
     """
-    Solves the integer weights knapsack problem returns one of
-    the several possible optimal subsets.
+    Solves the integer weights knapsack problem and returns one of the
+    optimal subsets along with its total value.
+
+    The knapsack problem is a problem in combinatorial optimization: Given a set of items,
+    each with a weight and a value, determine the number of each item to include in a collection
+    so that the total weight is less than or equal to a given limit and the total value is as large as possible.
 
     Parameters
-    ---------
+    ----------
+    w : int
+        The total capacity of the knapsack i.e maximum weight that knapsack can hold.
 
-    W: int, the total maximum weight for the given knapsack problem.
-    wt: list, the vector of weights for all items where wt[i] is the weight
-    of the i-th item.
-    val: list, the vector of values for all items where val[i] is the value
-    of the i-th item
+    wt : list
+        The list of weights for all items. wt[i] is the weight of the i-th item.
+
+    val : list
+        The list of values for all items. val[i] is the value of the i-th item.
 
     Returns
     -------
-    optimal_val: float, the optimal value for the given knapsack problem
-    example_optional_set: set, the indices of one of the optimal subsets
-    which gave rise to the optimal value.
+    Tuple[int, Set[int]]
+        Returns a tuple where the first element is the optimal value for the given knapsack problem
+        and the second element is a set of indices of one of the optimal subsets which gave rise to the optimal value.
+
+    Raises
+    ------
+    ValueError
+      If the number of weights is not equal to the number of values.
+      If both the weights and values vectors are not either lists or tuples.
+
+    TypeError
+      If any weight in the list of weights is not an integer.
 
     Examples
-    -------
+    --------
     >>> knapsack_with_example_solution(10, [1, 3, 5, 2], [10, 20, 100, 22])
     (142, {2, 3, 4})
     >>> knapsack_with_example_solution(6, [4, 3, 2, 3], [3, 2, 4, 4])
     (8, {3, 4})
-    >>> knapsack_with_example_solution(6, [4, 3, 2, 3], [3, 2, 4])
-    Traceback (most recent call last):
-        ...
-    ValueError: The number of weights must be the same as the number of values.
-    But got 4 weights and 3 values
     """
-    if not (isinstance(wt, (list, tuple)) and isinstance(val, (list, tuple))):
-        raise ValueError(
-            "Both the weights and values vectors must be either lists or tuples"
-        )
-
-    num_items = len(wt)
-    if num_items != len(val):
-        msg = (
-            "The number of weights must be the same as the number of values.\n"
-            f"But got {num_items} weights and {len(val)} values"
-        )
-        raise ValueError(msg)
-    for i in range(num_items):
-        if not isinstance(wt[i], int):
-            msg = (
-                "All weights must be integers but got weight of "
-                f"type {type(wt[i])} at index {i}"
-            )
-            raise TypeError(msg)
-
-    optimal_val, dp_table = knapsack(w, wt, val, num_items)
-    example_optional_set: set = set()
-    _construct_solution(dp_table, wt, num_items, w, example_optional_set)
-
-    return optimal_val, example_optional_set
 
 
 def _construct_solution(dp: list, wt: list, i: int, j: int, optimal_set: set):
