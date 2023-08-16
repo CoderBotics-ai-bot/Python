@@ -7,19 +7,9 @@ from __future__ import annotations
 from collections.abc import Iterator
 
 
+
+
 class RedBlackTree:
-    """
-    A Red-Black tree, which is a self-balancing BST (binary search
-    tree).
-    This tree has similar performance to AVL trees, but the balancing is
-    less strict, so it will perform faster for writing/deleting nodes
-    and slower for reading in the average case, though, because they're
-    both balanced binary search trees, both will get the same asymptotic
-    performance.
-    To read more about them, https://en.wikipedia.org/wiki/Red–black_tree
-    Unless otherwise specified, all asymptotic runtimes are specified in
-    terms of the size of the tree.
-    """
 
     def __init__(
         self,
@@ -67,26 +57,46 @@ class RedBlackTree:
         return right
 
     def rotate_right(self) -> RedBlackTree:
-        """Rotate the subtree rooted at this node to the right and
-        returns the new root to this subtree.
-        Performing one rotation can be done in O(1).
         """
-        if self.left is None:
-            return self
+        Performs a right rotation on the Red-Black Tree rooted at the current node.
+
+        A right-rotation will move the left child of the current node to become its parent,
+        and the current node becomes the right child of its left child. If the new root
+        (the left child of the current node) had a right child, it becomes the left child
+        of the current node.
+
+        This method is an important part of both the insertion and deletion operations for
+        maintaining the properties of the Red-Black Tree.
+
+        This is an in-place operation, it doesn't create a new structure.
+
+        Returns:
+            The new root of the subtree, will not return None because self.left must be not None to perform rotation.
+
+        Raises:
+            AssertionError: If the left child is None when this method is called.
+        """
+        assert self.left, "Cannot rotate right when there is no left child."
+
         parent = self.parent
-        left = self.left
-        self.left = left.right
+        left_child = self.left
+        self.left = left_child.right
+
         if self.left:
             self.left.parent = self
-        self.parent = left
-        left.right = self
+
+        self.parent = left_child
+        left_child.right = self
+
         if parent is not None:
             if parent.right is self:
-                parent.right = left
+                parent.right = left_child
             else:
-                parent.left = left
-        left.parent = parent
-        return left
+                parent.left = left_child
+
+        left_child.parent = parent
+
+        return left_child
 
     def insert(self, label: int) -> RedBlackTree:
         """Inserts label into the subtree rooted at self, performs any
@@ -599,17 +609,9 @@ def test_insert() -> bool:
     ans.right.right.right = RedBlackTree(12, 1, ans.right.right)
     return tree == ans
 
+
 def test_insert_and_search() -> bool:
-    """
-    Tests inserting and searching for values in a RedBlackTree.
-
-    This function creates a RedBlackTree with the root node having the value '0'. It further inserts
-    several values and then performs a search operation for both present and absent values. The function
-    returns False if an absent value is found or a present value is not found, else it returns True.
-
-    Returns:
-        bool: The return value. True for successful testing, False otherwise.
-    """
+    """Tests searching through the tree for values."""
     tree = RedBlackTree(0)
     tree.insert(8)
     tree.insert(-8)
