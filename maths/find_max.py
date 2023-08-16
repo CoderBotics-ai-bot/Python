@@ -25,39 +25,55 @@ def find_max_iterative(nums: list[int | float]) -> int | float:
     return max_num
 
 
-# Divide and Conquer algorithm
+
 def find_max_recursive(nums: list[int | float], left: int, right: int) -> int | float:
     """
-    find max value in list
-    :param nums: contains elements
-    :param left: index of first element
-    :param right: index of last element
-    :return: max in nums
+    This function uses a divide and conquer algorithm to recursively find the maximum value in a given list
+    between the provided left and right indices.
 
-    >>> for nums in ([3, 2, 1], [-3, -2, -1], [3, -3, 0], [3.0, 3.1, 2.9]):
-    ...     find_max_recursive(nums, 0, len(nums) - 1) == max(nums)
-    True
-    True
-    True
-    True
-    >>> nums = [1, 3, 5, 7, 9, 2, 4, 6, 8, 10]
-    >>> find_max_recursive(nums, 0, len(nums) - 1) == max(nums)
-    True
-    >>> find_max_recursive([], 0, 0)
-    Traceback (most recent call last):
-        ...
-    ValueError: find_max_recursive() arg is an empty sequence
-    >>> find_max_recursive(nums, 0, len(nums)) == max(nums)
-    Traceback (most recent call last):
-        ...
-    IndexError: list index out of range
-    >>> find_max_recursive(nums, -len(nums), -1) == max(nums)
-    True
-    >>> find_max_recursive(nums, -len(nums) - 1, -1) == max(nums)
-    Traceback (most recent call last):
-        ...
-    IndexError: list index out of range
+    The function first checks whether the provided list is empty or the indices are out of range. If either
+    is true, an error is raised. It then bases the search area reduction on the mid-point of the current
+    section until it finally arrives at the maximum value.
+
+    Args:
+        nums (list[int | float]): The list of integers or floating point numbers to search.
+        left (int): The left-most index of the list to begin the search.
+        right (int): The right-most index of the list to end the search.
+
+    Returns:
+        The maximum value found within the range [left, right] of the list.
+
+    Raises:
+        ValueError: If the list 'nums' is empty.
+        IndexError: If 'left' or 'right' indices are out of range.
+
+    Examples:
+
+        >>> for nums in ([3, 2, 1], [-3, -2, -1], [3, -3, 0], [3.0, 3.1, 2.9]):
+        ...     find_max_recursive(nums, 0, len(nums) - 1) == max(nums)
+        True
+        True
+        True
+        True
+        >>> nums = [1, 3, 5, 7, 9, 2, 4, 6, 8, 10]
+        >>> find_max_recursive(nums, 0, len(nums) - 1) == max(nums)
+        True
+        >>> find_max_recursive([], 0, 0)
+        Traceback (most recent call last):
+            ...
+        ValueError: find_max_recursive() arg is an empty sequence
+        >>> find_max_recursive(nums, 0, len(nums)) == max(nums)
+        Traceback (most recent call last):
+            ...
+        IndexError: list index out of range
+        >>> find_max_recursive(nums, -len(nums), -1) == max(nums)
+        True
+        >>> find_max_recursive(nums, -len(nums) - 1, -1) == max(nums)
+        Traceback (most recent call last):
+            ...
+        IndexError: list index out of range
     """
+
     if len(nums) == 0:
         raise ValueError("find_max_recursive() arg is an empty sequence")
     if (
@@ -74,7 +90,6 @@ def find_max_recursive(nums: list[int | float], left: int, right: int) -> int | 
     right_max = find_max_recursive(
         nums, mid + 1, right
     )  # find max in range[mid + 1, right]
-
     return left_max if left_max >= right_max else right_max
 
 
