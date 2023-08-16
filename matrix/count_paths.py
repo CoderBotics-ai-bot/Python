@@ -20,30 +20,36 @@ In the example above, there are two distinct paths:
 """
 
 
-def depth_first_search(grid: list[list[int]], row: int, col: int, visit: set) -> int:
-    """
-    Recursive Backtracking Depth First Search Algorithm
+from typing import List, Set
 
-    Starting from top left of a matrix, count the number of
-    paths that can reach the bottom right of a matrix.
-    1 represents a block (inaccessible)
-    0 represents a valid space (accessible)
+def depth_first_search(grid: List[List[int]], row: int, col: int, visit: Set) -> int:
+    """
+    Recursive Backtracking Depth First Search Algorithm for counting the number of valid paths in a matrix.
+
+    This function takes as input a matrix, starting point and a set of visited points,
+    and returns the number of valid paths from the top left to bottom right of the matrix.
+    The matrix representation is such that:
+    1 represents a block (untraversable)
+    0 represents a valid space (traversable)
+
+    Parameters:
+    grid (List[List[int]]): The input grid represented as a 2-D list.
+    row (int): The current row index.
+    col (int): The current column index.
+    visit (Set): A set storing coordinates of the visited cells.
+
+    Returns:
+    int: The number of valid paths from top left to bottom right.
+
+    Numbers represent cells in the matrix. For example, the matrix:
 
     0  0  0  0
     1  1  0  0
     0  0  0  1
     0  1  0  0
-    >>> grid = [[0, 0, 0, 0], [1, 1, 0, 0], [0, 0, 0, 1], [0, 1, 0, 0]]
-    >>> depth_first_search(grid, 0, 0, set())
-    2
 
-    0  0  0  0  0
-    0  1  1  1  0
-    0  1  1  1  0
-    0  0  0  0  0
-    >>> grid = [[0, 0, 0, 0, 0], [0, 1, 1, 1, 0], [0, 1, 1, 1, 0], [0, 0, 0, 0, 0]]
-    >>> depth_first_search(grid, 0, 0, set())
-    2
+    is represented by the list [[0, 0, 0, 0], [1, 1, 0, 0], [0, 0, 0, 1], [0, 1, 0, 0]].
+    When passed to this function along with a set(), will return 2, representing two distinct paths from start to finish.
     """
     row_length, col_length = len(grid), len(grid[0])
     if (
