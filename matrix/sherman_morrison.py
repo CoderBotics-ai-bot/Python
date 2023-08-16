@@ -5,6 +5,10 @@ from typing import Any
 
 
 
+
+
+
+
 class Matrix:
 
     def __init__(self, row: int, column: int, default_value: float = 0) -> None:
@@ -113,18 +117,30 @@ class Matrix:
 
     def __add__(self, another: Matrix) -> Matrix:
         """
-        <method Matrix.__add__>
-        Return self + another.
-        Example:
-        >>> a = Matrix(2, 1, -4)
-        >>> b = Matrix(2, 1, 3)
-        >>> a+b
-        Matrix consist of 2 rows and 1 columns
-        [-1]
-        [-1]
-        """
+        Perform matrix addition of the current matrix instance with another one.
 
-        # Validation
+        This function adds two matrices by adding the corresponding elements together.
+        Both matrices should have the same dimensions (same number of rows and columns).
+
+        Args:
+            another (Matrix): Another Matrix object to add to the current one.
+
+        Returns:
+            Matrix: The result of the matrix addition.
+
+        Raises:
+            AssertionError: If 'another' is not a Matrix or if the dimensions of
+                            the two matrices are not the same.
+
+        Example:
+            >>> a = Matrix(2, 1, -4)
+            >>> b = Matrix(2, 1, 3)
+            >>> print(a+b)
+            Matrix consist of 2 rows and 1 columns
+            [-1]
+            [-1]
+        """
+        # Validations
         assert isinstance(another, Matrix)
         assert self.row == another.row and self.column == another.column
 
