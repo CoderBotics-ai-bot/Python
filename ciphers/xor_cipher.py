@@ -19,6 +19,8 @@
 from __future__ import annotations
 
 
+
+
 class XORCipher:
     def __init__(self, key: int = 0):
         """
@@ -49,18 +51,28 @@ class XORCipher:
 
     def decrypt(self, content: str, key: int) -> list[str]:
         """
-        input: 'content' of type list and 'key' of type int
-        output: decrypted string 'content' as a list of chars
-        if key not passed the method uses the key by the constructor.
-        otherwise key = 1
-        """
+        Decrypt a given string content using XOR Cipher with a given key.
 
-        # precondition
+        The decryption process involves taking each character from the input string, converting
+        it to its ASCII value, and then performing a bitwise XOR operation on it with the given key.
+
+        The key is first checked to make sure it's of appropriate size - modulo 255 operation is performed.
+        If no key is provided during decryption, it defaults to the key stored in the instance variable '__key'
+        during object creation. If '__key' is also not set, it defaults to 1.
+
+        Args:
+            content (str): The content to be decrypted.
+            key (int): The decryption key.
+
+        Returns:
+            list[str]: The decrypted content as a list of characters.
+
+        Raises:
+            AssertionError: If the key is not an integer or if the content is not a list.
+        """
         assert isinstance(key, int) and isinstance(content, list)
 
         key = key or self.__key or 1
-
-        # make sure key is an appropriate size
         key %= 255
 
         return [chr(ord(ch) ^ key) for ch in content]
