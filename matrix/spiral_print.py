@@ -6,9 +6,19 @@ This problem has been solved through recursive way.
         ii) number of column of all rows should be equal
 """
 
-
 def check_matrix(matrix: list[list[int]]) -> bool:
-    # must be
+    """
+    Check if an input matrix (2D list) is a valid rectangular matrix.
+
+    This function checks that every row in the matrix has the same length, hence forming a perfect rectangle.
+    The function returns True if the input matrix is a valid rectangular matrix, and False otherwise.
+
+    Arguments:
+    matrix -- a 2D list of integers representing the matrix to be checked
+
+    Return:
+    result -- a boolean indicating whether the input matrix is a valid rectangular matrix
+    """
     matrix = [list(row) for row in matrix]
     if matrix and isinstance(matrix, list):
         if isinstance(matrix[0], list):
