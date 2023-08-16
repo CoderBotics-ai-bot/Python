@@ -599,9 +599,17 @@ def test_insert() -> bool:
     ans.right.right.right = RedBlackTree(12, 1, ans.right.right)
     return tree == ans
 
-
 def test_insert_and_search() -> bool:
-    """Tests searching through the tree for values."""
+    """
+    Tests inserting and searching for values in a RedBlackTree.
+
+    This function creates a RedBlackTree with the root node having the value '0'. It further inserts
+    several values and then performs a search operation for both present and absent values. The function
+    returns False if an absent value is found or a present value is not found, else it returns True.
+
+    Returns:
+        bool: The return value. True for successful testing, False otherwise.
+    """
     tree = RedBlackTree(0)
     tree.insert(8)
     tree.insert(-8)
