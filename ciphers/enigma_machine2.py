@@ -107,51 +107,51 @@ def _validator(
 
     return rotpos, rotsel, pbdict
 
-
 def _plugboard(pbstring: str) -> dict[str, str]:
     """
-    https://en.wikipedia.org/wiki/Enigma_machine#Plugboard
+    Creates a dictionary mapping for the Enigma machine setting designed to scramble the input in a
+    particular manner.
 
-    >>> _plugboard('PICTURES')
-    {'P': 'I', 'I': 'P', 'C': 'T', 'T': 'C', 'U': 'R', 'R': 'U', 'E': 'S', 'S': 'E'}
-    >>> _plugboard('POLAND')
-    {'P': 'O', 'O': 'P', 'L': 'A', 'A': 'L', 'N': 'D', 'D': 'N'}
+    More details can be found on: https://en.wikipedia.org/wiki/Enigma_machine#Plugboard
 
-    In the code, 'pb' stands for 'plugboard'
+    Args:
+        pbstring (str): A string input containing pairs of uppercase alphabets. Each pair is expected to be
+                        unique and characters can be separated by spaces.
 
-    Pairs can be separated by spaces
-    :param pbstring: string containing plugboard setting for the Enigma machine
-    :return: dictionary containing converted pairs
+    Returns:
+        dict: A dictionary mapping of the input string in the form of key-value pairs. Each pair is
+              swapped and mapped to each other.
+
+    Raises:
+        TypeError: If the input `pbstring` is not of type string.
+        Exception: If the length of the input `pbstring` is not even or it contains characters not in native
+                   language alphabet set (only English uppercase alphabets allowed).
+        Exception: In case of duplicate alphabets in the input `pbstring`.
+
+    Examples:
+        >>> _plugboard('PICTURES')
+        {'P': 'I', 'I': 'P', 'C': 'T', 'T': 'C', 'U': 'R', 'R': 'U', 'E': 'S', 'S': 'E'}
+        >>> _plugboard('POLAND')
+        {'P': 'O', 'O': 'P', 'L': 'A', 'A': 'L', 'N': 'D', 'D': 'N'}
     """
-
-    # tests the input string if it
-    # a) is type string
-    # b) has even length (so pairs can be made)
     if not isinstance(pbstring, str):
-        msg = f"Plugboard setting isn't type string ({type(pbstring)})"
-        raise TypeError(msg)
+        raise TypeError(f"Plugboard setting isn't type string ({type(pbstring)})")
     elif len(pbstring) % 2 != 0:
-        msg = f"Odd number of symbols ({len(pbstring)})"
-        raise Exception(msg)
+        raise Exception(f"Odd number of symbols ({len(pbstring)})")
     elif pbstring == "":
         return {}
 
     pbstring.replace(" ", "")
-
-    # Checks if all characters are unique
     tmppbl = set()
     for i in pbstring:
         if i not in abc:
-            msg = f"'{i}' not in list of symbols"
-            raise Exception(msg)
+            raise Exception(f"'{i}' not in list of symbols")
         elif i in tmppbl:
-            msg = f"Duplicate symbol ({i})"
-            raise Exception(msg)
+            raise Exception(f"Duplicate symbol ({i})")
         else:
             tmppbl.add(i)
     del tmppbl
 
-    # Created the dictionary
     pb = {}
     for j in range(0, len(pbstring) - 1, 2):
         pb[pbstring[j]] = pbstring[j + 1]
