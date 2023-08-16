@@ -21,6 +21,10 @@ from __future__ import annotations
 
 
 
+
+
+
+
 class XORCipher:
     def __init__(self, key: int = 0):
         """
@@ -104,28 +108,37 @@ class XORCipher:
 
     def decrypt_string(self, content: str, key: int = 0) -> str:
         """
-        input: 'content' of type string and 'key' of type int
-        output: decrypted string 'content'
-        if key not passed the method uses the key by the constructor.
-        otherwise key = 1
+        Decrypts the provided content using XOR cipher.
+
+        The method uses the passed key to decrypt the input content. If a key is not provided,
+        the method fetches one from the class attribute. In a case where the key attribute of
+        the class is also not set, a default key value of 1 is used.
+
+        The key value was restricted to a maximum value of 255. In the case of larger keys,
+        the method subtracts 255 from the key until it falls within the acceptable range.
+
+        Args:
+            content (str): The content to be decrypted.
+            key (int, optional): The decryption key. Defaults to 0.
+
+        Returns:
+            str: The decrypted content.
+
+        Raises:
+            AssertionError: If key is not an integer and content is not a string.
         """
-
-        # precondition
         assert isinstance(key, int) and isinstance(content, str)
-
         key = key or self.__key or 1
 
-        # make sure key can be any size
         while key > 255:
             key -= 255
 
-        # This will be returned
-        ans = ""
+        decrypted_content = ""
 
         for ch in content:
-            ans += chr(ord(ch) ^ key)
+            decrypted_content += chr(ord(ch) ^ key)
 
-        return ans
+        return decrypted_content
 
     def encrypt_file(self, file: str, key: int = 0) -> bool:
         """
