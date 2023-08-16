@@ -219,42 +219,52 @@ def _det(a: Point, b: Point, c: Point) -> float:
     return det
 
 
+
 def convex_hull_bf(points: list[Point]) -> list[Point]:
     """
-    Constructs the convex hull of a set of 2D points using a brute force algorithm.
-    The algorithm basically considers all combinations of points (i, j) and uses the
-    definition of convexity to determine whether (i, j) is part of the convex hull or
-    not.  (i, j) is part of the convex hull if and only iff there are no points on both
-    sides of the line segment connecting the ij, and there is no point k such that k is
-    on either end of the ij.
+    Constructs the convex-hull of a set of 2D points using a brute force algorithm.
 
-    Runtime: O(n^3) - definitely horrible
+    Parameters:
+    -----------
+    points : list[Point]
+        The set of 2D points for which the convex-hull is wanted.
 
-    Parameters
-    ---------
-    points: array-like of object of Points, lists or tuples.
-    The set of  2d points for which the convex-hull is needed
-
-    Returns
-    ------
-    convex_set: list, the convex-hull of points sorted in non-decreasing order.
-
-    See Also
+    Returns:
     --------
-    convex_hull_recursive,
+    list[Point]
+        The convex-hull of 'points' sorted in non-decreasing order.
 
-     Examples
-     ---------
-     >>> convex_hull_bf([[0, 0], [1, 0], [10, 1]])
-     [(0.0, 0.0), (1.0, 0.0), (10.0, 1.0)]
-     >>> convex_hull_bf([[0, 0], [1, 0], [10, 0]])
-     [(0.0, 0.0), (10.0, 0.0)]
-     >>> convex_hull_bf([[-1, 1],[-1, -1], [0, 0], [0.5, 0.5], [1, -1], [1, 1],
-     ...                 [-0.75, 1]])
-     [(-1.0, -1.0), (-1.0, 1.0), (1.0, -1.0), (1.0, 1.0)]
-     >>> convex_hull_bf([(0, 3), (2, 2), (1, 1), (2, 1), (3, 0), (0, 0), (3, 3),
-     ...                 (2, -1), (2, -4), (1, -3)])
-     [(0.0, 0.0), (0.0, 3.0), (1.0, -3.0), (2.0, -4.0), (3.0, 0.0), (3.0, 3.0)]
+    Raises:
+    -------
+    ValueError:
+        If 'points' is empty or None, or if a wrong data structure like a scalar
+        is passed.
+    TypeError:
+        If an iterable but non-indexable object (eg. dictionary) is passed.
+
+    Notes:
+    ------
+    The algorithm essentially considers all combinations of points (i, j) and uses the
+    definition of convexity to determine whether (i, j) is part of the convex-hull.
+    That is, (i, j) is part of the convex-hull iff there are no points on both
+    sides of the line segment ij, and there are no points k that are on either end of ij.
+    .
+
+    Examples:
+    ---------
+    >>> convex_hull_bf([Point(0, 0), Point(1, 0), Point(10, 0)])
+    [(0.0, 0.0), (10.0, 0.0)]
+
+    >>> convex_hull_bf([Point(-1, 1), Point(-1, -1), Point(0, 0), Point(0.5, 0.5), Point(1, -1),
+    ...                 Point(1, 1), Point(-0.75, 1)])
+    [(-1.0, -1.0), (-1.0, 1.0), (1.0, -1.0), (1.0, 1.0)]
+
+    Runtime:
+    Its time complexity is O(n^3) - definitely not suitable for large inputs.
+
+    See Also:
+    ---------
+    convex_hull_recursive - for a recursive-based solution
     """
 
     points = sorted(_validate_input(points))
@@ -274,14 +284,14 @@ def convex_hull_bf(points: list[Point]) -> list[Point]:
                     elif det_k < 0:
                         points_right_of_ij = True
                     else:
-                        # point[i], point[j], point[k] all lie on a straight line
-                        # if point[k] is to the left of point[i] or it's to the
-                        # right of point[j], then point[i], point[j] cannot be
-                        # part of the convex hull of A
+                        # Points[i], points[j], points[k] all lie on a straight line.
+                        # If points[k] is to the left of points[i] or to the right of points[j],
+                        # then points[i], points[j] cannot be part of the convex hull.
                         if points[k] < points[i] or points[k] > points[j]:
                             ij_part_of_convex_hull = False
                             break
 
+                # A point cannot be part of the convex hull if it has points on both its sides
                 if points_left_of_ij and points_right_of_ij:
                     ij_part_of_convex_hull = False
                     break
