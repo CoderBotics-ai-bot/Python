@@ -16,6 +16,7 @@ from __future__ import annotations
 
 from functools import lru_cache
 from math import ceil
+from typing import Set
 
 NUM_PRIMES = 100
 
@@ -29,31 +30,45 @@ for prime in range(3, ceil(NUM_PRIMES**0.5), 2):
     primes.difference_update(set(range(prime * prime, NUM_PRIMES, prime)))
 
 
+
 @lru_cache(maxsize=100)
-def partition(number_to_partition: int) -> set[int]:
+def partition(number_to_partition: int) -> Set[int]:
     """
-    Return a set of integers corresponding to unique prime partitions of n.
-    The unique prime partitions can be represented as unique prime decompositions,
-    e.g. (7+3) <-> 7*3 = 12, (3+3+2+2) = 3*3*2*2 = 36
+    Returns a set of integers corresponding to unique prime partitions of a given integer value.
+
+    A unique prime partition can be represented as a unique prime decomposition,
+    e.g. (7+3) maps to 7*3 = 21, (3+3+2+2) -> 3*3*2*2 = 36
+
+    Parameters:
+    - number_to_partition (int): The number to be partitioned.
+
+    Returns:
+    - Set[int]: A set of unique prime partition values.
+
+    Examples:
     >>> partition(10)
     {32, 36, 21, 25, 30}
+
     >>> partition(15)
     {192, 160, 105, 44, 112, 243, 180, 150, 216, 26, 125, 126}
+
     >>> len(partition(20))
     26
+
+    Notes:
+    - The prime numbers within the range are precomputed and stored in a global variable.
+    - The function is memoized for performance improvements.
     """
+
     if number_to_partition < 0:
-        return set()
+        return set()  # Invalid input: return an empty set.
     elif number_to_partition == 0:
-        return {1}
+        return {1}  # The number 1 is the only prime partition of 0.
 
-    ret: set[int] = set()
-    prime: int
-    sub: int
-
+    ret: Set[int] = set()  # Initialize the return set.
     for prime in primes:
         if prime > number_to_partition:
-            continue
+            continue  # Skip the primes greater than the number to partition.
         for sub in partition(number_to_partition - prime):
             ret.add(sub * prime)
 
