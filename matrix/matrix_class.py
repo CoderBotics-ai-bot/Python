@@ -3,133 +3,39 @@
 from __future__ import annotations
 
 
+from typing import List, Union
+
+
+
+
+
+
+
+
 class Matrix:
-    """
-    Matrix object generated from a 2D array where each element is an array representing
-    a row.
-    Rows can contain type int or float.
-    Common operations and information available.
-    >>> rows = [
-    ...     [1, 2, 3],
-    ...     [4, 5, 6],
-    ...     [7, 8, 9]
-    ... ]
-    >>> matrix = Matrix(rows)
-    >>> print(matrix)
-    [[1. 2. 3.]
-     [4. 5. 6.]
-     [7. 8. 9.]]
 
-    Matrix rows and columns are available as 2D arrays
-    >>> matrix.rows
-    [[1, 2, 3], [4, 5, 6], [7, 8, 9]]
-    >>> matrix.columns()
-    [[1, 4, 7], [2, 5, 8], [3, 6, 9]]
-
-    Order is returned as a tuple
-    >>> matrix.order
-    (3, 3)
-
-    Squareness and invertability are represented as bool
-    >>> matrix.is_square
-    True
-    >>> matrix.is_invertable()
-    False
-
-    Identity, Minors, Cofactors and Adjugate are returned as Matrices.  Inverse can be
-    a Matrix or Nonetype
-    >>> print(matrix.identity())
-    [[1. 0. 0.]
-     [0. 1. 0.]
-     [0. 0. 1.]]
-    >>> print(matrix.minors())
-    [[-3. -6. -3.]
-     [-6. -12. -6.]
-     [-3. -6. -3.]]
-    >>> print(matrix.cofactors())
-    [[-3. 6. -3.]
-     [6. -12. 6.]
-     [-3. 6. -3.]]
-    >>>  # won't be apparent due to the nature of the cofactor matrix
-    >>> print(matrix.adjugate())
-    [[-3. 6. -3.]
-     [6. -12. 6.]
-     [-3. 6. -3.]]
-    >>> matrix.inverse()
-    Traceback (most recent call last):
-        ...
-    TypeError: Only matrices with a non-zero determinant have an inverse
-
-    Determinant is an int, float, or Nonetype
-    >>> matrix.determinant()
-    0
-
-    Negation, scalar multiplication, addition, subtraction, multiplication and
-    exponentiation are available and all return a Matrix
-    >>> print(-matrix)
-    [[-1. -2. -3.]
-     [-4. -5. -6.]
-     [-7. -8. -9.]]
-    >>> matrix2 = matrix * 3
-    >>> print(matrix2)
-    [[3. 6. 9.]
-     [12. 15. 18.]
-     [21. 24. 27.]]
-    >>> print(matrix + matrix2)
-    [[4. 8. 12.]
-     [16. 20. 24.]
-     [28. 32. 36.]]
-    >>> print(matrix - matrix2)
-    [[-2. -4. -6.]
-     [-8. -10. -12.]
-     [-14. -16. -18.]]
-    >>> print(matrix ** 3)
-    [[468. 576. 684.]
-     [1062. 1305. 1548.]
-     [1656. 2034. 2412.]]
-
-    Matrices can also be modified
-    >>> matrix.add_row([10, 11, 12])
-    >>> print(matrix)
-    [[1. 2. 3.]
-     [4. 5. 6.]
-     [7. 8. 9.]
-     [10. 11. 12.]]
-    >>> matrix2.add_column([8, 16, 32])
-    >>> print(matrix2)
-    [[3. 6. 9. 8.]
-     [12. 15. 18. 16.]
-     [21. 24. 27. 32.]]
-    >>> print(matrix *  matrix2)
-    [[90. 108. 126. 136.]
-     [198. 243. 288. 304.]
-     [306. 378. 450. 472.]
-     [414. 513. 612. 640.]]
-    """
-
-    def __init__(self, rows: list[list[int]]):
-        error = TypeError(
-            "Matrices must be formed from a list of zero or more lists containing at "
-            "least one and the same number of values, each of which must be of type "
-            "int or float."
-        )
-        if len(rows) != 0:
-            cols = len(rows[0])
-            if cols == 0:
-                raise error
-            for row in rows:
-                if len(row) != cols:
-                    raise error
-                for value in row:
-                    if not isinstance(value, (int, float)):
-                        raise error
-            self.rows = rows
-        else:
-            self.rows = []
+    def __init__(self, elements: List[List[Union[int, float]]]):
+        """Initializes a Matrix object"""
+        self._validate_input(elements)
+        self.rows = [Row(row) for row in elements]
+        self.columns = self._get_columns()
 
     # MATRIX INFORMATION
     def columns(self) -> list[list[int]]:
         return [[row[i] for row in self.rows] for i in range(len(self.rows[0]))]
+
+    def _validate_input(self, elements: List[List[Union[int, float]]]):
+        """Validates the input for the Matrix constructor"""
+        if not elements or not all(elements):
+            raise ValueError("Matrix cannot be empty")
+
+        num_columns = len(elements[0])
+        if not all(len(row) == num_columns for row in elements):
+            raise ValueError("All rows must have the same number of elements")
+
+    def _get_columns(self) -> List[List[Union[int, float]]]:
+        """Returns the columns of the matrix"""
+        return [[row[idx] for row in self.rows] for idx in range(len(self.rows[0]))]
 
     @property
     def num_rows(self) -> int:
