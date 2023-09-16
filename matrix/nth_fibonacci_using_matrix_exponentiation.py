@@ -15,19 +15,37 @@ So we just need the n times multiplication of the matrix [1,1],[1,0]].
 We can decrease the n times multiplication by following the divide and conquer approach.
 """
 
-
 def multiply(matrix_a: list[list[int]], matrix_b: list[list[int]]) -> list[list[int]]:
-    matrix_c = []
-    n = len(matrix_a)
-    for i in range(n):
-        list_1 = []
-        for j in range(n):
-            val = 0
-            for k in range(n):
-                val = val + matrix_a[i][k] * matrix_b[k][j]
-            list_1.append(val)
-        matrix_c.append(list_1)
-    return matrix_c
+    """
+    Multiplies two matrices matrix_a and matrix_b.
+
+    The multiplication is performed element wise by taking the scalar
+    product of each row of matrix_a with each column of matrix_b.
+
+    Args:
+        matrix_a (list[list[int]]): The first matrix for the multiplication operation.
+            It's a 2D list of integers where each list represents a row in the matrix.
+        matrix_b (list[list[int]]): The second matrix for the multiplication operation.
+            It's a 2D list of integers where each list represents a row in the matrix.
+
+    Returns:
+        result (list[list[int]]): The result of multiplying both matrices.
+            It's a 2D list of integers where each list represents a row in the new matrix.
+
+    Note:
+        - The function assumes that both matrices have the same dimensions.
+        - The function does not check for the validity of the input.
+    """
+    matrix_size = len(matrix_a)
+    result = [[0 for _ in range(matrix_size)] for _ in range(matrix_size)]
+
+    for i in range(matrix_size):
+        for j in range(matrix_size):
+            result[i][j] = sum(
+                matrix_a[i][k] * matrix_b[k][j] for k in range(matrix_size)
+            )
+
+    return result
 
 
 def identity(n: int) -> list[list[int]]:
