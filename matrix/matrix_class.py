@@ -12,6 +12,30 @@ from typing import List, Union
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 class Matrix:
 
     def __init__(self, elements: List[List[Union[int, float]]]):
@@ -49,16 +73,13 @@ class Matrix:
     def order(self) -> tuple[int, int]:
         return self.num_rows, self.num_columns
 
+    @staticmethod
+    def identity(elements: Union[List[int], List[str]]) -> Union[List[int], List[str]]:
+        return elements
+
     @property
     def is_square(self) -> bool:
         return self.order[0] == self.order[1]
-
-    def identity(self) -> Matrix:
-        values = [
-            [0 if column_num != row_num else 1 for column_num in range(self.num_rows)]
-            for row_num in range(self.num_rows)
-        ]
-        return Matrix(values)
 
     def determinant(self) -> int:
         if not self.is_square:
