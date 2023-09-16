@@ -1,25 +1,11 @@
-def binary_search(array: list, lower_bound: int, upper_bound: int, value: int) -> int:
-    """
-    This function carries out Binary search on a 1d array and
-    return -1 if it do not exist
-    array: A 1d sorted array
-    value : the value meant to be searched
-    >>> matrix = [1, 4, 7, 11, 15]
-    >>> binary_search(matrix, 0, len(matrix) - 1, 1)
-    0
-    >>> binary_search(matrix, 0, len(matrix) - 1, 23)
-    -1
-    """
+from typing import List
 
-    r = int((lower_bound + upper_bound) // 2)
-    if array[r] == value:
-        return r
-    if lower_bound >= upper_bound:
-        return -1
-    if array[r] < value:
-        return binary_search(array, r + 1, upper_bound, value)
-    else:
-        return binary_search(array, lower_bound, r - 1, value)
+
+def binary_search(array: List[int], value: int) -> int:
+    """
+    Function to initial call to recursive binary search helper.
+    """
+    return binary_search_helper(array, 0, len(array) - 1, value)
 
 
 def mat_bin_search(value: int, matrix: list) -> list:
@@ -49,6 +35,25 @@ def mat_bin_search(value: int, matrix: list) -> list:
             return [index, r]
         index += 1
     return [-1, -1]
+
+
+
+def binary_search_helper(
+    array: List[int], lower_bound: int, upper_bound: int, value: int
+) -> int:
+    """
+    Recursive helper function to perform the binary search.
+    """
+    if lower_bound > upper_bound:
+        return -1
+
+    mid = (lower_bound + upper_bound) // 2
+    if array[mid] < value:
+        return binary_search_helper(array, mid + 1, upper_bound, value)
+    elif array[mid] > value:
+        return binary_search_helper(array, lower_bound, mid - 1, value)
+    else:
+        return mid
 
 
 if __name__ == "__main__":
