@@ -36,6 +36,102 @@ from typing import List, Union
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 class Matrix:
 
     def __init__(self, elements: List[List[Union[int, float]]]):
@@ -77,27 +173,44 @@ class Matrix:
     def identity(elements: Union[List[int], List[str]]) -> Union[List[int], List[str]]:
         return elements
 
+    def determinant(self, matrix: List[List[Union[int, float]]]) -> Union[int, float]:
+        """
+        Calculate the determinant of a matrix.
+
+        The determinant calculation is done using the method of minors of a matrix.
+
+        :param matrix: list[list[int/float]] : a 2D list representing the matrix
+        :return: int/float : determinant of the matrix
+        """
+        total = 0
+        size = len(matrix)
+
+        if size == 1:
+            return matrix[0][0]
+
+        # define submatrix for focus column
+        for focus_col in range(size):
+            sign = (-1) ** focus_col
+
+            # call this function again for smaller matrix
+            sub_matrix = self.minor(matrix, 0, focus_col)
+
+            # add current result to the total calculation
+            total += sign * matrix[0][focus_col] * self.determinant(sub_matrix)
+
+        return total
+
+    def minor(
+        self, matrix: List[List[Union[int, float]]], row: int, col: int
+    ) -> List[List[Union[int, float]]]:
+        """Compute the minor of the matrix after removing specific row and column."""
+        return [
+            row[:col] + row[col + 1 :] for idx, row in enumerate(matrix) if idx != row
+        ]
+
     @property
     def is_square(self) -> bool:
         return self.order[0] == self.order[1]
-
-    def determinant(self) -> int:
-        if not self.is_square:
-            return 0
-        if self.order == (0, 0):
-            return 1
-        if self.order == (1, 1):
-            return int(self.rows[0][0])
-        if self.order == (2, 2):
-            return int(
-                (self.rows[0][0] * self.rows[1][1])
-                - (self.rows[0][1] * self.rows[1][0])
-            )
-        else:
-            return sum(
-                self.rows[0][column] * self.cofactors().rows[0][column]
-                for column in range(self.num_columns)
-            )
 
     def is_invertable(self) -> bool:
         return bool(self.determinant())
