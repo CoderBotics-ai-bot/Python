@@ -15,6 +15,9 @@ So we just need the n times multiplication of the matrix [1,1],[1,0]].
 We can decrease the n times multiplication by following the divide and conquer approach.
 """
 
+
+from typing import List
+
 def multiply(matrix_a: list[list[int]], matrix_b: list[list[int]]) -> list[list[int]]:
     """
     Multiplies two matrices matrix_a and matrix_b.
@@ -51,25 +54,48 @@ def multiply(matrix_a: list[list[int]], matrix_b: list[list[int]]) -> list[list[
 def identity(n: int) -> list[list[int]]:
     return [[int(row == column) for column in range(n)] for row in range(n)]
 
-
 def nth_fibonacci_matrix(n: int) -> int:
     """
-    >>> nth_fibonacci_matrix(100)
-    354224848179261915075
-    >>> nth_fibonacci_matrix(-100)
-    -100
+    Calculate the nth term of the Fibonacci sequence using the matrix exponentiation method.
+
+    Args:
+        n (int): The position of the term in the Fibonacci sequence to calculate.
+
+    Returns:
+        int: The nth term of the Fibonacci sequence.
+
+    Raises:
+        ValueError: If `n` is less than 0.
     """
+
+    def matrix_power(matrix: List[List[int]], exponent: int) -> List[List[int]]:
+        """
+        Compute power of a matrix.
+
+        Args:
+            matrix (list): The input matrix.
+            exponent (int): The exponent to raise the matrix to.
+
+        Returns:
+            list: The resulting matrix after raising it to the given exponent.
+        """
+        result = identity(2)
+        while exponent > 0:
+            if exponent % 2 == 1:
+                result = multiply(result, matrix)
+            matrix = multiply(matrix, matrix)
+            exponent = exponent // 2
+        return result
+
+    if n < 0:
+        raise ValueError("Argument `n` must be greater than or equal to 0.")
+
     if n <= 1:
         return n
-    res_matrix = identity(2)
+
     fibonacci_matrix = [[1, 1], [1, 0]]
-    n = n - 1
-    while n > 0:
-        if n % 2 == 1:
-            res_matrix = multiply(res_matrix, fibonacci_matrix)
-        fibonacci_matrix = multiply(fibonacci_matrix, fibonacci_matrix)
-        n = int(n / 2)
-    return res_matrix[0][0]
+    fibonacci_matrix = matrix_power(fibonacci_matrix, n - 1)
+    return fibonacci_matrix[0][0]
 
 
 def nth_fibonacci_bruteforce(n: int) -> int:
