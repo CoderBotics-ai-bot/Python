@@ -1,21 +1,73 @@
+
+
+from typing import List, Tuple, Set, Optional
 # An island in matrix is a group of linked areas, all having the same value.
 # This code counts number of islands in a given matrix, with including diagonal
 # connections.
 
 
-class Matrix:  # Public class to implement a graph
+# An island in matrix is a group of linked areas, all having the same value.
+# This code counts number of islands in a given matrix, with including diagonal
+# connections.
+
+
+# An island in matrix is a group of linked areas, all having the same value.
+# This code counts number of islands in a given matrix, with including diagonal
+# connections.
+
+
+# An island in matrix is a group of linked areas, all having the same value.
+# This code counts number of islands in a given matrix, with including diagonal
+# connections.
+
+
+class Matrix:
     def __init__(self, row: int, col: int, graph: list[list[bool]]) -> None:
         self.ROW = row
         self.COL = col
         self.graph = graph
 
-    def is_safe(self, i: int, j: int, visited: list[list[bool]]) -> bool:
-        return (
-            0 <= i < self.ROW
-            and 0 <= j < self.COL
-            and not visited[i][j]
-            and self.graph[i][j]
-        )
+    def is_safe(
+        self,
+        matrix: List[List[int]],
+        starting_point: Tuple[int, int],
+        already_checked: Optional[Set[Tuple[int, int]]] = None,
+    ) -> bool:
+        """
+        Determine if a given starting_point in a matrix is surrounded by '1's or not.
+        """
+
+        def get_neighbour_positions(position):
+            neighbours = [
+                (position[0] + i, position[1] + j)
+                for i in range(-1, 2)
+                for j in range(-1, 2)
+                if (i, j) != (0, 0)
+            ]
+            return [
+                (i, j)
+                for i, j in neighbours
+                if 0 <= i < len(matrix) and 0 <= j < len(matrix[0])
+            ]
+
+        if already_checked is None:
+            already_checked = set()
+
+        x, y = starting_point
+        if matrix[x][y] == 0:
+            return False
+
+        if starting_point in already_checked:
+            return True
+
+        already_checked.add(starting_point)
+        neighbours = get_neighbour_positions(starting_point)
+
+        for neighbour in neighbours:
+            if not self.is_safe(matrix, neighbour, already_checked):
+                return False
+
+        return True
 
     def diffs(self, i: int, j: int, visited: list[list[bool]]) -> None:
         # Checking all 8 elements surrounding nth element
