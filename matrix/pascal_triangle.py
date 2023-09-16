@@ -1,30 +1,33 @@
-def print_pascal_triangle(num_rows: int) -> None:
-    """
-    Prints Pascal's triangle for a given number of rows.
+def generate_pascal_triangle(num_rows: int) -> list[list[int]]:
+    """Refactored version of generate_pascal_triangle."""
+    check_num_rows(num_rows)
 
-    This method generates a triangle and then prints it out to the console.
-    Each line of the triangle is printed on a new line, with padding so that
-    the triangle is centered.
+    triangle: list[list[int]] = []
+    for current_row_idx in range(num_rows):
+        triangle.append(populate_current_row(triangle, current_row_idx))
 
-    Args:
-        num_rows (int): The number of rows in the triangle. Must be a non-negative integer.
+    return triangle
 
-    Raises:
-        TypeError: If num_rows is not an integer.
-        ValueError: If num_rows is less than 0.
 
-    Side Effects:
-        Prints to standard output.
+def check_num_rows(num_rows: int) -> None:
+    if not isinstance(num_rows, int):
+        raise TypeError("The input value of 'num_rows' should be 'int'")
+    elif num_rows < 0:
+        raise ValueError(
+            "The input value of 'num_rows' should be greater than or equal to 0"
+        )
 
-    Examples:
-    >>> print_pascal_triangle(5)
-        1
-       1 1
-      1 2 1
-     1 3 3 1
-    1 4 6 4 1
-    """
-    triangle = generate_pascal_triangle(num_rows)
 
-    for row in triangle:
-        print(" ".join(str(num) for num in row).center(num_rows * 2))
+def populate_current_row(triangle: list[list[int]], current_row_idx: int) -> list[int]:
+    if current_row_idx == 0:
+        return [1]
+    previous_row = triangle[current_row_idx - 1]
+    current_row = (
+        [1]
+        + [previous_row[i - 1] + previous_row[i] for i in range(1, current_row_idx)]
+        + [1]
+    )
+    return current_row
+
+
+from typing import List
