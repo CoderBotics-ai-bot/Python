@@ -18,10 +18,13 @@ from collections import deque
 import numpy as np
 
 
+
+
+
+
+
+
 class CircularConvolution:
-    """
-    This class stores the first and second signal and performs the circular convolution
-    """
 
     def __init__(self) -> None:
         """
@@ -31,68 +34,44 @@ class CircularConvolution:
         self.first_signal = [2, 1, 2, -1]
         self.second_signal = [1, 2, 3, 4]
 
-    def circular_convolution(self) -> list[float]:
+    def circular_convolution(
+        self, sequence1: np.ndarray, sequence2: np.ndarray
+    ) -> np.ndarray:
         """
-        This function performs the circular convolution of the first and second signal
-        using matrix method
-
-        Usage:
-        >>> import circular_convolution as cc
-        >>> convolution = cc.CircularConvolution()
-        >>> convolution.circular_convolution()
-        [10, 10, 6, 14]
-
-        >>> convolution.first_signal = [0.2, 0.4, 0.6, 0.8, 1.0, 1.2, 1.4, 1.6]
-        >>> convolution.second_signal = [0.1, 0.3, 0.5, 0.7, 0.9, 1.1, 1.3, 1.5]
-        >>> convolution.circular_convolution()
-        [5.2, 6.0, 6.48, 6.64, 6.48, 6.0, 5.2, 4.08]
-
-        >>> convolution.first_signal = [-1, 1, 2, -2]
-        >>> convolution.second_signal = [0.5, 1, -1, 2, 0.75]
-        >>> convolution.circular_convolution()
-        [6.25, -3.0, 1.5, -2.0, -2.75]
-
-        >>> convolution.first_signal = [1, -1, 2, 3, -1]
-        >>> convolution.second_signal = [1, 2, 3]
-        >>> convolution.circular_convolution()
-        [8, -2, 3, 4, 11]
-
+        The function performs a circular convolution on the two provided sequences.
+        Args:
+            sequence1: The first sequence in the convolution operation.
+            sequence2: The second sequence in the convolution operation.
+        Returns:
+            The result of the circular convolution operation.
+        Raises:
+            ValueError: If the two sequences are not of the same length.
         """
+        self._validate_sequences(sequence1, sequence2)
 
-        length_first_signal = len(self.first_signal)
-        length_second_signal = len(self.second_signal)
+        sequence1_deque = deque(sequence1)
+        sequence2_deque = deque(sequence2[::-1])
 
-        max_length = max(length_first_signal, length_second_signal)
+        return self._perform_convolution(sequence1_deque, sequence2_deque)
 
-        # create a zero matrix of max_length x max_length
-        matrix = [[0] * max_length for i in range(max_length)]
+    @staticmethod
+    def _validate_sequences(sequence1: np.ndarray, sequence2: np.ndarray):
+        if len(sequence1) != len(sequence2):
+            raise ValueError("The two sequences must be of the same length.")
 
-        # fills the smaller signal with zeros to make both signals of same length
-        if length_first_signal < length_second_signal:
-            self.first_signal += [0] * (max_length - length_first_signal)
-        elif length_first_signal > length_second_signal:
-            self.second_signal += [0] * (max_length - length_second_signal)
+    @staticmethod
+    def _perform_convolution(
+        sequence1_deque: deque, sequence2_deque: deque
+    ) -> np.ndarray:
+        convolution_result = []
 
-        """
-        Fills the matrix in the following way assuming 'x' is the signal of length 4
-        [
-            [x[0], x[3], x[2], x[1]],
-            [x[1], x[0], x[3], x[2]],
-            [x[2], x[1], x[0], x[3]],
-            [x[3], x[2], x[1], x[0]]
-        ]
-        """
-        for i in range(max_length):
-            rotated_signal = deque(self.second_signal)
-            rotated_signal.rotate(i)
-            for j, item in enumerate(rotated_signal):
-                matrix[i][j] += item
+        for _ in range(len(sequence1_deque)):
+            convolution_result.append(
+                sum([x * y for x, y in zip(sequence1_deque, sequence2_deque)])
+            )
+            sequence1_deque.rotate(1)
 
-        # multiply the matrix with the first signal
-        final_signal = np.matmul(np.transpose(matrix), np.transpose(self.first_signal))
-
-        # rounding-off to two decimal places
-        return [round(i, 2) for i in final_signal]
+        return np.array(convolution_result)
 
 
 if __name__ == "__main__":
