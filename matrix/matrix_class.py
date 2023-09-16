@@ -132,6 +132,390 @@ from typing import List, Union
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 class Matrix:
 
     def __init__(self, elements: List[List[Union[int, float]]]):
@@ -208,24 +592,44 @@ class Matrix:
             row[:col] + row[col + 1 :] for idx, row in enumerate(matrix) if idx != row
         ]
 
+    def get_minor(
+        self, removed_row: int, removed_col: int
+    ) -> List[List[Union[int, float]]]:
+        """Generates a minor matrix by removing specified row and column.
+
+        Args:
+            removed_row (int): The row number to be removed.
+            removed_col (int): The column number to be removed.
+
+        Returns:
+            List[List[Union[int, float]]]: The minor matrix after the row and the column are removed.
+        """
+        return self._create_minor_matrix(removed_row, removed_col)
+
+    def _create_minor_matrix(
+        self, removed_row: int, removed_col: int
+    ) -> List[List[Union[int, float]]]:
+        """Creates a minor matrix by removing the specified row and column from the original matrix.
+
+        Args:
+            removed_row (int): The row number to be removed.
+            removed_col (int): The column number to be removed.
+
+        Returns:
+            List[List[Union[int, float]]]: The minor matrix after the row and the column are removed.
+        """
+        return [
+            row[:removed_col] + row[removed_col + 1 :]
+            for i, row in enumerate(self.matrix)
+            if i != removed_row
+        ]
+
     @property
     def is_square(self) -> bool:
         return self.order[0] == self.order[1]
 
     def is_invertable(self) -> bool:
         return bool(self.determinant())
-
-    def get_minor(self, row: int, column: int) -> int:
-        values = [
-            [
-                self.rows[other_row][other_column]
-                for other_column in range(self.num_columns)
-                if other_column != column
-            ]
-            for other_row in range(self.num_rows)
-            if other_row != row
-        ]
-        return Matrix(values).determinant()
 
     def get_cofactor(self, row: int, column: int) -> int:
         if (row + column) % 2 == 0:
