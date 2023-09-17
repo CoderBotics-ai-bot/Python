@@ -16,42 +16,86 @@ We can decrease the n times multiplication by following the divide and conquer a
 """
 
 
+from typing import List
+
 def multiply(matrix_a: list[list[int]], matrix_b: list[list[int]]) -> list[list[int]]:
-    matrix_c = []
-    n = len(matrix_a)
-    for i in range(n):
-        list_1 = []
-        for j in range(n):
-            val = 0
-            for k in range(n):
-                val = val + matrix_a[i][k] * matrix_b[k][j]
-            list_1.append(val)
-        matrix_c.append(list_1)
-    return matrix_c
+    """
+    Multiplies two matrices matrix_a and matrix_b.
+
+    The multiplication is performed element wise by taking the scalar
+    product of each row of matrix_a with each column of matrix_b.
+
+    Args:
+        matrix_a (list[list[int]]): The first matrix for the multiplication operation.
+            It's a 2D list of integers where each list represents a row in the matrix.
+        matrix_b (list[list[int]]): The second matrix for the multiplication operation.
+            It's a 2D list of integers where each list represents a row in the matrix.
+
+    Returns:
+        result (list[list[int]]): The result of multiplying both matrices.
+            It's a 2D list of integers where each list represents a row in the new matrix.
+
+    Note:
+        - The function assumes that both matrices have the same dimensions.
+        - The function does not check for the validity of the input.
+    """
+    matrix_size = len(matrix_a)
+    result = [[0 for _ in range(matrix_size)] for _ in range(matrix_size)]
+
+    for i in range(matrix_size):
+        for j in range(matrix_size):
+            result[i][j] = sum(
+                matrix_a[i][k] * matrix_b[k][j] for k in range(matrix_size)
+            )
+
+    return result
 
 
 def identity(n: int) -> list[list[int]]:
     return [[int(row == column) for column in range(n)] for row in range(n)]
 
-
 def nth_fibonacci_matrix(n: int) -> int:
     """
-    >>> nth_fibonacci_matrix(100)
-    354224848179261915075
-    >>> nth_fibonacci_matrix(-100)
-    -100
+    Calculate the nth term of the Fibonacci sequence using the matrix exponentiation method.
+
+    Args:
+        n (int): The position of the term in the Fibonacci sequence to calculate.
+
+    Returns:
+        int: The nth term of the Fibonacci sequence.
+
+    Raises:
+        ValueError: If `n` is less than 0.
     """
+
+    def matrix_power(matrix: List[List[int]], exponent: int) -> List[List[int]]:
+        """
+        Compute power of a matrix.
+
+        Args:
+            matrix (list): The input matrix.
+            exponent (int): The exponent to raise the matrix to.
+
+        Returns:
+            list: The resulting matrix after raising it to the given exponent.
+        """
+        result = identity(2)
+        while exponent > 0:
+            if exponent % 2 == 1:
+                result = multiply(result, matrix)
+            matrix = multiply(matrix, matrix)
+            exponent = exponent // 2
+        return result
+
+    if n < 0:
+        raise ValueError("Argument `n` must be greater than or equal to 0.")
+
     if n <= 1:
         return n
-    res_matrix = identity(2)
+
     fibonacci_matrix = [[1, 1], [1, 0]]
-    n = n - 1
-    while n > 0:
-        if n % 2 == 1:
-            res_matrix = multiply(res_matrix, fibonacci_matrix)
-        fibonacci_matrix = multiply(fibonacci_matrix, fibonacci_matrix)
-        n = int(n / 2)
-    return res_matrix[0][0]
+    fibonacci_matrix = matrix_power(fibonacci_matrix, n - 1)
+    return fibonacci_matrix[0][0]
 
 
 def nth_fibonacci_bruteforce(n: int) -> int:
@@ -69,22 +113,14 @@ def nth_fibonacci_bruteforce(n: int) -> int:
         fib0, fib1 = fib1, fib0 + fib1
     return fib1
 
-
 def main() -> None:
-    for ordinal in "0th 1st 2nd 3rd 10th 100th 1000th".split():
-        n = int("".join(c for c in ordinal if c in "0123456789"))  # 1000th --> 1000
-        print(
-            f"{ordinal} fibonacci number using matrix exponentiation is "
-            f"{nth_fibonacci_matrix(n)} and using bruteforce is "
-            f"{nth_fibonacci_bruteforce(n)}\n"
-        )
-    # from timeit import timeit
-    # print(timeit("nth_fibonacci_matrix(1000000)",
-    #              "from main import nth_fibonacci_matrix", number=5))
-    # print(timeit("nth_fibonacci_bruteforce(1000000)",
-    #              "from main import nth_fibonacci_bruteforce", number=5))
-    # 2.3342058970001744
-    # 57.256506615000035
+    """
+    Main method to display comparison between `nth_fibonacci_matrix` and `nth_fibonacci_bruteforce`.
+    Comparison is performed for various Fibonacci terms and execution speed.
+    Fibonacci terms include: 0th, 1st, 2nd, 3rd, 10th, 100th, 1000th.
+    """
+    for ordinal in extract_ordinal_numbers():
+        compute_and_display_comparison(ordinal)
 
 
 if __name__ == "__main__":
@@ -92,3 +128,31 @@ if __name__ == "__main__":
 
     doctest.testmod()
     main()
+
+
+def extract_ordinal_numbers() -> List[str]:
+    """
+    Helper function to Extract Ordinal Numbers
+    """
+    return "0th 1st 2nd 3rd 10th 100th 1000th".split()
+
+
+def compute_and_display_comparison(ordinal: str) -> None:
+    """
+    Helper function to Compute and Display Comparison
+    """
+    n = convert_ordinal_to_int(ordinal)
+    matrix_result = nth_fibonacci_matrix(n)
+    bruteforce_result = nth_fibonacci_bruteforce(n)
+    print(
+        f"{ordinal} fibonacci number using matrix exponentiation is "
+        f"{matrix_result} and using bruteforce is "
+        f"{bruteforce_result}\n"
+    )
+
+
+def convert_ordinal_to_int(ordinal: str) -> int:
+    """
+    Helper function to Convert Ordinal to Integer.
+    """
+    return int("".join(c for c in ordinal if c in "0123456789"))  # 1000th --> 1000
