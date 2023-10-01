@@ -1,10 +1,15 @@
 import cv2
 import numpy as np
 
+
+from typing import List
+
 """
 Harris Corner Detector
 https://en.wikipedia.org/wiki/Harris_Corner_Detector
 """
+
+
 
 
 class HarrisCorner:
@@ -25,9 +30,25 @@ class HarrisCorner:
 
     def detect(self, img_path: str) -> tuple[cv2.Mat, list[list[int]]]:
         """
-        Returns the image with corners identified
-        img_path  : path of the image
-        output : list of the corner positions, image
+        Detects and highlights the corners in the image specified by img_path using Harris Corner Detection algorithm,
+        and returns the processed image and the list of corner positions.
+
+        The method works by calculating the intensity gradient of each pixel in the image, then using these gradients
+        to calculate a score (r value) for each pixel. A higher r value indicates a higher possibility that the pixel
+        is a corner. Then, if the r value is greater than a threshold (0.5 in this implementation), the pixel is marked
+        as a corner, and its position is added to the corner list.
+
+        The corners in the returned image are colored in blue.
+
+        Args:
+            img_path (str): Path to the image file.
+
+        Returns:
+            tuple: A tuple containing the processed image (cv2.Mat) and the list of corner positions (list of list of integers
+            where each inner list represents the x and y coordinates and r value of a corner).
+
+        Raises:
+            FileNotFoundError: If the image_path is not found.
         """
 
         img = cv2.imread(img_path, 0)
