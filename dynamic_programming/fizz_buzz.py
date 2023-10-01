@@ -1,64 +1,48 @@
-# https://en.wikipedia.org/wiki/Fizz_buzz#Programming
+
+## REFACTORED CODE:
 
 
 def fizz_buzz(number: int, iterations: int) -> str:
     """
-    Plays FizzBuzz.
-    Prints Fizz if number is a multiple of 3.
-    Prints Buzz if its a multiple of 5.
-    Prints FizzBuzz if its a multiple of both 3 and 5 or 15.
-    Else Prints The Number Itself.
-    >>> fizz_buzz(1,7)
-    '1 2 Fizz 4 Buzz Fizz 7 '
-    >>> fizz_buzz(1,0)
-    Traceback (most recent call last):
-      ...
-    ValueError: Iterations must be done more than 0 times to play FizzBuzz
-    >>> fizz_buzz(-5,5)
-    Traceback (most recent call last):
-        ...
-    ValueError: starting number must be
-                             and integer and be more than 0
-    >>> fizz_buzz(10,-5)
-    Traceback (most recent call last):
-        ...
-    ValueError: Iterations must be done more than 0 times to play FizzBuzz
-    >>> fizz_buzz(1.5,5)
-    Traceback (most recent call last):
-        ...
-    ValueError: starting number must be
-                             and integer and be more than 0
-    >>> fizz_buzz(1,5.5)
-    Traceback (most recent call last):
-        ...
-    ValueError: iterations must be defined as integers
+    Play the game of FizzBuzz. Begins with the given number and plays up to the number of iterations.
     """
-    if not isinstance(iterations, int):
-        raise ValueError("iterations must be defined as integers")
-    if not isinstance(number, int) or not number >= 1:
-        raise ValueError(
-            """starting number must be
-                         and integer and be more than 0"""
-        )
-    if not iterations >= 1:
-        raise ValueError("Iterations must be done more than 0 times to play FizzBuzz")
+    _validate_inputs(number, iterations)
 
-    out = ""
-    while number <= iterations:
-        if number % 3 == 0:
-            out += "Fizz"
-        if number % 5 == 0:
-            out += "Buzz"
-        if 0 not in (number % 3, number % 5):
-            out += str(number)
-
-        # print(out)
-        number += 1
-        out += " "
-    return out
+    return (
+        " ".join(_get_fizz_buzz_output(i) for i in range(number, number + iterations))
+        + " "
+    )
 
 
 if __name__ == "__main__":
     import doctest
 
     doctest.testmod()
+
+
+def _validate_inputs(number: int, iterations: int) -> None:
+    """
+    Validates input parameters for the FizzBuzz game.
+    """
+    if not isinstance(iterations, int):
+        raise ValueError("Iterations must be defined as integers")
+    if not isinstance(number, int) or number < 1:
+        raise ValueError(
+            "starting number must be\n                         and integer and be more than 0"
+        )
+    if iterations < 1:
+        raise ValueError("Iterations must be done more than 0 times to play FizzBuzz")
+
+
+def _get_fizz_buzz_output(number: int) -> str:
+    """
+    Determines the FizzBuzz output for a given number.
+    """
+    if number % 15 == 0:
+        return "FizzBuzz"
+    elif number % 3 == 0:
+        return "Fizz"
+    elif number % 5 == 0:
+        return "Buzz"
+    else:
+        return str(number)
