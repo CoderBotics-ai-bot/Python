@@ -43,6 +43,9 @@ dp_array(i,j)=dp_array(dp(i−1,j),dp_array(i−1,j−1),dp_array(i,j−1)) + 1.
 """
 
 
+from typing import List
+
+
 def largest_square_area_in_matrix_top_down_approch(
     rows: int, cols: int, mat: list[list[int]]
 ) -> int:
@@ -121,35 +124,6 @@ def largest_square_area_in_matrix_top_down_approch_with_dp(
     return largest_square_area[0]
 
 
-def largest_square_area_in_matrix_bottom_up(
-    rows: int, cols: int, mat: list[list[int]]
-) -> int:
-    """
-    Function updates the largest_square_area, using bottom up approach.
-
-    >>> largest_square_area_in_matrix_bottom_up(2, 2, [[1,1], [1,1]])
-    2
-    >>> largest_square_area_in_matrix_bottom_up(2, 2, [[0,0], [0,0]])
-    0
-
-    """
-    dp_array = [[0] * (cols + 1) for _ in range(rows + 1)]
-    largest_square_area = 0
-    for row in range(rows - 1, -1, -1):
-        for col in range(cols - 1, -1, -1):
-            right = dp_array[row][col + 1]
-            diagonal = dp_array[row + 1][col + 1]
-            bottom = dp_array[row + 1][col]
-
-            if mat[row][col] == 1:
-                dp_array[row][col] = 1 + min(right, diagonal, bottom)
-                largest_square_area = max(dp_array[row][col], largest_square_area)
-            else:
-                dp_array[row][col] = 0
-
-    return largest_square_area
-
-
 def largest_square_area_in_matrix_bottom_up_space_optimization(
     rows: int, cols: int, mat: list[list[int]]
 ) -> int:
@@ -177,6 +151,41 @@ def largest_square_area_in_matrix_bottom_up_space_optimization(
             else:
                 current_row[col] = 0
         next_row = current_row
+
+    return largest_square_area
+
+## REFACTORED CODE:
+
+
+def largest_square_area_in_matrix_bottom_up(
+    rows: int, cols: int, mat: List[List[int]]
+) -> int:
+    """
+    Find the largest square area of 1s in a given binary matrix using a bottom-up approach.
+
+    Args:
+        rows (int): The number of rows in the input matrix.
+        cols (int): The number of columns in the input matrix.
+        mat (list[list[int]]): The input matrix as a 2D list of binary integers.
+
+    Returns:
+        int: The side length of the largest square of 1's in the input matrix.
+    """
+    if not rows or not cols:
+        return 0
+
+    dp_array = [[0] * (cols + 1) for _ in range(rows + 1)]
+    largest_square_area = 0
+
+    for row in range(rows - 1, -1, -1):
+        for col in range(cols - 1, -1, -1):
+            if mat[row][col] == 1:
+                right = dp_array[row][col + 1]
+                diagonal = dp_array[row + 1][col + 1]
+                bottom = dp_array[row + 1][col]
+
+                dp_array[row][col] = 1 + min(right, diagonal, bottom)
+                largest_square_area = max(dp_array[row][col], largest_square_area)
 
     return largest_square_area
 
