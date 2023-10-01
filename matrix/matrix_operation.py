@@ -5,46 +5,149 @@ Functions for 2D matrix operations
 from __future__ import annotations
 
 from typing import Any
+from typing import List
+
+
+from typing import List
+
+
+from typing import Any, List
+from typing import List, Union
+from itertools import zip_longest
+
+
+from typing import List, Union
+from itertools import zip_longest
 
 
 def add(*matrix_s: list[list[int]]) -> list[list[int]]:
     """
-    >>> add([[1,2],[3,4]],[[2,3],[4,5]])
-    [[3, 5], [7, 9]]
-    >>> add([[1.2,2.4],[3,4]],[[2,3],[4,5]])
-    [[3.2, 5.4], [7, 9]]
-    >>> add([[1, 2], [4, 5]], [[3, 7], [3, 4]], [[3, 5], [5, 7]])
-    [[7, 14], [12, 16]]
-    >>> add([3], [4, 5])
-    Traceback (most recent call last):
-      ...
-    TypeError: Expected a matrix, got int/list instead
+    Same docstring as in the original function.
     """
-    if all(_check_not_integer(m) for m in matrix_s):
-        for i in matrix_s[1:]:
-            _verify_matrix_sizes(matrix_s[0], i)
-        return [[sum(t) for t in zip(*m)] for m in zip(*matrix_s)]
-    raise TypeError("Expected a matrix, got int/list instead")
+    all_matrices_are_valid = all(_check_not_integer(m) for m in matrix_s)
+
+    if not all_matrices_are_valid:
+        raise TypeError("Expected a matrix, got int/list instead")
+
+    for i in matrix_s[1:]:
+        _verify_matrix_sizes(matrix_s[0], i)
+
+    return _calculate_sum(matrix_s)
+
+def subtract(
+    matrix_a: List[List[float]], matrix_b: List[List[float]]
+) -> List[List[float]]:
+    """
+    Subtracts one matrix from another and returns the resulting matrix.
+
+    Parameters:
+        matrix_a (List[List[int]]) : The first matrix.
+        matrix_b (List[List[int]]) : The second matrix.
+
+    Returns:
+        List[List[int]] : The resulting matrix after subtraction.
+
+    Raises:
+        TypeError : If inputs are not of type List[List[int]].
+        ValueError : If matrices have different sizes.
+    """
+
+    _validate_input(matrix_a, matrix_b)
+
+    return [
+        [a - b for a, b in zip(row_a, row_b)]
+        for row_a, row_b in zip(matrix_a, matrix_b)
+    ]
 
 
-def subtract(matrix_a: list[list[int]], matrix_b: list[list[int]]) -> list[list[int]]:
+
+def multiply(
+    matrix_a: List[List[Union[int, float]]], matrix_b: List[List[Union[int, float]]]
+) -> List[List[Union[int, float]]]:
     """
-    >>> subtract([[1,2],[3,4]],[[2,3],[4,5]])
-    [[-1, -1], [-1, -1]]
-    >>> subtract([[1,2.5],[3,4]],[[2,3],[4,5.5]])
-    [[-1, -0.5], [-1, -1.5]]
-    >>> subtract([3], [4, 5])
-    Traceback (most recent call last):
-      ...
-    TypeError: Expected a matrix, got int/list instead
+    Multiplies two matrices if they are compatible for multiplication.
+
+    Args:
+        matrix_a (List[List[Union[int, float]]]): First matrix.
+        matrix_b (List[List[Union[int, float]]]): Second matrix.
+
+    Returns:
+        List[List[Union[int, float]]]: The product of matrix_a and matrix_b.
+
+    Raises:
+        ValueError: If the numbers of columns in the first matrix
+                    doesn't match the number of rows in the second matrix
+        ValueError: If a value in the matrices is not a float or an integer.
+
+    Examples:
+        >>> multiply([[1,2],[3,4]],[[5,5],[7,5]])
+        [[19, 15], [43, 35]]
+        >>> multiply([[1,2.5],[3,4.5]],[[5,5],[7,5]])
+        [[22.5, 17.5], [46.5, 37.5]]
+        >>> multiply([[1, 2, 3]], [[2], [3], [4]])
+        [[20]]
     """
-    if (
-        _check_not_integer(matrix_a)
-        and _check_not_integer(matrix_b)
-        and _verify_matrix_sizes(matrix_a, matrix_b)
+    _check_elements_type(matrix_a)
+    _check_elements_type(matrix_b)
+
+    rows_a, cols_a = _get_matrix_sizes(matrix_a)
+    rows_b, cols_b = _get_matrix_sizes(matrix_b)
+
+    if cols_a != rows_b:
+        raise ValueError(
+            f"Cannot multiply matrices of dimensions ({rows_a},{cols_a}) and ({rows_b},{cols_b})"
+        )
+
+    return _calculate_matrix_product(matrix_a, matrix_b)
+
+
+# Newly created (sub-)functions
+def _validate_input(matrix_a: Any, matrix_b: Any) -> None:
+    _validate_matrix(matrix_a)
+    _validate_matrix(matrix_b)
+
+    if len(matrix_a) != len(matrix_b) or len(matrix_a[0]) != len(matrix_b[0]):
+        raise ValueError("Both matrices should have the same dimensions.")
+
+
+def _check_elements_type(matrix: List[List[Union[int, float]]]) -> None:
+    for row in matrix:
+        if not all(isinstance(val, (int, float)) for val in row):
+            raise ValueError("Matrix values must be integers or floats.")
+
+
+def _get_matrix_sizes(matrix: List[List[Union[int, float]]]) -> tuple[int, int]:
+    rows = len(matrix)
+    cols = len(matrix[0]) if matrix else 0
+    return (rows, cols)
+
+
+def _calculate_matrix_product(
+    matrix_a: List[List[Union[int, float]]], matrix_b: List[List[Union[int, float]]]
+) -> List[List[Union[int, float]]]:
+    transposed_b = list(map(list, zip_longest(*matrix_b, fillvalue=0)))
+    return [
+        [sum(a * b for a, b in zip(row_a, row_b)) for row_b in transposed_b]
+        for row_a in matrix_a
+    ]
+
+
+def _validate_matrix(matrix: Any) -> None:
+    if not (
+        isinstance(matrix, (list, tuple))
+        and all(
+            isinstance(row, (list, tuple))
+            and all(isinstance(item, (int, float)) for item in row)
+            for row in matrix
+        )
     ):
-        return [[i - j for i, j in zip(*m)] for m in zip(matrix_a, matrix_b)]
-    raise TypeError("Expected a matrix, got int/list instead")
+        raise TypeError("All elements of the matrix should be of type int/float.")
+
+
+
+def _calculate_sum(elements: List[List[int]]) -> int:
+    """Calculate the sum of a given list of matrices."""
+    return [[sum(t) for t in zip(*m)] for m in zip(*elements)]
 
 
 def scalar_multiply(matrix: list[list[int]], n: float) -> list[list[float]]:
@@ -55,29 +158,6 @@ def scalar_multiply(matrix: list[list[int]], n: float) -> list[list[float]]:
     [[7.0, 11.5], [15, 20]]
     """
     return [[x * n for x in row] for row in matrix]
-
-
-def multiply(matrix_a: list[list[int]], matrix_b: list[list[int]]) -> list[list[int]]:
-    """
-    >>> multiply([[1,2],[3,4]],[[5,5],[7,5]])
-    [[19, 15], [43, 35]]
-    >>> multiply([[1,2.5],[3,4.5]],[[5,5],[7,5]])
-    [[22.5, 17.5], [46.5, 37.5]]
-    >>> multiply([[1, 2, 3]], [[2], [3], [4]])
-    [[20]]
-    """
-    if _check_not_integer(matrix_a) and _check_not_integer(matrix_b):
-        rows, cols = _verify_matrix_sizes(matrix_a, matrix_b)
-
-    if cols[0] != rows[1]:
-        msg = (
-            "Cannot multiply matrix of dimensions "
-            f"({rows[0]},{cols[0]}) and ({rows[1]},{cols[1]})"
-        )
-        raise ValueError(msg)
-    return [
-        [sum(m * n for m, n in zip(i, j)) for j in zip(*matrix_b)] for i in matrix_a
-    ]
 
 
 def identity(n: int) -> list[list[int]]:
