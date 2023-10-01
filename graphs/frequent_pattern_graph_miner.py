@@ -124,22 +124,25 @@ def get_support(cluster):
     """
     return [i * 100 / len(cluster) for i in cluster]
 
-
 def print_all() -> None:
-    print("\nNodes\n")
-    for key, value in nodes.items():
-        print(key, value)
-    print("\nSupport\n")
-    print(support)
-    print("\n Cluster \n")
-    for key, value in sorted(cluster.items(), reverse=True):
-        print(key, value)
-    print("\n Graph\n")
-    for key, value in graph.items():
-        print(key, value)
-    print("\n Edge List of Frequent subgraphs \n")
-    for edge_list in freq_subgraph_edge_list:
-        print(edge_list)
+    """
+    Prints the content of all global structures: nodes, support, cluster, graph, and frequent subgraph edge list.
+
+    This is a utility function intended for debugging or monitoring the progress of the algorithm. It does not
+    return any value. The function fetches and prints the state of global variables directly. It should be noted
+    that this function relies on the following global variables:
+
+    - nodes: a dictionary containing all graph nodes.
+    - support: a dictionary containing supporting information for the graph.
+    - cluster: a dictionary containing information about the clusters in the graph.
+    - graph: a dictionary representing the graph itself.
+    - freq_subgraph_edge_list: a list containing frequent subgraph edges.
+    """
+    _print_nodes()
+    _print_support()
+    _print_cluster()
+    _print_graph()
+    _print_freq_subgraph_edge_list()
 
 
 def create_edge(nodes, graph, cluster, c1):
@@ -164,6 +167,35 @@ def create_edge(nodes, graph, cluster, c1):
                 c2 = c2 + 1
             else:
                 break
+
+
+def _print_nodes() -> None:
+    print("\nNodes\n")
+    for key, value in nodes.items():
+        print(key, value)
+
+
+def _print_support() -> None:
+    print("\nSupport\n")
+    print(support)
+
+
+def _print_cluster() -> None:
+    print("\n Cluster \n")
+    for key, value in sorted(cluster.items(), reverse=True):
+        print(key, value)
+
+
+def _print_graph() -> None:
+    print("\n Graph\n")
+    for key, value in graph.items():
+        print(key, value)
+
+
+def _print_freq_subgraph_edge_list() -> None:
+    print("\n Edge List of Frequent subgraphs \n")
+    for edge_list in freq_subgraph_edge_list:
+        print(edge_list)
 
 
 def construct_graph(cluster, nodes):
