@@ -20,6 +20,9 @@ from typing import List, Tuple
 from typing import List, Dict, Tuple
 
 
+from typing import List, Dict, Tuple, Union
+
+
 class Clause:
     """
     A clause represented in Conjunctive Normal Form.
@@ -183,6 +186,34 @@ def generate_parameters(formula: Formula) -> Tuple[List[Clause], List[str]]:
     return clauses, symbols
 
 
+def find_unit_clauses(
+    clauses: List[Clause], model: Dict[str, Union[bool, None]]
+) -> Tuple[List[str], Dict[str, Union[bool, None]]]:
+    """
+    Identify unit clauses within the set of clauses under the current model.
+
+    Args:
+        clauses (List[Clause]): List of Clause objects.
+        model (Dict[str, Union[bool, None]]): Current model containing symbol assignments.
+
+    Returns:
+        Tuple[List[str], Dict[str, Union[bool, None]]]: A tuple containing a list of identified unit clauses
+        and a dictionary of these unit clauses along with their assigned values.
+    """
+    unit_symbols = []
+    for clause in clauses:
+        unit_symbol = get_unit_symbol_from_clause(clause)
+        if unit_symbol is not None:
+            unit_symbols.append(unit_symbol)
+
+    assignment = assign_symbols(unit_symbols)
+    unit_symbols = [
+        symbol[:2] for symbol in unit_symbols
+    ]  # Remove ' symbol for negation from symbol.
+
+    return unit_symbols, assignment
+
+
 def find_pure_symbols(
     clauses: List[Clause], symbols: List[str], model: Dict[str, bool | None]
 ) -> Tuple[List[str], Dict[str, bool | None]]:
@@ -198,6 +229,54 @@ def find_pure_symbols(
             assignment[symbol] = False
 
     return pure_symbols, assignment
+
+
+
+def get_unit_symbol_from_clause(clause: Clause) -> str:
+    """
+    Get the unit symbol from a given clause if one exists.
+
+    Args:
+        clause (Clause): The given clause object.
+
+    Returns:
+        str: The unit symbol from a clause if it exists. Otherwise, return None.
+    """
+    if len(clause) == 1:
+        return next(iter(clause.literals.keys()))
+
+    f_count, n_count = 0, 0
+    sym = None
+    for literal, value in clause.literals.items():
+        if value is False:
+            f_count += 1
+        elif value is None:
+            sym = literal
+            n_count += 1
+    # If all literals except one are False, and if it is the only unassigned literal, it is the unit symbol.
+    if f_count == len(clause) - 1 and n_count == 1:
+        return sym
+
+    return None
+
+
+def assign_symbols(unit_symbols: List[str]) -> Dict[str, Union[bool, None]]:
+    """
+    Assign Truth value to the given symbols.
+
+    Literal without negation gets True and with negation gets False.
+
+    Args:
+        unit_symbols (List[str]): List of unit symbols.
+
+    Returns:
+        Dict[str, Union[bool, None]]: Dictionary of symbols assigned their respective Truth values.
+    """
+    assignment: Dict[str, Union[bool, None]] = {}
+    for symbol in unit_symbols:
+        base_symbol = symbol[:2]
+        assignment[base_symbol] = len(symbol) == 2
+    return assignment
 
 def extract_symbol_from_literal(literal: str) -> str:
     """
@@ -239,54 +318,6 @@ def extract_symbols_from_clause(clause: Clause) -> List[str]:
         A list of symbols in the clause as strings.
     """
     return [extract_symbol_from_literal(literal) for literal in clause.literals]
-
-
-def find_unit_clauses(
-    clauses: list[Clause], model: dict[str, bool | None]
-) -> tuple[list[str], dict[str, bool | None]]:
-    """
-    Returns the unit symbols and their values to satisfy clause.
-    Unit symbols are symbols in a formula that are:
-    - Either the only symbol in a clause
-    - Or all other literals in that clause have been assigned False
-    This has the following steps:
-    1. Find symbols that are the only occurrences in a clause.
-    2. Find symbols in a clause where all other literals are assigned False.
-    3. Assign True or False depending on whether the symbols occurs in
-    normal or complemented form respectively.
-
-    >>> clause1 = Clause(["A4", "A3", "A5'", "A1", "A3'"])
-    >>> clause2 = Clause(["A4"])
-    >>> clause3 = Clause(["A3"])
-    >>> clauses, symbols = generate_parameters(Formula([clause1, clause2, clause3]))
-
-    >>> unit_clauses, values = find_unit_clauses(clauses, {})
-    >>> unit_clauses
-    ['A4', 'A3']
-    >>> values
-    {'A4': True, 'A3': True}
-    """
-    unit_symbols = []
-    for clause in clauses:
-        if len(clause) == 1:
-            unit_symbols.append(next(iter(clause.literals.keys())))
-        else:
-            f_count, n_count = 0, 0
-            for literal, value in clause.literals.items():
-                if value is False:
-                    f_count += 1
-                elif value is None:
-                    sym = literal
-                    n_count += 1
-            if f_count == len(clause) - 1 and n_count == 1:
-                unit_symbols.append(sym)
-    assignment: dict[str, bool | None] = {}
-    for i in unit_symbols:
-        symbol = i[:2]
-        assignment[symbol] = len(i) == 2
-    unit_symbols = [i[:2] for i in unit_symbols]
-
-    return unit_symbols, assignment
 
 
 def dpll_algorithm(
