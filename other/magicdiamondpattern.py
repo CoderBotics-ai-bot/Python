@@ -1,4 +1,3 @@
-
 def floyd(n: int) -> None:
     """
     Prints the upper half of the diamond (pyramid) for a given size.
@@ -21,19 +20,35 @@ def floyd(n: int) -> None:
     for i in range(n):
         print(" " * (n - i - 1) + "* " * (i + 1))
 
+## REFACTORED CODE:
 
-# Function to print lower half of diamond (pyramid)
-def reverse_floyd(n):
+
+def reverse_floyd(n: int) -> None:
     """
-        Parameters:
-    n : size of pattern
+    Print the lower half of a diamond shape using an asterisk (*).
+
+    Given a non-negative integer n, this function prints the lower half of a diamond
+    structure of "*", a process that resembles an inverse Floyd's triangle.
+    If n is less than 0, this function will print nothing.
+
+    Parameters
+    ----------
+    n : int
+        The number of asterisks on the longest line of the pattern.
+
+    Examples
+    --------
+    When n is 5 the function will print:
+
+    * * * * *
+    * * * *
+    * * *
+    * *
+    *
     """
-    for i in range(n, 0, -1):
-        for _ in range(i, 0, -1):  # printing stars
-            print("* ", end="")
-        print()
-        for _ in range(n - i + 1, 0, -1):  # printing spaces
-            print(" ", end="")
+    if n >= 0:
+        for i in range(n, 0, -1):
+            print("* " * i)
 
 
 # Function to print complete diamond pattern of "*"
