@@ -34,6 +34,9 @@ import numpy as np
 from matplotlib import pyplot as plt
 from matplotlib.colors import ListedColormap
 
+
+from typing import List
+
 usage_doc = "Usage of script: script_name <size_of_canvas:int>"
 
 choice = [0] * 100 + [1] * 10
@@ -73,38 +76,39 @@ def run(canvas: list[list[bool]]) -> list[list[bool]]:
 
     return next_gen_canvas.tolist()
 
-
 def __judge_point(pt: bool, neighbours: list[list[bool]]) -> bool:
-    dead = 0
-    alive = 0
-    # finding dead or alive neighbours count.
-    for i in neighbours:
-        for status in i:
-            if status:
-                alive += 1
-            else:
-                dead += 1
+    """
+    Determine the future status of a specified point based on its neighbours.
 
-    # handling duplicate entry for focus pt.
-    if pt:
-        alive -= 1
-    else:
-        dead -= 1
+    This function implements the rules of the Game of Life to decide whether a certain point
+    (cell) in the life grid will be alive or dead in the next generation.
+
+    The rules are as follows:
+    - Any live cell with fewer than two live neighbours dies.
+    - Any live cell with two or three live neighbours lives on to the next generation.
+    - Any live cell with more than three live neighbours dies.
+    - Any dead cell with exactly three live neighbours becomes a live cell.
+
+    Parameters:
+    pt: The current status of the point. True if the point is alive, False otherwise.
+    neighbours: A 2D list of boolean values representing the statuses of the neighbours of the point.
+
+    Returns:
+    bool: The status of the point in the next generation.
+         True if the point will be alive, False otherwise.
+    """
+
+    alive_neighbours = sum(status for sublist in neighbours for status in sublist)
+    alive_neighbours = alive_neighbours - 1 if pt else alive_neighbours
 
     # running the rules of game here.
-    state = pt
-    if pt:
-        if alive < 2:
-            state = False
-        elif alive in {2, 3}:
-            state = True
-        elif alive > 3:
-            state = False
-    else:
-        if alive == 3:
-            state = True
+    if pt and not 2 <= alive_neighbours <= 3:
+        return False
 
-    return state
+    if not pt and alive_neighbours == 3:
+        return True
+
+    return pt
 
 
 if __name__ == "__main__":
