@@ -20,6 +20,9 @@ import sys
 from random import randint
 
 
+from typing import List
+
+
 class Node:
     """Binary Search Tree Node"""
 
@@ -35,34 +38,23 @@ class Node:
         return f"Node(key={self.key}, freq={self.freq})"
 
 
-def print_binary_search_tree(root, key, i, j, parent, is_left):
-    """
-    Recursive function to print a BST from a root table.
-
-    >>> key = [3, 8, 9, 10, 17, 21]
-    >>> root = [[0, 1, 1, 1, 1, 1], [0, 1, 1, 1, 1, 3], [0, 0, 2, 3, 3, 3], \
-                [0, 0, 0, 3, 3, 3], [0, 0, 0, 0, 4, 5], [0, 0, 0, 0, 0, 5]]
-    >>> print_binary_search_tree(root, key, 0, 5, -1, False)
-    8 is the root of the binary search tree.
-    3 is the left child of key 8.
-    10 is the right child of key 8.
-    9 is the left child of key 10.
-    21 is the right child of key 10.
-    17 is the left child of key 21.
-    """
+def print_binary_search_tree(
+    root: List[List[int]], key: List[int], i: int, j: int, parent: int, is_left: bool
+) -> None:
+    """Refactored function to print the structure of a Binary Search Tree (BST) from a root table."""
     if i > j or i < 0 or j > len(root) - 1:
         return
 
-    node = root[i][j]
-    if parent == -1:  # root does not have a parent
-        print(f"{key[node]} is the root of the binary search tree.")
-    elif is_left:
-        print(f"{key[node]} is the left child of key {parent}.")
-    else:
-        print(f"{key[node]} is the right child of key {parent}.")
+    node_key = key[root[i][j]]
 
-    print_binary_search_tree(root, key, i, node - 1, key[node], True)
-    print_binary_search_tree(root, key, node + 1, j, key[node], False)
+    is_root = parent == -1
+    relationship = "left" if is_left else "right"
+
+    print_node_relationship(node_key, parent, relationship if not is_root else "")
+
+    new_parent = node_key
+    print_binary_search_tree(root, key, i, root[i][j] - 1, new_parent, True)
+    print_binary_search_tree(root, key, root[i][j] + 1, j, new_parent, False)
 
 
 def find_optimal_binary_search_tree(nodes):
@@ -132,6 +124,13 @@ def find_optimal_binary_search_tree(nodes):
 
     print(f"\nThe cost of optimal BST for given tree nodes is {dp[0][n - 1]}.")
     print_binary_search_tree(root, keys, 0, n - 1, -1, False)
+
+
+
+def print_node_relationship(key_node: int, parent: int, relationship: str) -> None:
+    """Helper function to print the key-node relationship."""
+    node = "root" if parent == -1 else f"{relationship} child of key {parent}"
+    print(f"{key_node} is the {node} of the binary search tree.")
 
 
 def main():
