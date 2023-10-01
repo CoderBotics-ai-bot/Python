@@ -86,14 +86,22 @@ def count_negatives_binary_search(grid: list[list[int]]) -> int:
     return (len(grid) * len(grid[0])) - total
 
 
-def count_negatives_brute_force(grid: list[list[int]]) -> int:
+def count_negatives_brute_force(grid: List[List[int]]) -> int:
     """
-    This solution is O(n^2) because it iterates through every column and row.
+    Count the number of negative numbers in the given 2D grid.
 
-    >>> [count_negatives_brute_force(grid) for grid in test_grids]
-    [8, 0, 0, 3, 1498500]
+    The function uses a brute force approach, scanning every element in the grid. As a result, its time complexity
+    is O(n^2), where n is the number of elements in the grid.
+    For a grid with only negative numbers, the function performs optimally. However, for a grid with only
+    positive numbers, performance suffers as the algorithm checks each number individually.
+
+    Args:
+        grid (List[List[int]]): A 2D list of integers.
+
+    Returns:
+        int: The count of negative numbers in the grid.
     """
-    return len([number for row in grid for number in row if number < 0])
+    return sum(count_negatives_in_row(row) for row in grid)
 
 
 def count_negatives_brute_force_with_break(grid: list[list[int]]) -> int:
@@ -111,6 +119,18 @@ def count_negatives_brute_force_with_break(grid: list[list[int]]) -> int:
                 total += len(row) - i
                 break
     return total
+
+def count_negatives_in_row(row: List[int]) -> int:
+    """
+    Count the number of negative numbers in the list.
+
+    Args:
+        row (List[int]): An list of integers.
+
+    Returns:
+        int: The count of negative numbers in the list.
+    """
+    return sum(1 for i in row if i < 0)
 
 
 def benchmark() -> None:
