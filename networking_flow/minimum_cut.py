@@ -10,20 +10,42 @@ test_graph = [
 ]
 
 
-def bfs(graph, s, t, parent):
-    # Return True if there is node that has not iterated.
+from typing import List
+
+def bfs(graph: List[List[int]], s: int, t: int, parent: List[int]) -> bool:
+    """
+    Performs a breadth-first search (BFS) on the graph from the given source to target.
+
+    This function iterates through all nodes in the graph, for each node it checks all its
+    neighbors. If a neighbor has not been visited and the current edge's weight is greater
+    than 0, it gets added to the queue for future investigation.
+
+    Args:
+    graph (List[List[int]]): A nested list representing the graph in adjacency matrix format,
+                             where each inner list represents a node and the elements represent the edge weights.
+    s (int): The index of the start node.
+    t (int): The index of the target node.
+    parent (List[int]): A list where the index represents the node and the value represents
+                        the node's parent.
+
+    Returns:
+    bool: Returns True if a path exists from the source to target node. Returns False if no
+          such path exists.
+    """
     visited = [False] * len(graph)
-    queue = [s]
     visited[s] = True
+    queue = [s]
 
     while queue:
         u = queue.pop(0)
-        for ind in range(len(graph[u])):
-            if visited[ind] is False and graph[u][ind] > 0:
+        for ind, val in enumerate(graph[u]):
+            if not visited[ind] and val > 0:
                 queue.append(ind)
                 visited[ind] = True
                 parent[ind] = u
 
+    # If we reached sink in BFS starting from source, then return
+    # True, else False
     return visited[t]
 
 
