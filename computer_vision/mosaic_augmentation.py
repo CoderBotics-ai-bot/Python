@@ -8,6 +8,9 @@ from string import ascii_lowercase, digits
 import cv2
 import numpy as np
 
+
+from typing import List, Tuple, Union
+
 # Parrameters
 OUTPUT_SIZE = (720, 1280)  # Height, Width
 SCALE_RANGE = (0.4, 0.6)  # if height or width lower than this scale, drop it.
@@ -16,36 +19,6 @@ LABEL_DIR = ""
 IMG_DIR = ""
 OUTPUT_DIR = ""
 NUMBER_IMAGES = 250
-
-
-def get_dataset(label_dir: str, img_dir: str) -> tuple[list, list]:
-    """
-    - label_dir <type: str>: Path to label include annotation of images
-    - img_dir <type: str>: Path to folder contain images
-    Return <type: list>: List of images path and labels
-    """
-    img_paths = []
-    labels = []
-    for label_file in glob.glob(os.path.join(label_dir, "*.txt")):
-        label_name = label_file.split(os.sep)[-1].rsplit(".", 1)[0]
-        with open(label_file) as in_file:
-            obj_lists = in_file.readlines()
-        img_path = os.path.join(img_dir, f"{label_name}.jpg")
-
-        boxes = []
-        for obj_list in obj_lists:
-            obj = obj_list.rstrip("\n").split(" ")
-            xmin = float(obj[1]) - float(obj[3]) / 2
-            ymin = float(obj[2]) - float(obj[4]) / 2
-            xmax = float(obj[1]) + float(obj[3]) / 2
-            ymax = float(obj[2]) + float(obj[4]) / 2
-
-            boxes.append([int(obj[0]), xmin, ymin, xmax, ymax])
-        if not boxes:
-            continue
-        img_paths.append(img_path)
-        labels.append(boxes)
-    return img_paths, labels
 
 
 def update_image_and_anno(
@@ -163,6 +136,23 @@ def main() -> None:
         save_annos(file_root, annos_list)
 
 
+def get_dataset(
+    label_dir: str, img_dir: str
+) -> Tuple[List[str], List[List[Union[int, float]]]]:
+    img_paths = []
+    labels = []
+
+    for label_file in glob.glob(os.path.join(label_dir, "*.txt")):
+        img_path = get_dataset_path(label_dir, img_dir, label_file)
+        boxes = get_boxes_from_label_file(label_file)
+
+        if boxes:
+            img_paths.append(img_path)
+            labels.append(boxes)
+
+    return img_paths, labels
+
+
 def random_chars(number_char: int) -> str:
     """
     Automatic generate random 32 characters.
@@ -173,6 +163,29 @@ def random_chars(number_char: int) -> str:
     assert number_char > 1, "The number of character should greater than 1"
     letter_code = ascii_lowercase + digits
     return "".join(random.choice(letter_code) for _ in range(number_char))
+
+def get_dataset_path(label_dir: str, img_dir: str, label_file: str) -> str:
+    """Computes the corresponding image file path from a label file path."""
+    label_name = os.path.splitext(os.path.basename(label_file))[0]
+    return os.path.join(img_dir, f"{label_name}.jpg")
+
+
+def get_object_box(obj: List[str]) -> List[Union[int, float]]:
+    """Helper function to compute bounding box coordinates."""
+    xmin = float(obj[1]) - float(obj[3]) / 2
+    ymin = float(obj[2]) - float(obj[4]) / 2
+    xmax = float(obj[1]) + float(obj[3]) / 2
+    ymax = float(obj[2]) + float(obj[4]) / 2
+
+    return [int(obj[0]), xmin, ymin, xmax, ymax]
+
+
+def get_boxes_from_label_file(label_file: str) -> List[List[Union[int, float]]]:
+    """Reads a label file and returns all object boxes described within."""
+    with open(label_file, "r") as file:
+        box_lines = file.readlines()
+
+    return [get_object_box(line.rstrip("\n").split(" ")) for line in box_lines]
 
 def generate_anno_obj(anno: list) -> str:
     """
