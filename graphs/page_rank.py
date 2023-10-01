@@ -60,21 +60,19 @@ def page_rank(nodes: List["Node"], limit: int = 3, d: float = 0.85) -> Dict[str,
 
     return ranks
 
+def main() -> None:
+    """
+    Main function to calculate and display the PageRank of nodes in a graph.
 
-def main():
-    names = list(input("Enter Names of the Nodes: ").split())
+    This function requests the user to input the names of the nodes, creates the nodes,
+    assigns inbound and outbound connections based on predefined adjacency matrix (graph),
+    and finally calculates and displays the PageRank for each node using the page_rank function.
+    """
+    nodes = get_nodes()
 
-    nodes = [Node(name) for name in names]
+    assign_connections(nodes)
 
-    for ri, row in enumerate(graph):
-        for ci, col in enumerate(row):
-            if col == 1:
-                nodes[ci].add_inbound(names[ri])
-                nodes[ri].add_outbound(names[ci])
-
-    print("======= Nodes =======")
-    for node in nodes:
-        print(node)
+    display_nodes(nodes)
 
     page_rank(nodes)
 
@@ -84,6 +82,34 @@ def initialize_ranks(nodes: List["Node"]) -> Tuple[Dict[str, float], Dict[str, i
     ranks = {node.name: 1 for node in nodes}
     outbounds = {node.name: len(node.outbound) for node in nodes}
     return ranks, outbounds
+
+
+def get_nodes() -> List[Node]:
+    """
+    Function to get a list of nodes from user input.
+    """
+    names = list(input("Enter Names of the Nodes: ").split())
+    return [Node(name) for name in names]
+
+
+def assign_connections(nodes: List[Node]) -> None:
+    """
+    Function to assign inbound and outbound connections for nodes.
+    """
+    for ri, row in enumerate(graph):
+        for ci, col in enumerate(row):
+            if col == 1:
+                nodes[ci].add_inbound(nodes[ri].name)
+                nodes[ri].add_outbound(nodes[ci].name)
+
+
+def display_nodes(nodes: List[Node]) -> None:
+    """
+    Function to Display the nodes.
+    """
+    print("======= Nodes =======")
+    for node in nodes:
+        print(node)
 
 
 def iterate_rank_calculation(
