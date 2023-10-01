@@ -9,6 +9,9 @@ import cv2
 from pathlib import Path
 from typing import List, Tuple
 
+
+import numpy as np
+
 """
 Flip image and bounding box for computer vision task
 https://paperswithcode.com/method/randomhorizontalflip
@@ -47,6 +50,29 @@ def main() -> None:
 def get_file_name(path: str) -> str:
     return Path(path).stem
 
+
+def update_image_and_anno(
+    img_list: List[str], anno_list: List[List[float]], flip_type: int = 1
+) -> Tuple[List[str], List[List[List[float]]], List[str]]:
+    if flip_type not in {0, 1}:
+        raise ValueError("flip_type must be either 0 or 1")
+
+    new_annos_lists = []
+    new_imgs_list = []
+    path_list = img_list.copy()
+
+    flip_axis_index = 1 if flip_type == 1 else 2
+
+    for path, annotations in zip(path_list, anno_list):
+        image = cv2.imread(path)
+        new_image = flip_image(image, flip_type)
+        new_annotations = update_annotations(annotations, flip_axis_index)
+
+        new_annos_lists.append(new_annotations)
+        new_imgs_list.append(new_image)
+
+    return new_imgs_list, new_annos_lists, path_list
+
 def get_dataset(
     label_dir: str, img_dir: str
 ) -> Tuple[List[str], List[List[List[float]]]]:
@@ -62,6 +88,24 @@ def get_dataset(
         labels.append(boxes)
 
     return img_paths, labels
+
+def flip_image(image: np.array, flip_type: int) -> np.array:
+    """Flips the given image based on the type of flip."""
+    return cv2.flip(image, flip_type)
+
+
+def update_annotations(
+    annotations: List[List[float]], flip_axis_index: int
+) -> List[List[float]]:
+    """Updates the annotations based on the axis of flip."""
+    new_annotations = []
+    for bbox in annotations:
+        axis_value_new = 1 - bbox[flip_axis_index]
+        new_bbox = bbox.copy()
+        new_bbox[flip_axis_index] = axis_value_new
+        new_annotations.append(new_bbox)
+
+    return new_annotations
 
 
 def save_image(image, file_root: str) -> None:
@@ -86,42 +130,6 @@ def save_annotations(annotations: list, file_root: str) -> None:
     ]
     with open(f"/{file_root}.txt", "w") as outfile:
         outfile.write("\n".join(annos_list))
-
-
-def update_image_and_anno(
-    img_list: list, anno_list: list, flip_type: int = 1
-) -> tuple[list, list, list]:
-    """
-    - img_list <type: list>: list of all images
-    - anno_list <type: list>: list of all annotations of specific image
-    - flip_type <type: int>: 0 is vertical, 1 is horizontal
-    Return:
-        - new_imgs_list <type: narray>: image after resize
-        - new_annos_lists <type: list>: list of new annotation after scale
-        - path_list <type: list>: list the name of image file
-    """
-    new_annos_lists = []
-    path_list = []
-    new_imgs_list = []
-    for idx in range(len(img_list)):
-        new_annos = []
-        path = img_list[idx]
-        path_list.append(path)
-        img_annos = anno_list[idx]
-        img = cv2.imread(path)
-        if flip_type == 1:
-            new_img = cv2.flip(img, flip_type)
-            for bbox in img_annos:
-                x_center_new = 1 - bbox[1]
-                new_annos.append([bbox[0], x_center_new, bbox[2], bbox[3], bbox[4]])
-        elif flip_type == 0:
-            new_img = cv2.flip(img, flip_type)
-            for bbox in img_annos:
-                y_center_new = 1 - bbox[2]
-                new_annos.append([bbox[0], bbox[1], y_center_new, bbox[3], bbox[4]])
-        new_annos_lists.append(new_annos)
-        new_imgs_list.append(new_img)
-    return new_imgs_list, new_annos_lists, path_list
 
 
 def random_chars(number_char: int = 32) -> str:
