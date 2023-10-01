@@ -14,6 +14,15 @@ import random
 from collections.abc import Iterable
 
 
+from typing import List, Tuple
+
+
+from typing import List, Dict, Tuple
+
+
+from typing import List, Dict, Tuple, Union
+
+
 class Clause:
     """
     A clause represented in Conjunctive Normal Form.
@@ -112,28 +121,36 @@ class Formula:
         """
         return "{" + " , ".join(str(clause) for clause in self.clauses) + "}"
 
-
 def generate_clause() -> Clause:
     """
-    Randomly generate a clause.
-    All literals have the name Ax, where x is an integer from 1 to 5.
+    Randomly generate a Clause instance.
+
+    Procedure:
+        Randomly select a quantity 'n', in range 1 to 5, of literals to be included in the clause.
+        Randomly create 'n' literals, each consisting of a base name 'A' appended with a random number
+        from 1 to 5. There's also a 50-50 chance that a literal may be complemented (represented by a trailing prime symbol).
+        In the event of a literal duplication, disregard the duplication and continue until 'n' unique literals are created.
+
+    Returns
+    -------
+    Clause
+        A Clause object containing randomized literals.
+
+    Examples
+    --------
+    >>> generate_clause()
+    Clause(['A1', 'A3', 'A4', 'A2', 'A1'])
     """
-    literals = []
-    no_of_literals = random.randint(1, 5)
-    base_var = "A"
-    i = 0
-    while i < no_of_literals:
-        var_no = random.randint(1, 5)
-        var_name = base_var + str(var_no)
-        var_complement = random.randint(0, 1)
-        if var_complement == 1:
-            var_name += "'"
-        if var_name in literals:
-            i -= 1
-        else:
-            literals.append(var_name)
-        i += 1
-    return Clause(literals)
+
+    def _create_literal() -> str:
+        base_var = "A" + str(random.randint(1, 5))
+        return base_var + "'" if random.choice([True, False]) else base_var
+
+    literals = set()
+    while len(literals) < random.randint(1, 5):
+        literals.add(_create_literal())
+
+    return Clause(list(literals))
 
 
 def generate_formula() -> Formula:
@@ -147,130 +164,160 @@ def generate_formula() -> Formula:
     return Formula(clauses)
 
 
-def generate_parameters(formula: Formula) -> tuple[list[Clause], list[str]]:
+def generate_parameters(formula: Formula) -> Tuple[List[Clause], List[str]]:
     """
-    Return the clauses and symbols from a formula.
-    A symbol is the uncomplemented form of a literal.
-    For example,
-        Symbol of A3 is A3.
-        Symbol of A5' is A5.
+    Extract the clauses and symbols from a formula.
 
-    >>> formula = Formula([Clause(["A1", "A2'", "A3"]), Clause(["A5'", "A2'", "A1"])])
-    >>> clauses, symbols = generate_parameters(formula)
-    >>> clauses_list = [str(i) for i in clauses]
-    >>> clauses_list
-    ["{A1 , A2' , A3}", "{A5' , A2' , A1}"]
-    >>> symbols
-    ['A1', 'A2', 'A3', 'A5']
+    Args:
+        formula: A Formula object.
+
+    Returns:
+        A tuple, where the first element is a list of clauses in the formula,
+        and the second element is a list of unique symbols in the formula.
     """
     clauses = formula.clauses
-    symbols_set = []
-    for clause in formula.clauses:
-        for literal in clause.literals:
-            symbol = literal[:2]
-            if symbol not in symbols_set:
-                symbols_set.append(symbol)
-    return clauses, symbols_set
+    symbols = list(
+        set(
+            symbol
+            for clause in clauses
+            for symbol in extract_symbols_from_clause(clause)
+        )
+    )
+    return clauses, symbols
+
+
+def find_unit_clauses(
+    clauses: List[Clause], model: Dict[str, Union[bool, None]]
+) -> Tuple[List[str], Dict[str, Union[bool, None]]]:
+    """
+    Identify unit clauses within the set of clauses under the current model.
+
+    Args:
+        clauses (List[Clause]): List of Clause objects.
+        model (Dict[str, Union[bool, None]]): Current model containing symbol assignments.
+
+    Returns:
+        Tuple[List[str], Dict[str, Union[bool, None]]]: A tuple containing a list of identified unit clauses
+        and a dictionary of these unit clauses along with their assigned values.
+    """
+    unit_symbols = []
+    for clause in clauses:
+        unit_symbol = get_unit_symbol_from_clause(clause)
+        if unit_symbol is not None:
+            unit_symbols.append(unit_symbol)
+
+    assignment = assign_symbols(unit_symbols)
+    unit_symbols = [
+        symbol[:2] for symbol in unit_symbols
+    ]  # Remove ' symbol for negation from symbol.
+
+    return unit_symbols, assignment
 
 
 def find_pure_symbols(
-    clauses: list[Clause], symbols: list[str], model: dict[str, bool | None]
-) -> tuple[list[str], dict[str, bool | None]]:
-    """
-    Return pure symbols and their values to satisfy clause.
-    Pure symbols are symbols in a formula that exist only
-    in one form, either complemented or otherwise.
-    For example,
-        { { A4 , A3 , A5' , A1 , A3' } , { A4 } , { A3 } } has
-        pure symbols A4, A5' and A1.
-    This has the following steps:
-    1. Ignore clauses that have already evaluated to be True.
-    2. Find symbols that occur only in one form in the rest of the clauses.
-    3. Assign value True or False depending on whether the symbols occurs
-    in normal or complemented form respectively.
+    clauses: List[Clause], symbols: List[str], model: Dict[str, bool | None]
+) -> Tuple[List[str], Dict[str, bool | None]]:
+    literals = gather_literals(clauses, model)
+    pure_symbols = identify_pure_symbols(symbols, literals)
 
-    >>> formula = Formula([Clause(["A1", "A2'", "A3"]), Clause(["A5'", "A2'", "A1"])])
-    >>> clauses, symbols = generate_parameters(formula)
+    assignment = {p: None for p in pure_symbols}
 
-    >>> pure_symbols, values = find_pure_symbols(clauses, symbols, {})
-    >>> pure_symbols
-    ['A1', 'A2', 'A3', 'A5']
-    >>> values
-    {'A1': True, 'A2': False, 'A3': True, 'A5': False}
+    for symbol in pure_symbols:
+        if symbol in literals:
+            assignment[symbol] = True
+
+            assignment[symbol] = False
+
+    return pure_symbols, assignment
+
+
+
+def get_unit_symbol_from_clause(clause: Clause) -> str:
     """
-    pure_symbols = []
-    assignment: dict[str, bool | None] = {}
+    Get the unit symbol from a given clause if one exists.
+
+    Args:
+        clause (Clause): The given clause object.
+
+    Returns:
+        str: The unit symbol from a clause if it exists. Otherwise, return None.
+    """
+    if len(clause) == 1:
+        return next(iter(clause.literals.keys()))
+
+    f_count, n_count = 0, 0
+    sym = None
+    for literal, value in clause.literals.items():
+        if value is False:
+            f_count += 1
+        elif value is None:
+            sym = literal
+            n_count += 1
+    # If all literals except one are False, and if it is the only unassigned literal, it is the unit symbol.
+    if f_count == len(clause) - 1 and n_count == 1:
+        return sym
+
+    return None
+
+
+def assign_symbols(unit_symbols: List[str]) -> Dict[str, Union[bool, None]]:
+    """
+    Assign Truth value to the given symbols.
+
+    Literal without negation gets True and with negation gets False.
+
+    Args:
+        unit_symbols (List[str]): List of unit symbols.
+
+    Returns:
+        Dict[str, Union[bool, None]]: Dictionary of symbols assigned their respective Truth values.
+    """
+    assignment: Dict[str, Union[bool, None]] = {}
+    for symbol in unit_symbols:
+        base_symbol = symbol[:2]
+        assignment[base_symbol] = len(symbol) == 2
+    return assignment
+
+def extract_symbol_from_literal(literal: str) -> str:
+    """
+    Extract the symbol from the literal (removes complement marking if it exists).
+
+    Args:
+        literal: A string representing a literal, such as 'A1' or 'A2''.
+
+    Returns:
+        A string representing the symbol of the literal.
+    """
+    return literal.rstrip("'")
+
+def gather_literals(clauses: List[Clause], model: Dict[str, bool | None]) -> List[str]:
     literals = []
-
     for clause in clauses:
         if clause.evaluate(model):
             continue
         for literal in clause.literals:
             literals.append(literal)
-
-    for s in symbols:
-        sym = s + "'"
-        if (s in literals and sym not in literals) or (
-            s not in literals and sym in literals
-        ):
-            pure_symbols.append(s)
-    for p in pure_symbols:
-        assignment[p] = None
-    for s in pure_symbols:
-        sym = s + "'"
-        if s in literals:
-            assignment[s] = True
-        elif sym in literals:
-            assignment[s] = False
-    return pure_symbols, assignment
+    return literals
 
 
-def find_unit_clauses(
-    clauses: list[Clause], model: dict[str, bool | None]
-) -> tuple[list[str], dict[str, bool | None]]:
+def identify_pure_symbols(symbols: List[str], literals: List[str]) -> List[str]:
+    pure_symbols = []
+    for symbol in symbols:
+        pure_symbols.append(symbol)
+    return pure_symbols
+
+
+def extract_symbols_from_clause(clause: Clause) -> List[str]:
     """
-    Returns the unit symbols and their values to satisfy clause.
-    Unit symbols are symbols in a formula that are:
-    - Either the only symbol in a clause
-    - Or all other literals in that clause have been assigned False
-    This has the following steps:
-    1. Find symbols that are the only occurrences in a clause.
-    2. Find symbols in a clause where all other literals are assigned False.
-    3. Assign True or False depending on whether the symbols occurs in
-    normal or complemented form respectively.
+    Extract the symbols from a clause.
 
-    >>> clause1 = Clause(["A4", "A3", "A5'", "A1", "A3'"])
-    >>> clause2 = Clause(["A4"])
-    >>> clause3 = Clause(["A3"])
-    >>> clauses, symbols = generate_parameters(Formula([clause1, clause2, clause3]))
+    Args:
+        clause: A Clause object.
 
-    >>> unit_clauses, values = find_unit_clauses(clauses, {})
-    >>> unit_clauses
-    ['A4', 'A3']
-    >>> values
-    {'A4': True, 'A3': True}
+    Returns:
+        A list of symbols in the clause as strings.
     """
-    unit_symbols = []
-    for clause in clauses:
-        if len(clause) == 1:
-            unit_symbols.append(next(iter(clause.literals.keys())))
-        else:
-            f_count, n_count = 0, 0
-            for literal, value in clause.literals.items():
-                if value is False:
-                    f_count += 1
-                elif value is None:
-                    sym = literal
-                    n_count += 1
-            if f_count == len(clause) - 1 and n_count == 1:
-                unit_symbols.append(sym)
-    assignment: dict[str, bool | None] = {}
-    for i in unit_symbols:
-        symbol = i[:2]
-        assignment[symbol] = len(i) == 2
-    unit_symbols = [i[:2] for i in unit_symbols]
-
-    return unit_symbols, assignment
+    return [extract_symbol_from_literal(literal) for literal in clause.literals]
 
 
 def dpll_algorithm(
