@@ -18,42 +18,6 @@ OUTPUT_DIR = ""
 NUMBER_IMAGES = 250
 
 
-def main() -> None:
-    """
-    Get images list and annotations list from input dir.
-    Update new images and annotations.
-    Save images and annotations in output dir.
-    """
-    img_paths, annos = get_dataset(LABEL_DIR, IMG_DIR)
-    for index in range(NUMBER_IMAGES):
-        idxs = random.sample(range(len(annos)), 4)
-        new_image, new_annos, path = update_image_and_anno(
-            img_paths,
-            annos,
-            idxs,
-            OUTPUT_SIZE,
-            SCALE_RANGE,
-            filter_scale=FILTER_TINY_SCALE,
-        )
-
-        # Get random string code: '7b7ad245cdff75241935e4dd860f3bad'
-        letter_code = random_chars(32)
-        file_name = path.split(os.sep)[-1].rsplit(".", 1)[0]
-        file_root = f"{OUTPUT_DIR}/{file_name}_MOSAIC_{letter_code}"
-        cv2.imwrite(f"{file_root}.jpg", new_image, [cv2.IMWRITE_JPEG_QUALITY, 85])
-        print(f"Succeeded {index+1}/{NUMBER_IMAGES} with {file_name}")
-        annos_list = []
-        for anno in new_annos:
-            width = anno[3] - anno[1]
-            height = anno[4] - anno[2]
-            x_center = anno[1] + width / 2
-            y_center = anno[2] + height / 2
-            obj = f"{anno[0]} {x_center} {y_center} {width} {height}"
-            annos_list.append(obj)
-        with open(f"{file_root}.txt", "w") as outfile:
-            outfile.write("\n".join(line for line in annos_list))
-
-
 def get_dataset(label_dir: str, img_dir: str) -> tuple[list, list]:
     """
     - label_dir <type: str>: Path to label include annotation of images
@@ -169,6 +133,36 @@ def update_image_and_anno(
     return output_img, new_anno, path_list[0]
 
 
+def main() -> None:
+    """
+    Get images list and annotations list from input dir.
+    Update new images and annotations.
+    Save images and annotations in output dir.
+    """
+    img_paths, annos = get_dataset(LABEL_DIR, IMG_DIR)
+    for index in range(NUMBER_IMAGES):
+        idxs = random.sample(range(len(annos)), 4)
+        new_image, new_annos, path = update_image_and_anno(
+            img_paths,
+            annos,
+            idxs,
+            OUTPUT_SIZE,
+            SCALE_RANGE,
+            filter_scale=FILTER_TINY_SCALE,
+        )
+
+        letter_code = random_chars(32)
+        file_root = generate_file_root(OUTPUT_DIR, path, letter_code)
+
+        save_image(file_root, new_image)
+
+        file_name = path.split(os.sep)[-1].rsplit(".", 1)[0]
+        print_success(index, file_name)
+
+        annos_list = [generate_anno_obj(anno) for anno in new_annos]
+        save_annos(file_root, annos_list)
+
+
 def random_chars(number_char: int) -> str:
     """
     Automatic generate random 32 characters.
@@ -179,6 +173,23 @@ def random_chars(number_char: int) -> str:
     assert number_char > 1, "The number of character should greater than 1"
     letter_code = ascii_lowercase + digits
     return "".join(random.choice(letter_code) for _ in range(number_char))
+
+def generate_anno_obj(anno: list) -> str:
+    """
+    Generate annotation object as a string
+    """
+    width = anno[3] - anno[1]
+    height = anno[4] - anno[2]
+    x_center = anno[1] + width / 2
+    y_center = anno[2] + height / 2
+    return f"{anno[0]} {x_center} {y_center} {width} {height}"
+
+
+def print_success(index: int, file_name: str, total: int = NUMBER_IMAGES) -> None:
+    """
+    Print success message
+    """
+    print(f"Succeeded {index+1}/{total} with {file_name}")
 
 
 if __name__ == "__main__":
