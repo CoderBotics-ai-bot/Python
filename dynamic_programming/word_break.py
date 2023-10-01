@@ -24,49 +24,74 @@ import functools
 from typing import Any
 
 
+from typing import List, Any
+
+
 def word_break(string: str, words: list[str]) -> bool:
     """
-    Return True if numbers have opposite signs False otherwise.
-
-    >>> word_break("applepenapple", ["apple","pen"])
-    True
-    >>> word_break("catsandog", ["cats","dog","sand","and","cat"])
-    False
-    >>> word_break("cars", ["car","ca","rs"])
-    True
-    >>> word_break('abc', [])
-    False
-    >>> word_break(123, ['a'])
-    Traceback (most recent call last):
-        ...
-    ValueError: the string should be not empty string
-    >>> word_break('', ['a'])
-    Traceback (most recent call last):
-        ...
-    ValueError: the string should be not empty string
-    >>> word_break('abc', [123])
-    Traceback (most recent call last):
-        ...
-    ValueError: the words should be a list of non-empty strings
-    >>> word_break('abc', [''])
-    Traceback (most recent call last):
-        ...
-    ValueError: the words should be a list of non-empty strings
+    Checks if a given string can be segmented into a space-separated
+    sequence of one or more dictionary words. Utilizes dynamic programming
+    and trie data structure to improve efficiency.
     """
 
-    # Validation
+    # Validate first, exit if invalid
+    input_validation(string, words)
+
+    # Build the trie
+    trie = build_trie(words)
+
+    # Initialize length variable
+    len_string = len(string)
+
+    # Initialize is_breakable function
+    @functools.cache
+    def is_breakable(index: int) -> bool:
+        # Scroll the string
+        if index == len_string:
+            return True
+
+        trie_node = trie
+        for i in range(index, len_string):
+            trie_node = trie_node.get(string[i], None)
+
+            # Scroll the trie, exit if necessary
+            if trie_node is None:
+                return False
+
+            if trie_node.get("WORD_KEEPER", False) and is_breakable(i + 1):
+                return True
+
+        # Default return
+        return False
+
+    return is_breakable(0)
+
+
+if __name__ == "__main__":
+    import doctest
+
+    doctest.testmod()
+
+def input_validation(string: str, words: List[str]) -> None:
+    """Validates the inputs."""
+
     if not isinstance(string, str) or len(string) == 0:
-        raise ValueError("the string should be not empty string")
+        raise ValueError("the string should be not an empty string")
 
     if not isinstance(words, list) or not all(
         isinstance(item, str) and len(item) > 0 for item in words
     ):
         raise ValueError("the words should be a list of non-empty strings")
 
-    # Build trie
+
+def build_trie(words: List[str]) -> dict[str, Any]:
+    """Builds the trie data structure for given words."""
+
+    # Initialize an empty trie
     trie: dict[str, Any] = {}
     word_keeper_key = "WORD_KEEPER"
 
+    # Adding words to trie
     for word in words:
         trie_node = trie
         for c in word:
@@ -77,35 +102,4 @@ def word_break(string: str, words: list[str]) -> bool:
 
         trie_node[word_keeper_key] = True
 
-    len_string = len(string)
-
-    # Dynamic programming method
-    @functools.cache
-    def is_breakable(index: int) -> bool:
-        """
-        >>> string = 'a'
-        >>> is_breakable(1)
-        True
-        """
-        if index == len_string:
-            return True
-
-        trie_node = trie
-        for i in range(index, len_string):
-            trie_node = trie_node.get(string[i], None)
-
-            if trie_node is None:
-                return False
-
-            if trie_node.get(word_keeper_key, False) and is_breakable(i + 1):
-                return True
-
-        return False
-
-    return is_breakable(0)
-
-
-if __name__ == "__main__":
-    import doctest
-
-    doctest.testmod()
+    return trie
