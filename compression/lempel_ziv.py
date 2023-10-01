@@ -8,6 +8,9 @@ import os
 import sys
 
 
+from typing import Tuple, Dict
+
+
 def read_file_binary(file_path: str) -> str:
     """
     Reads given file as bytes and returns them as a long string
@@ -40,35 +43,12 @@ def add_key_to_lexicon(
 
     lexicon[curr_string + "1"] = bin(index)[2:]
 
-
 def compress_data(data_bits: str) -> str:
-    """
-    Compresses given data_bits using Lempel–Ziv–Welch compression algorithm
-    and returns the result as a string
-    """
-    lexicon = {"0": "0", "1": "1"}
-    result, curr_string = "", ""
-    index = len(lexicon)
-
-    for i in range(len(data_bits)):
-        curr_string += data_bits[i]
-        if curr_string not in lexicon:
-            continue
-
-        last_match_id = lexicon[curr_string]
-        result += last_match_id
-        add_key_to_lexicon(lexicon, curr_string, index, last_match_id)
-        index += 1
-        curr_string = ""
-
-    while curr_string != "" and curr_string not in lexicon:
-        curr_string += "0"
-
-    if curr_string != "":
-        last_match_id = lexicon[curr_string]
-        result += last_match_id
-
-    return result
+    lexicon = initialize_lexicon()
+    compressed_data, remainder = compress_bits(data_bits, lexicon)
+    if remainder:
+        compressed_data += process_remainder(remainder, lexicon)
+    return compressed_data
 
 
 def add_file_length(source_path: str, compressed: str) -> str:
@@ -81,6 +61,30 @@ def add_file_length(source_path: str, compressed: str) -> str:
     length_length = len(file_length_binary)
 
     return "0" * (length_length - 1) + file_length_binary + compressed
+
+
+def initialize_lexicon() -> dict[str, str]:
+    return {"0": "0", "1": "1"}
+
+
+def compress_bits(data_bits: str, lexicon: dict[str, str]) -> Tuple[str, str]:
+    index = len(lexicon)
+    result, curr_string = "", ""
+    for i in range(len(data_bits)):
+        curr_string += data_bits[i]
+        if curr_string not in lexicon:
+            continue
+        result += lexicon[curr_string]
+        add_key_to_lexicon(lexicon, curr_string, index, lexicon[curr_string])
+        index += 1
+        curr_string = ""
+    return result, curr_string
+
+
+def process_remainder(remainder: str, lexicon: dict[str, str]) -> str:
+    while remainder and remainder not in lexicon:
+        remainder += "0"
+    return lexicon[remainder] if remainder else ""
 
 
 def write_file_binary(file_path: str, to_write: str) -> None:
