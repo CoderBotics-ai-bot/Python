@@ -6,20 +6,29 @@ Description:
 """
 
 
-def bfs(graph, s, t, parent):
-    # Return True if there is node that has not iterated.
+from typing import List
+
+
+def bfs(graph: List[List[int]], s: int, t: int, parent: List[int]) -> bool:
+    """
+    Breadth-first-search from source node to the sink node.
+
+    Args:
+        graph (List[List[int]]): Adjacency matrix representation of the graph.
+        s (int): The source node id.
+        t (int): The terminal (or sink) node id.
+        parent (List[int]): The array to store the path.
+
+    Returns:
+        bool: True if a path exists from source to sink node, False otherwise.
+    """
     visited = [False] * len(graph)
-    queue = []
-    queue.append(s)
+    queue = [s]
     visited[s] = True
 
     while queue:
         u = queue.pop(0)
-        for ind in range(len(graph[u])):
-            if visited[ind] is False and graph[u][ind] > 0:
-                queue.append(ind)
-                visited[ind] = True
-                parent[ind] = u
+        queue_next_node(queue, visited, graph, u, parent)
 
     return visited[t]
 
@@ -46,6 +55,29 @@ def ford_fulkerson(graph, source, sink):
             graph[v][u] += path_flow
             v = parent[v]
     return max_flow
+
+def queue_next_node(
+    queue: List[int],
+    visited: List[bool],
+    graph: List[List[int]],
+    u: int,
+    parent: List[int],
+) -> None:
+    """
+    Append next node into queue if it's not iterated and has edge > 0 with current node.
+
+    Args:
+        queue (List[int]): The current queue of nodes in BFS.
+        visited (List[bool]): Boolean list marking visited nodes.
+        graph (List[List[int]]): Adjacency matrix representation of the graph.
+        u (int): The current node id.
+        parent (List[int]): The array to store our path.
+    """
+    for ind in range(len(graph[u])):
+        if not visited[ind] and graph[u][ind] > 0:
+            queue.append(ind)
+            visited[ind] = True
+            parent[ind] = u
 
 
 graph = [
