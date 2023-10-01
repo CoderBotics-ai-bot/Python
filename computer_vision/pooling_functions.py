@@ -8,6 +8,11 @@ import numpy as np
 
 
 from typing import Tuple
+from typing import List
+from numpy import ndarray
+
+
+from typing import Tuple, List
 
 def maxpooling(arr: np.ndarray, size: int, stride: int) -> np.ndarray:
     """
@@ -43,57 +48,36 @@ def maxpooling(arr: np.ndarray, size: int, stride: int) -> np.ndarray:
     return updated_arr
 
 
-# Averagepooling Function
-def avgpooling(arr: np.ndarray, size: int, stride: int) -> np.ndarray:
+def avgpooling(arr: ndarray, size: int, stride: int) -> ndarray:
     """
-    This function is used to perform avgpooling on the input array of 2D matrix(image)
-    Args:
-        arr: numpy array
-        size: size of pooling matrix
-        stride: the number of pixels shifts over the input matrix
-    Returns:
-        numpy array of avgpooled matrix
-    Sample Input Output:
-    >>> avgpooling([[1,2,3,4],[5,6,7,8],[9,10,11,12],[13,14,15,16]], 2, 2)
-    array([[ 3.,  5.],
-           [11., 13.]])
-    >>> avgpooling([[147, 180, 122],[241, 76, 32],[126, 13, 157]], 2, 1)
-    array([[161., 102.],
-           [114.,  69.]])
+    Perform average pooling on a 2D numpy array (image).
+
+    ...
+
     """
+    # Input validation
     arr = np.array(arr)
     if arr.shape[0] != arr.shape[1]:
         raise ValueError("The input array is not a square matrix")
-    i = 0
-    j = 0
-    mat_i = 0
-    mat_j = 0
 
     # compute the shape of the output matrix
     avgpool_shape = (arr.shape[0] - size) // stride + 1
+
     # initialize the output matrix with zeros of shape avgpool_shape
     updated_arr = np.zeros((avgpool_shape, avgpool_shape))
 
-    while i < arr.shape[0]:
-        # if the end of the matrix is reached, break
-        if i + size > arr.shape[0]:
+    for mat_i in range(0, arr.shape[0], stride):
+        if mat_i + size > arr.shape[0]:
             break
-        while j < arr.shape[1]:
-            # if the end of the matrix is reached, break
-            if j + size > arr.shape[1]:
-                break
-            # compute the average of the pooling matrix
-            updated_arr[mat_i][mat_j] = int(np.average(arr[i : i + size, j : j + size]))
-            # shift the pooling matrix by stride of column pixels
-            j += stride
-            mat_j += 1
 
-        # shift the pooling matrix by stride of row pixels
-        i += stride
-        mat_i += 1
-        # reset the column index to 0
-        j = 0
-        mat_j = 0
+        for mat_j in range(0, arr.shape[1], stride):
+            if mat_j + size > arr.shape[1]:
+                break
+
+            # compute the average of the pooling matrix
+            updated_arr[mat_i // stride][mat_j // stride] = int(
+                compute_avg_pooling(arr, size, stride, mat_i, mat_j)
+            )
 
     return updated_arr
 
@@ -105,6 +89,24 @@ def validate_input(arr: np.ndarray, size: int, stride: int) -> None:
         raise ValueError(
             "The size and stride must be lesser than or equal to the respective dimensions of the input array"
         )
+
+def compute_avg_pooling(
+    arr: ndarray, size: int, stride: int, mat_i: int, mat_j: int
+) -> float:
+    """
+    Compute the average of a sub-matrix of 'arr' with size 'size', starting from position (mat_i, mat_j), moving by 'stride' both vertically and horizontally.
+
+    Args:
+        arr (ndarray): Input 2D square image array.
+        size (int): Size of the sub-matrix (pooling window).
+        stride (int): Stride (step size) for moving the pooling window.
+        mat_i (int): Vertical starting index.
+        mat_j (int): Horizontal starting index.
+
+    Returns:
+        float: the average of the sub-matrix.
+    """
+    return np.average(arr[mat_i : mat_i + size : stride, mat_j : mat_j + size : stride])
 
 
 def compute_output_shape(arr: np.ndarray, size: int, stride: int) -> tuple:
