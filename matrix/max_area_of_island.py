@@ -6,6 +6,15 @@ a value 1 in the island. Return the maximum area of an island in a grid. If ther
 island, return 0.
 """
 
+
+from typing import List, Set
+
+
+from typing import List, Tuple, Set
+
+
+from typing import List, Set, Tuple
+
 matrix = [
     [0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0],
     [0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0],
@@ -29,45 +38,58 @@ def is_safe(row: int, col: int, rows: int, cols: int) -> bool:
     """
     return 0 <= row < rows and 0 <= col < cols
 
-
 def depth_first_search(row: int, col: int, seen: set, mat: list[list[int]]) -> int:
     """
-    Returns the current area of the island
+    Uses Depth-First Search (DFS) algorithm to compute the size of an island in a matrix.
+    The island is defined as a group of '1's connected either horizontally or vertically (not diagonally).
+    The function begins the search from a specific point (specified by 'row' and 'col' arguments),
+    exploring as far as possible along each branch before backtracking.
 
-    >>> depth_first_search(0, 0, set(), matrix)
-    0
+    Args:
+    row (int): Row index from where the DFS should start.
+    col (int): Column index from where the DFS should start.
+    seen (set): A set storing all the matrix positions ((row, col) tuples) that have been visited.
+    mat (list[list[int]]): 2D list of integers representing the matrix (1 represents land, 0 represents water).
+
+    Returns:
+    int: The size of the island.
+
+    Examples:
+    >>> depth_first_search(0, 0, set(), [[0, 0, 1, 0], [1, 1, 0, 0], [0, 1, 1, 0], [0, 0, 0, 1]])
+    1
+    >>> depth_first_search(1, 1, set(), [[0, 0, 1, 0], [1, 1, 0, 0], [0, 1, 1, 0], [0, 0, 0, 1]])
+    4
     """
     rows = len(mat)
     cols = len(mat[0])
-    if is_safe(row, col, rows, cols) and (row, col) not in seen and mat[row][col] == 1:
-        seen.add((row, col))
-        return (
-            1
-            + depth_first_search(row + 1, col, seen, mat)
-            + depth_first_search(row - 1, col, seen, mat)
-            + depth_first_search(row, col + 1, seen, mat)
-            + depth_first_search(row, col - 1, seen, mat)
-        )
-    else:
+
+    if not is_safe(row, col, rows, cols) or (row, col) in seen or mat[row][col] != 1:
         return 0
 
+    seen.add((row, col))
 
-def find_max_area(mat: list[list[int]]) -> int:
-    """
-    Finds the area of all islands and returns the maximum area.
+    directions = [(1, 0), (-1, 0), (0, 1), (0, -1)]
+    return 1 + sum(
+        depth_first_search(row + dr, col + dc, seen, mat) for dr, dc in directions
+    )
 
-    >>> find_max_area(matrix)
-    6
+
+def find_max_area(mat: List[List[int]]) -> int:
     """
+    Finds the area of the largest island within a matrix.
+    An island is defined as a group of '1's connected either horizontally or vertically (not diagonally).
+
+    Args:
+        mat (List[List[int]]): Two-dimensional list (representing matrix) of integer elements
+                               where 1 represents land and 0 represents water.
+
+    Returns:
+        int: The area (number of '1's) of the largest island in 'mat'.
+             If there are no islands, returns 0.
+    """
+
     seen: set = set()
-
-    max_area = 0
-    for row, line in enumerate(mat):
-        for col, item in enumerate(line):
-            if item == 1 and (row, col) not in seen:
-                # Maximizing the area
-                max_area = max(max_area, depth_first_search(row, col, seen, mat))
-    return max_area
+    return find_max_islands(mat, seen, cur_area=0, max_area=0)
 
 
 if __name__ == "__main__":
@@ -110,3 +132,34 @@ if __name__ == "__main__":
     """
 
     doctest.testmod()
+
+def find_max_islands(
+    mat: List[List[int]], seen: Set[Tuple[int, int]], cur_area: int, max_area: int
+) -> int:
+    """
+    A helper function to recursively check for largest island in the given matrix.
+
+    Args:
+        mat (List[List[int]]): Two-dimensional list (representing a matrix) of integer elements
+                               where 1 represents land and 0 represents water.
+
+        seen (Set[Tuple[int, int]]): Set containing the positions of elements already checked.
+
+        cur_area (int): Current island area being considered.
+
+        max_area (int): Maximum island area found so far.
+
+    Returns:
+        int: The area (number of '1's) of the largest island in 'mat'.
+    """
+
+    # 4-directional coordinates (left, right, up, down).
+    directions = [(0, -1), (0, 1), (-1, 0), (1, 0)]
+
+    for row, line in enumerate(mat):
+        for col, item in enumerate(line):
+            if item == 1 and (row, col) not in seen:
+                cur_area = max(cur_area, depth_first_search(row, col, seen, mat))
+                max_area = max(cur_area, max_area)
+
+    return max_area
