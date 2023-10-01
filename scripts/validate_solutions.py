@@ -12,6 +12,9 @@ import requests
 
 from typing import List
 
+
+from typing import List, Dict
+
 PROJECT_EULER_DIR_PATH = pathlib.Path.cwd().joinpath("project_euler")
 PROJECT_EULER_ANSWERS_PATH = pathlib.Path.cwd().joinpath(
     "scripts", "project_euler_answers.json"
@@ -55,29 +58,22 @@ def get_files_url() -> str:
         event = json.load(file)
     return event["pull_request"]["url"] + "/files"
 
-
-def added_solution_file_path() -> list[pathlib.Path]:
-    """Collects only the solution file path which got added in the current
-    pull request.
-
-    This will only be triggered if the script is ran from GitHub Actions.
+def added_solution_file_path() -> List[pathlib.Path]:
     """
-    solution_file_paths = []
-    headers = {
-        "Accept": "application/vnd.github.v3+json",
-        "Authorization": "token " + os.environ["GITHUB_TOKEN"],
-    }
-    files = requests.get(get_files_url(), headers=headers).json()
-    for file in files:
-        filepath = pathlib.Path.cwd().joinpath(file["filename"])
-        if (
-            filepath.suffix != ".py"
-            or filepath.name.startswith(("_", "test"))
-            or not filepath.name.startswith("sol")
-        ):
-            continue
-        solution_file_paths.append(filepath)
-    return solution_file_paths
+    Collects the file paths of newly added solution files in the current pull request.
+    The function filters only the Python files excluding the ones starting with an underscore (_) or "test".
+    The function is intended to be run from GitHub Actions and requires the following environment variables:
+    GITHUB_EVENT_PATH: The path of the file with the complete webhook event payload. For more information, see "GitHub Actions: Webhook events"
+    GITHUB_TOKEN: GitHub automatically creates a GITHUB_TOKEN secret to use in your workflow
+
+    Returns:
+        solution_file_paths (List[pathlib.Path]): List of paths to the added solution files
+    Notes:
+        Only .py files are considered as solution files.
+    """
+    headers = get_auth_headers()
+    added_files = parse_files_from_payload(get_files_url(), headers)
+    return [filepath for filepath in added_files if is_solution_file(filepath)]
 
 
 def collect_solution_file_paths() -> list[pathlib.Path]:
@@ -86,6 +82,26 @@ def collect_solution_file_paths() -> list[pathlib.Path]:
         if filepaths := added_solution_file_path():
             return filepaths
     return all_solution_file_paths()
+
+
+def get_auth_headers() -> dict:
+    return {
+        "Accept": "application/vnd.github.v3+json",
+        "Authorization": "token " + os.environ["GITHUB_TOKEN"],
+    }
+
+
+def parse_files_from_payload(url: str, headers: dict) -> list:
+    return requests.get(url, headers=headers).json()
+
+
+def is_solution_file(file: dict) -> bool:
+    filepath = pathlib.Path.cwd().joinpath(file["filename"])
+    return (
+        filepath.suffix == ".py"
+        and not filepath.name.startswith(("_", "test"))
+        and filepath.name.startswith("sol")
+    )
 
 
 @pytest.mark.parametrize(
