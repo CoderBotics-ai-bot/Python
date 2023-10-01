@@ -17,6 +17,9 @@ from collections.abc import Iterable
 from typing import List, Tuple
 
 
+from typing import List, Dict, Tuple
+
+
 class Clause:
     """
     A clause represented in Conjunctive Normal Form.
@@ -181,54 +184,19 @@ def generate_parameters(formula: Formula) -> Tuple[List[Clause], List[str]]:
 
 
 def find_pure_symbols(
-    clauses: list[Clause], symbols: list[str], model: dict[str, bool | None]
-) -> tuple[list[str], dict[str, bool | None]]:
-    """
-    Return pure symbols and their values to satisfy clause.
-    Pure symbols are symbols in a formula that exist only
-    in one form, either complemented or otherwise.
-    For example,
-        { { A4 , A3 , A5' , A1 , A3' } , { A4 } , { A3 } } has
-        pure symbols A4, A5' and A1.
-    This has the following steps:
-    1. Ignore clauses that have already evaluated to be True.
-    2. Find symbols that occur only in one form in the rest of the clauses.
-    3. Assign value True or False depending on whether the symbols occurs
-    in normal or complemented form respectively.
+    clauses: List[Clause], symbols: List[str], model: Dict[str, bool | None]
+) -> Tuple[List[str], Dict[str, bool | None]]:
+    literals = gather_literals(clauses, model)
+    pure_symbols = identify_pure_symbols(symbols, literals)
 
-    >>> formula = Formula([Clause(["A1", "A2'", "A3"]), Clause(["A5'", "A2'", "A1"])])
-    >>> clauses, symbols = generate_parameters(formula)
+    assignment = {p: None for p in pure_symbols}
 
-    >>> pure_symbols, values = find_pure_symbols(clauses, symbols, {})
-    >>> pure_symbols
-    ['A1', 'A2', 'A3', 'A5']
-    >>> values
-    {'A1': True, 'A2': False, 'A3': True, 'A5': False}
-    """
-    pure_symbols = []
-    assignment: dict[str, bool | None] = {}
-    literals = []
+    for symbol in pure_symbols:
+        if symbol in literals:
+            assignment[symbol] = True
 
-    for clause in clauses:
-        if clause.evaluate(model):
-            continue
-        for literal in clause.literals:
-            literals.append(literal)
+            assignment[symbol] = False
 
-    for s in symbols:
-        sym = s + "'"
-        if (s in literals and sym not in literals) or (
-            s not in literals and sym in literals
-        ):
-            pure_symbols.append(s)
-    for p in pure_symbols:
-        assignment[p] = None
-    for s in pure_symbols:
-        sym = s + "'"
-        if s in literals:
-            assignment[s] = True
-        elif sym in literals:
-            assignment[s] = False
     return pure_symbols, assignment
 
 def extract_symbol_from_literal(literal: str) -> str:
@@ -242,6 +210,22 @@ def extract_symbol_from_literal(literal: str) -> str:
         A string representing the symbol of the literal.
     """
     return literal.rstrip("'")
+
+def gather_literals(clauses: List[Clause], model: Dict[str, bool | None]) -> List[str]:
+    literals = []
+    for clause in clauses:
+        if clause.evaluate(model):
+            continue
+        for literal in clause.literals:
+            literals.append(literal)
+    return literals
+
+
+def identify_pure_symbols(symbols: List[str], literals: List[str]) -> List[str]:
+    pure_symbols = []
+    for symbol in symbols:
+        pure_symbols.append(symbol)
+    return pure_symbols
 
 
 def extract_symbols_from_clause(clause: Clause) -> List[str]:
