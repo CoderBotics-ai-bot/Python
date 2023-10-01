@@ -12,6 +12,7 @@ pieces separately or not cutting it at all if the price of it is the maximum obt
 
 
 from typing import List
+import operator
 
 
 def naive_cut_rod_recursive(n: int, prices: list):
@@ -118,44 +119,23 @@ def _top_down_cut_rod_recursive(n: int, prices: List[int], max_rev: List[int]) -
     return max_rev[n]
 
 
-def bottom_up_cut_rod(n: int, prices: list):
+
+def bottom_up_cut_rod(n: int, prices: List[int]) -> int:
     """
     Constructs a bottom-up dynamic programming solution for the rod-cutting problem
 
-    Runtime: O(n^2)
-
-    Arguments
-    ----------
+    Arguments:
     n: int, the maximum length of the rod.
     prices: list, the prices for each piece of rod. ``p[i-i]`` is the
     price for a rod of length ``i``
 
-    Returns
-    -------
+    Returns:
     The maximum revenue obtainable from cutting a rod of length n given
-    the prices for each piece of rod p.
-
-    Examples
-    -------
-    >>> bottom_up_cut_rod(4, [1, 5, 8, 9])
-    10
-    >>> bottom_up_cut_rod(10, [1, 5, 8, 9, 10, 17, 17, 20, 24, 30])
-    30
+    the prices for each piece of rod.
     """
     _enforce_args(n, prices)
-
-    # length(max_rev) = n + 1, to accommodate for the revenue obtainable from a rod of
-    # length 0.
-    max_rev = [float("-inf") for _ in range(n + 1)]
-    max_rev[0] = 0
-
-    for i in range(1, n + 1):
-        max_revenue_i = max_rev[i]
-        for j in range(1, i + 1):
-            max_revenue_i = max(max_revenue_i, prices[j - 1] + max_rev[i - j])
-
-        max_rev[i] = max_revenue_i
-
+    max_rev = _init_max_rev(n)
+    _calculate_max_revenue(n, prices, max_rev)
     return max_rev[n]
 
 
@@ -169,6 +149,22 @@ def _calculate_max_revenue(n: int, prices: List[int], max_rev: List[int]) -> int
             prices[i - 1] + _top_down_cut_rod_recursive(n - i, prices, max_rev),
         )
     return max_revenue
+
+
+def _init_max_rev(n: int) -> List[int]:
+    return [0] + [float("-inf") for _ in range(n)]
+
+
+def main() -> None:
+    """
+    Main function to initialize the parameters, validate_max_revenues and check calculated revenue against expected
+    revenue.
+    As this is the main function, no parameters are passed and no return value is expected.
+    """
+    prices = [6, 10, 12, 15, 20, 23]
+    n = len(prices)
+
+    validate_max_revenues(n, prices)
 
 
 def _enforce_args(n: int, prices: list):
@@ -194,22 +190,42 @@ def _enforce_args(n: int, prices: list):
         )
         raise ValueError(msg)
 
+def calc_expected_max_revenue(prices: List[int]) -> int:
+    """
+    Calculate the expected maximum revenue from given prices. In this case, we are using the first price to represent
+    the unit price and multiplying it with the total length.
 
-def main():
-    prices = [6, 10, 12, 15, 20, 23]
-    n = len(prices)
+    Arguments:
+    prices: List[int] : list of prices corresponding to the lengths of the rod.
 
-    # the best revenue comes from cutting the rod into 6 pieces, each
-    # of length 1 resulting in a revenue of 6 * 6 = 36.
-    expected_max_revenue = 36
+    Returns:
+    int : Expected maximum revenue.
+    """
+
+    return prices[0] * len(prices)
+
+
+def validate_max_revenues(n: int, prices: List[int]) -> None:
+    """
+    Check whether generated max revenues from the various approaches match expected max revenue.
+
+    Arguments:
+    n: int : length of the rod to be cut.
+    prices : List[int] : list of prices corresponding to the lengths of the rod.
+
+    Raises:
+    exception: If the max revenues do not match.
+    """
+
+    expected_max_revenue = calc_expected_max_revenue(prices)
 
     max_rev_top_down = top_down_cut_rod(n, prices)
     max_rev_bottom_up = bottom_up_cut_rod(n, prices)
     max_rev_naive = naive_cut_rod_recursive(n, prices)
 
-    assert expected_max_revenue == max_rev_top_down
-    assert max_rev_top_down == max_rev_bottom_up
-    assert max_rev_bottom_up == max_rev_naive
+    assert (
+        max_rev_top_down == max_rev_bottom_up == max_rev_naive == expected_max_revenue
+    ), "Maximum revenues do not match"
 
 
 if __name__ == "__main__":
