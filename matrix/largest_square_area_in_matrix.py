@@ -46,6 +46,9 @@ dp_array(i,j)=dp_array(dp(i−1,j),dp_array(i−1,j−1),dp_array(i,j−1)) + 1.
 from typing import List
 
 
+from typing import List, Tuple
+
+
 def largest_square_area_in_matrix_top_down_approch(
     rows: int, cols: int, mat: list[list[int]]
 ) -> int:
@@ -123,37 +126,6 @@ def largest_square_area_in_matrix_top_down_approch_with_dp(
 
     return largest_square_area[0]
 
-
-def largest_square_area_in_matrix_bottom_up_space_optimization(
-    rows: int, cols: int, mat: list[list[int]]
-) -> int:
-    """
-    Function updates the largest_square_area, using bottom up
-    approach. with space optimization.
-
-    >>> largest_square_area_in_matrix_bottom_up_space_optimization(2, 2, [[1,1], [1,1]])
-    2
-    >>> largest_square_area_in_matrix_bottom_up_space_optimization(2, 2, [[0,0], [0,0]])
-    0
-    """
-    current_row = [0] * (cols + 1)
-    next_row = [0] * (cols + 1)
-    largest_square_area = 0
-    for row in range(rows - 1, -1, -1):
-        for col in range(cols - 1, -1, -1):
-            right = current_row[col + 1]
-            diagonal = next_row[col + 1]
-            bottom = next_row[col]
-
-            if mat[row][col] == 1:
-                current_row[col] = 1 + min(right, diagonal, bottom)
-                largest_square_area = max(current_row[col], largest_square_area)
-            else:
-                current_row[col] = 0
-        next_row = current_row
-
-    return largest_square_area
-
 ## REFACTORED CODE:
 
 
@@ -190,8 +162,63 @@ def largest_square_area_in_matrix_bottom_up(
     return largest_square_area
 
 
+def largest_square_area_in_matrix_bottom_up_space_optimization(
+    rows: int, cols: int, mat: List[List[int]]
+) -> int:
+    """
+    Calculate largest square area in a binary matrix using a bottom-up approach with space optimization.
+    """
+
+    current_row = [0] * (cols + 1)
+    next_row = [0] * (cols + 1)
+    largest_square_area = 0
+
+    for row in range(rows - 1, -1, -1):
+        for col in range(cols - 1, -1, -1):
+            square_area, current_row = calculate_square_area(
+                mat, row, col, current_row, next_row
+            )
+            largest_square_area = max(square_area, largest_square_area)
+        next_row = current_row
+
+    return largest_square_area
+
+
 if __name__ == "__main__":
     import doctest
 
     doctest.testmod()
     print(largest_square_area_in_matrix_bottom_up(2, 2, [[1, 1], [1, 1]]))
+
+def calculate_square_area(
+    mat: List[List[int]],
+    row: int,
+    col: int,
+    current_row: List[int],
+    next_row: List[int],
+) -> Tuple[int, List[int]]:
+    """
+    Calculates the square area at the provided cell and updates corresponding rows.
+
+    Args:
+        mat (List[List[int]]): The binary matrix.
+        row (int): Index of current row.
+        col (int): Index of current column.
+        current_row (List[int]): Current row values for dynamic programming.
+        next_row (List[int]): Next row values for dynamic programming.
+
+    Returns:
+        Tuple[int, List[int]]: Updated square area and current row.
+    """
+    right = current_row[col + 1]
+    diagonal = next_row[col + 1]
+    bottom = next_row[col]
+
+    if mat[row][col] == 1:
+        current_row[col] = 1 + min(right, diagonal, bottom)
+        square_area = current_row[col]
+    else:
+        current_row[col] = 0
+        square_area = 0
+
+    return square_area, current_row
