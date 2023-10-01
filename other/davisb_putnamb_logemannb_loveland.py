@@ -112,28 +112,36 @@ class Formula:
         """
         return "{" + " , ".join(str(clause) for clause in self.clauses) + "}"
 
-
 def generate_clause() -> Clause:
     """
-    Randomly generate a clause.
-    All literals have the name Ax, where x is an integer from 1 to 5.
+    Randomly generate a Clause instance.
+
+    Procedure:
+        Randomly select a quantity 'n', in range 1 to 5, of literals to be included in the clause.
+        Randomly create 'n' literals, each consisting of a base name 'A' appended with a random number
+        from 1 to 5. There's also a 50-50 chance that a literal may be complemented (represented by a trailing prime symbol).
+        In the event of a literal duplication, disregard the duplication and continue until 'n' unique literals are created.
+
+    Returns
+    -------
+    Clause
+        A Clause object containing randomized literals.
+
+    Examples
+    --------
+    >>> generate_clause()
+    Clause(['A1', 'A3', 'A4', 'A2', 'A1'])
     """
-    literals = []
-    no_of_literals = random.randint(1, 5)
-    base_var = "A"
-    i = 0
-    while i < no_of_literals:
-        var_no = random.randint(1, 5)
-        var_name = base_var + str(var_no)
-        var_complement = random.randint(0, 1)
-        if var_complement == 1:
-            var_name += "'"
-        if var_name in literals:
-            i -= 1
-        else:
-            literals.append(var_name)
-        i += 1
-    return Clause(literals)
+
+    def _create_literal() -> str:
+        base_var = "A" + str(random.randint(1, 5))
+        return base_var + "'" if random.choice([True, False]) else base_var
+
+    literals = set()
+    while len(literals) < random.randint(1, 5):
+        literals.add(_create_literal())
+
+    return Clause(list(literals))
 
 
 def generate_formula() -> Formula:
