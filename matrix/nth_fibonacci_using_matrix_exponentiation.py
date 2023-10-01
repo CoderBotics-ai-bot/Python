@@ -16,18 +16,37 @@ We can decrease the n times multiplication by following the divide and conquer a
 """
 
 
+from typing import List
+
 def multiply(matrix_a: list[list[int]], matrix_b: list[list[int]]) -> list[list[int]]:
-    matrix_c = []
-    n = len(matrix_a)
-    for i in range(n):
-        list_1 = []
-        for j in range(n):
-            val = 0
-            for k in range(n):
-                val = val + matrix_a[i][k] * matrix_b[k][j]
-            list_1.append(val)
-        matrix_c.append(list_1)
-    return matrix_c
+    """
+    Perform matrix multiplication of two 2D lists.
+
+    Args:
+        matrix_a (list[list[int]]): 2D list of integers representing the first matrix to be multiplied.
+        matrix_b (list[list[int]]): 2D list of integers representing the second matrix to be multiplied.
+
+    Returns:
+        list[list[int]]: A 2D list of integers resulting from the multiplication of 'matrix_a' and 'matrix_b'
+    """
+
+    def compute_element(i: int, j: int) -> int:
+        """
+        Compute the (i,j)th element of the resulting matrix from the multiplication.
+
+        Args:
+            i (int): The row index
+            j (int): The column index
+
+        Returns:
+            int: The computed element.
+        """
+        return sum(matrix_a[i][k] * matrix_b[k][j] for k in range(len(matrix_a)))
+
+    return [
+        [compute_element(i, j) for j in range(len(matrix_a))]
+        for i in range(len(matrix_a))
+    ]
 
 
 def identity(n: int) -> list[list[int]]:
