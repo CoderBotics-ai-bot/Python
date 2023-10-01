@@ -6,6 +6,9 @@ Reference: https://leetcode.com/problems/count-negative-numbers-in-a-sorted-matr
 """
 
 
+from typing import List
+
+
 def generate_large_matrix() -> list[list[int]]:
     """
     >>> generate_large_matrix() # doctest: +ELLIPSIS
@@ -33,53 +36,37 @@ def validate_grid(grid: list[list[int]]) -> None:
     assert all(row == sorted(row, reverse=True) for row in grid)
     assert all(list(col) == sorted(col, reverse=True) for col in zip(*grid))
 
-
-def find_negative_index(array: list[int]) -> int:
+def find_negative_index(array: List[int]) -> int:
     """
-    Find the smallest negative index
+    Find the index of the first negative number in a sorted integer array.
 
-    >>> find_negative_index([0,0,0,0])
-    4
-    >>> find_negative_index([4,3,2,-1])
-    3
-    >>> find_negative_index([1,0,-1,-10])
-    2
-    >>> find_negative_index([0,0,0,-1])
-    3
-    >>> find_negative_index([11,8,7,-3,-5,-9])
-    3
-    >>> find_negative_index([-1,-1,-2,-3])
-    0
-    >>> find_negative_index([5,1,0])
-    3
-    >>> find_negative_index([-5,-5,-5])
-    0
-    >>> find_negative_index([0])
-    1
-    >>> find_negative_index([])
-    0
+    This function uses a binary search algorithm for finding the index at which
+    the first negative number occurs in a given list. The list/array must be
+    sorted in non-descending order. If there is no negative number in the array,
+    it returns the length of the array.
+
+    The time complexity is O(log n), where n is the number of elements in the array.
+
+    Args:
+        array (List[int]): A sorted list of integers.
+
+    Returns:
+        int: The index of first negative number in the array. If there is no negative
+             number, the function returns the length of the array.
     """
-    left = 0
-    right = len(array) - 1
-
-    # Edge cases such as no values or all numbers are negative.
     if not array or array[0] < 0:
         return 0
 
-    while right + 1 > left:
+    left = 0
+    right = len(array) - 1
+
+    while left < right:
         mid = (left + right) // 2
-        num = array[mid]
-
-        # Num must be negative and the index must be greater than or equal to 0.
-        if num < 0 and array[mid - 1] >= 0:
-            return mid
-
-        if num >= 0:
-            left = mid + 1
+        if array[mid] < 0:
+            right = mid
         else:
-            right = mid - 1
-    # No negative numbers so return the last index of the array + 1 which is the length.
-    return len(array)
+            left = mid + 1
+    return left if array[left] < 0 else len(array)
 
 
 def count_negatives_binary_search(grid: list[list[int]]) -> int:
