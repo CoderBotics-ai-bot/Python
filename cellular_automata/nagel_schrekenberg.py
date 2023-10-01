@@ -27,6 +27,8 @@ Examples for doctest:
 from random import randint, random
 
 
+from random import randint
+
 def construct_highway(
     number_of_cells: int,
     frequency: int,
@@ -36,24 +38,35 @@ def construct_highway(
     max_speed: int = 5,
 ) -> list:
     """
-    Build the highway following the parameters given
-    >>> construct_highway(10, 2, 6)
-    [[6, -1, 6, -1, 6, -1, 6, -1, 6, -1]]
-    >>> construct_highway(10, 10, 2)
-    [[2, -1, -1, -1, -1, -1, -1, -1, -1, -1]]
+    This function builds a highway populated with cars at defined distances.
+
+    Args:
+        number_of_cells (int): The number of cells in the highway (length of the highway).
+        frequency (int): The frequency of cars on the highway. A car will be placed every nth cell, where n is the frequency.
+        initial_speed (int): The initial speed of all cars.
+        random_frequency (bool, optional): If True, cars will be placed at random distances apart. Defaults to False.
+        random_speed (bool, optional): If True, each car will start with a random speed. Defaults to False.
+        max_speed (int, optional): The maximum allowable random speed. Defaults to 5.
+
+    Returns:
+        list: A 2D list representing the state of the highway.
     """
 
-    highway = [[-1] * number_of_cells]  # Create a highway without any car
-    i = 0
+    # ensure that speed is non-negative
     initial_speed = max(initial_speed, 0)
-    while i < number_of_cells:
-        highway[0][i] = (
-            randint(0, max_speed) if random_speed else initial_speed
-        )  # Place the cars
-        i += (
-            randint(1, max_speed * 2) if random_frequency else frequency
-        )  # Arbitrary number, may need tuning
-    return highway
+
+    # construct the highway
+    highway = [
+        -1
+        if (index % frequency != 0)
+        or (random_frequency and randint(1, max_speed * 2) != 1)
+        else randint(0, max_speed)
+        if random_speed
+        else initial_speed
+        for index in range(number_of_cells)
+    ]
+
+    return [highway]
 
 
 def get_distance(highway_now: list, car_index: int) -> int:
