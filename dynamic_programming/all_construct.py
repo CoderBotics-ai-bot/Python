@@ -7,40 +7,24 @@ from __future__ import annotations
 
 def all_construct(target: str, word_bank: list[str] | None = None) -> list[list[str]]:
     """
-        returns the list containing all the possible
-        combinations a string(target) can be constructed from
-        the given list of substrings(word_bank)
-    >>> all_construct("hello", ["he", "l", "o"])
-    [['he', 'l', 'l', 'o']]
-    >>> all_construct("purple",["purp","p","ur","le","purpl"])
-    [['purp', 'le'], ['p', 'ur', 'p', 'le']]
+    Returns all the possible combinations a string can be constructed from given substrings.
     """
 
     word_bank = word_bank or []
-    # create a table
     table_size: int = len(target) + 1
 
-    table: list[list[list[str]]] = []
-    for _ in range(table_size):
-        table.append([])
-    # seed value
-    table[0] = [[]]  # because empty string has empty combination
+    # Initialize the table with empty lists
+    table: list[list[list[str]]] = [[] for _ in range(table_size)]
 
-    # iterate through the indices
+    # Add the combination for an empty string
+    table[0] = [[]]
+
+    # Iterate through the indices
     for i in range(table_size):
-        # condition
-        if table[i] != []:
-            for word in word_bank:
-                # slice condition
-                if target[i : i + len(word)] == word:
-                    new_combinations: list[list[str]] = [
-                        [word, *way] for way in table[i]
-                    ]
-                    # adds the word to every combination the current position holds
-                    # now,push that combination to the table[i+len(word)]
-                    table[i + len(word)] += new_combinations
+        if table[i]:  # If there is at least one combination at the current index
+            gather_targets(target, word_bank, i, table)
 
-    # combinations are in reverse order so reverse for better output
+    # Reverse the final combinations for better output
     for combination in table[len(target)]:
         combination.reverse()
 
@@ -56,3 +40,18 @@ if __name__ == "__main__":
             ["h", "ex", "hex", "ag", "ago", "ru", "auru", "rus", "go", "no", "o", "s"],
         )
     )
+
+def gather_targets(
+    target: str, word_bank: list[str], index: int, table: list[list[list[str]]]
+) -> None:
+    """
+    Helper function to populate the table with all possible combinations at a particular index.
+    """
+
+    for word in word_bank:
+        if target[index : index + len(word)] == word:
+            # Get all the combinations for the current word
+            new_combinations = [[word, *combination] for combination in table[index]]
+
+            # Update the table using the combinations found
+            table[index + len(word)].extend(new_combinations)
