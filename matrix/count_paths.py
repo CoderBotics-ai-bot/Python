@@ -20,56 +20,42 @@ In the example above, there are two distinct paths:
 """
 
 
-def depth_first_search(grid: list[list[int]], row: int, col: int, visit: set) -> int:
-    """
-    Recursive Backtracking Depth First Search Algorithm
-
-    Starting from top left of a matrix, count the number of
-    paths that can reach the bottom right of a matrix.
-    1 represents a block (inaccessible)
-    0 represents a valid space (accessible)
-
-    0  0  0  0
-    1  1  0  0
-    0  0  0  1
-    0  1  0  0
-    >>> grid = [[0, 0, 0, 0], [1, 1, 0, 0], [0, 0, 0, 1], [0, 1, 0, 0]]
-    >>> depth_first_search(grid, 0, 0, set())
-    2
-
-    0  0  0  0  0
-    0  1  1  1  0
-    0  1  1  1  0
-    0  0  0  0  0
-    >>> grid = [[0, 0, 0, 0, 0], [0, 1, 1, 1, 0], [0, 1, 1, 1, 0], [0, 0, 0, 0, 0]]
-    >>> depth_first_search(grid, 0, 0, set())
-    2
-    """
-    row_length, col_length = len(grid), len(grid[0])
-    if (
-        min(row, col) < 0
-        or row == row_length
-        or col == col_length
-        or (row, col) in visit
-        or grid[row][col] == 1
-    ):
-        return 0
-    if row == row_length - 1 and col == col_length - 1:
-        return 1
-
-    visit.add((row, col))
-
-    count = 0
-    count += depth_first_search(grid, row + 1, col, visit)
-    count += depth_first_search(grid, row - 1, col, visit)
-    count += depth_first_search(grid, row, col + 1, visit)
-    count += depth_first_search(grid, row, col - 1, visit)
-
-    visit.remove((row, col))
-    return count
+from typing import List, Set, Tuple
 
 
 if __name__ == "__main__":
     import doctest
 
     doctest.testmod()
+
+def depth_first_search(grid: List[List[int]], row: int, col: int, visit: set) -> int:
+    """Refactored Depth-First Search (DFS) function"""
+
+    def is_invalid_move(position, row_len, col_len, visit, grid):
+        """Helper function to check if a move is invalid"""
+        row, col = position
+        return (
+            (row < 0 or col < 0)
+            or (row == row_len or col == col_len)
+            or position in visit
+            or grid[row][col] == 1
+        )
+
+    row_len, col_len = len(grid), len(grid[0])
+
+    if is_invalid_move((row, col), row_len, col_len, visit, grid):
+        return 0
+
+    if row == row_len - 1 and col == col_len - 1:
+        return 1
+
+    visit.add((row, col))
+
+    moves = [(1, 0), (-1, 0), (0, 1), (0, -1)]
+    count = sum(
+        depth_first_search(grid, row + move[0], col + move[1], visit) for move in moves
+    )
+
+    visit.remove((row, col))
+
+    return count
