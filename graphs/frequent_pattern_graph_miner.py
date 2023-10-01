@@ -12,6 +12,10 @@ from typing import List
 
 
 from typing import List
+from typing import Dict, List, Union
+
+
+from typing import Dict, List, Tuple, Union
 # fmt: off
 edge_array = [
     ['ab-e1', 'ac-e3', 'ad-e5', 'bc-e4', 'bd-e2', 'be-e6', 'bh-e12', 'cd-e2', 'ce-e4',
@@ -145,34 +149,103 @@ def print_all() -> None:
     _print_freq_subgraph_edge_list()
 
 
-def create_edge(nodes, graph, cluster, c1):
+
+def create_edge(
+    nodes: Dict[str, List[str]],
+    graph: Dict[Union[str, Tuple[str]], List[List[str]]],
+    cluster: Dict[int, List[str]],
+    c1: int,
+) -> None:
     """
-    create edge between the nodes
+    Create edges between the nodes if certain conditions are met.
+
+    Given a dictionary of nodes, an initially empty graph, a dictionary of clusters,
+    and a cluster number, this function creates edges between nodes in the graph if
+    there is a bitwise similarity between them. The condition for similarity is when
+    bitwise 'And' operation between any two nodes in different clusters results in a
+    value equal to the value of the first node.
+
+    Args:
+    nodes (dict): Dictionary with key as a binary string and value as a list of strings.
+    graph (dict): Empty dictionary construct edges from nodes.
+    cluster (dict): Dictionary with keys as cluster numbers and values as identifiers of nodes.
+    c1 (int): Current cluster number.
+
+    Side Effect:
+    This function does not return anything but it modifies the graph dictionary in-place
+    by adding new edges to it.
+
+    Note:
+    'c1 + 1' and 'max(cluster.keys())' ensure that edges are only created between nodes
+    in subsequent clusters and not within the same cluster.
     """
+
     for i in cluster[c1]:
         count = 0
         c2 = c1 + 1
-        while c2 < max(cluster.keys()):
-            for j in cluster[c2]:
-                """
-                creates edge only if the condition satisfies
-                """
-                if int(i, 2) & int(j, 2) == int(i, 2):
-                    if tuple(nodes[i]) in graph:
-                        graph[tuple(nodes[i])].append(nodes[j])
-                    else:
-                        graph[tuple(nodes[i])] = [nodes[j]]
-                    count += 1
-            if count == 0:
-                c2 = c2 + 1
-            else:
+        max_cluster_key = max(cluster.keys())
+        while c2 < max_cluster_key:
+            node_edges = get_node_edges(nodes, cluster, i, c2, count)
+            graph.update(node_edges)
+            if node_edges:
                 break
+            c2 += 1
 
 
 def _print_nodes() -> None:
     print("\nNodes\n")
     for key, value in nodes.items():
         print(key, value)
+
+
+def get_node_edges(
+    nodes: Dict[str, List[str]],
+    cluster: Dict[int, List[str]],
+    current_node: str,
+    c2: int,
+    edge_count: int,
+) -> Dict[Union[str, Tuple[str]], List[List[str]]]:
+    """
+    Get edges of the current node with nodes of the next cluster based on bitwise similarity.
+
+    Args:
+    nodes (dict): Dictionary with key as binary string and value as list of strings.
+    cluster (dict): Dictionary with keys as cluster numbers and values as lists of binary string identifiers.
+    current_node (str): Identifier of current node as a binary string.
+    c2 (int): Identifier of the next cluster.
+    edge_count: Number of edges created so far.
+
+    Returns:
+    (dict): New edges of the current node with nodes of the next cluster.
+    """
+
+    node_edges = {}
+    for next_node in cluster[c2]:
+        if is_bitwise_similar(current_node, next_node):
+            if tuple(nodes[current_node]) in node_edges:
+                node_edges[tuple(nodes[current_node])].append(nodes[next_node])
+            else:
+                node_edges[tuple(nodes[current_node])] = [nodes[next_node]]
+            edge_count += 1
+    return node_edges if edge_count else {}
+
+
+def is_bitwise_similar(node1: str, node2: str) -> bool:
+    """
+    Check if two nodes are bitwise similar.
+
+    Two nodes are bitwise similar if the result of bitwise 'And' operation between
+    their binary string identifiers is equal to the identifier of the first node.
+
+    Args:
+    node1 (str): Identifier of the first node as binary string.
+    node2 (str): Identifier of the second node as binary string.
+
+    Returns:
+    (bool): Bitwise similarity between the nodes.
+    """
+
+    return int(node1, 2) & int(node2, 2) == int(node1, 2)
 
 
 def _print_support() -> None:
