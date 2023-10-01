@@ -7,7 +7,6 @@ More info:
     https://medium.com/trick-the-interviwer/regular-expression-matching-9972eb74c03
 """
 
-
 def recursive_match(text: str, pattern: str) -> bool:
     """
     Recursive matching algorithm.
@@ -33,16 +32,13 @@ def recursive_match(text: str, pattern: str) -> bool:
     if not pattern:
         return not text
 
-    if not text:
-        return pattern[-1] == "*" and recursive_match(text, pattern[:-2])
+    if "*" == pattern[-1]:
+        if text and (text[-1] == pattern[-2] or "." == pattern[-2]):
+            return recursive_match(text[:-1], pattern)
+        return recursive_match(text, pattern[:-2])
 
-    if text[-1] == pattern[-1] or pattern[-1] == ".":
+    if text and (text[-1] == pattern[-1] or "." == pattern[-1]):
         return recursive_match(text[:-1], pattern[:-1])
-
-    if pattern[-1] == "*":
-        return recursive_match(text[:-1], pattern) or recursive_match(
-            text, pattern[:-2]
-        )
 
     return False
 
