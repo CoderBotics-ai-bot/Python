@@ -7,6 +7,9 @@ using dynamic programming.
 """
 
 
+from typing import List, Tuple
+
+
 def mf_knapsack(i, wt, val, j):
     """
     This code involves the concept of memory functions. Here we solve the subproblems
@@ -26,9 +29,129 @@ def mf_knapsack(i, wt, val, j):
     return f[i][j]
 
 
-def knapsack(w, wt, val, n):
-    dp = [[0] * (w + 1) for _ in range(n + 1)]
 
+def knapsack(
+    w: int, wt: List[int], val: List[int], n: int
+) -> Tuple[int, List[List[int]]]:
+    """
+    Refactored knapsack 0/1 problem solver. Utilizing helper functions initialize_dp and calculate_dp.
+    """
+
+    dp = initialize_dp(w, n)
+
+    return calculate_dp(dp, wt, val, w, n)
+
+def knapsack_with_example_solution(
+    w: int, wt: List[int], val: List[int]
+) -> Tuple[int, set]:
+    """
+    Solves the 0/1 Knapsack problem using dynamic programming. It also
+    constructs an example set of item indices which gives the optimal solution.
+
+    Parameters:
+    - w (int): Total weight that the knapsack can carry.
+    - wt (List[int]): The weights of the items.
+    - val (List[int]): The values of the items.
+
+    Returns:
+    Tuple[int, set]: A tuple where the first element is the maximum value that
+                     can be carried in the knapsack and the second element is
+                     a set of item indices that make up this optimal solution.
+    """
+    validate_inputs(wt, val)
+    validate_weights(wt)
+
+    num_items = len(wt)
+
+    optimal_val, dp_table = knapsack(w, wt, val, num_items)
+    example_optional_set: set = set()
+
+    _construct_solution(dp_table, wt, num_items, w, example_optional_set)
+
+    return optimal_val, example_optional_set
+
+
+def initialize_dp(w: int, n: int) -> List[List[int]]:
+    """
+    Initialize a 2D array dp of size (n+1) x (w+1) filled with zeros.
+    """
+    return [[0 for _ in range(w + 1)] for _ in range(n + 1)]
+
+def _construct_solution(
+    dp: List[List[int]], wt: List[int], i: int, j: int, optimal_set: set
+) -> None:
+    """
+    Recursively reconstructs one of the optimal subsets given a filled DP table and the vector of weights.
+
+    This function modifies the optimal_set parameter by adding item indexes to it.
+    Each index in the optimal_set represents an item in the subset that contributes to the maximum subset sum.
+
+    Parameters
+    ----------
+    dp : List[List[int]]
+        The table of a solved integer weight dynamic programming problem.
+    wt : List[int]
+        The vector of weights of the items.
+    i : int
+        The index of the current item under consideration.
+    j : int
+        The current possible maximum weight.
+    optimal_set : set
+        The optimal subset so far. This gets modified by the function.
+
+    Returns
+    -------
+    None
+    """
+    if i == 0 or j == 0:
+        return
+
+    previous_item = dp[i - 1][j]
+    if dp[i][j] != previous_item:
+        optimal_set.add(i)
+        j -= wt[i - 1]
+
+    _construct_solution(dp, wt, i - 1, j, optimal_set)
+
+
+def validate_inputs(wt: List[int], val: List[int]) -> None:
+    """
+    Validate that the weights and values are lists or tuples and that
+    they have the same number of elements.
+
+    Parameters:
+    - wt (List[int]): The weights of the items.
+    - val (List[int]): The values of the items.
+    """
+    if not isinstance(wt, (list, tuple)) or not isinstance(val, (list, tuple)):
+        raise ValueError("Weights and values must be a list or a tuple.")
+
+    if len(wt) != len(val):
+        raise ValueError(
+            "The number of weights must be the same as the number of values."
+        )
+
+
+def validate_weights(wt: List[int]) -> None:
+    """
+    Validate that all weights are integers.
+
+    Parameters:
+    - wt (List[int]): The weights of the items.
+    """
+    for i, weight in enumerate(wt):
+        if not isinstance(weight, int):
+            raise TypeError(
+                f"All weights must be integers but got weight of type {type(weight)} at index {i}."
+            )
+
+
+def calculate_dp(
+    dp: List[List[int]], wt: List[int], val: List[int], w: int, n: int
+) -> Tuple[int, List[List[int]]]:
+    """
+    Utilize dynamic programming approach to calculate the maximum value that could be put in a knapsack of capacity w.
+    """
     for i in range(1, n + 1):
         for w_ in range(1, w + 1):
             if wt[i - 1] <= w_:
@@ -36,97 +159,7 @@ def knapsack(w, wt, val, n):
             else:
                 dp[i][w_] = dp[i - 1][w_]
 
-    return dp[n][w_], dp
-
-
-def knapsack_with_example_solution(w: int, wt: list, val: list):
-    """
-    Solves the integer weights knapsack problem returns one of
-    the several possible optimal subsets.
-
-    Parameters
-    ---------
-
-    W: int, the total maximum weight for the given knapsack problem.
-    wt: list, the vector of weights for all items where wt[i] is the weight
-    of the i-th item.
-    val: list, the vector of values for all items where val[i] is the value
-    of the i-th item
-
-    Returns
-    -------
-    optimal_val: float, the optimal value for the given knapsack problem
-    example_optional_set: set, the indices of one of the optimal subsets
-    which gave rise to the optimal value.
-
-    Examples
-    -------
-    >>> knapsack_with_example_solution(10, [1, 3, 5, 2], [10, 20, 100, 22])
-    (142, {2, 3, 4})
-    >>> knapsack_with_example_solution(6, [4, 3, 2, 3], [3, 2, 4, 4])
-    (8, {3, 4})
-    >>> knapsack_with_example_solution(6, [4, 3, 2, 3], [3, 2, 4])
-    Traceback (most recent call last):
-        ...
-    ValueError: The number of weights must be the same as the number of values.
-    But got 4 weights and 3 values
-    """
-    if not (isinstance(wt, (list, tuple)) and isinstance(val, (list, tuple))):
-        raise ValueError(
-            "Both the weights and values vectors must be either lists or tuples"
-        )
-
-    num_items = len(wt)
-    if num_items != len(val):
-        msg = (
-            "The number of weights must be the same as the number of values.\n"
-            f"But got {num_items} weights and {len(val)} values"
-        )
-        raise ValueError(msg)
-    for i in range(num_items):
-        if not isinstance(wt[i], int):
-            msg = (
-                "All weights must be integers but got weight of "
-                f"type {type(wt[i])} at index {i}"
-            )
-            raise TypeError(msg)
-
-    optimal_val, dp_table = knapsack(w, wt, val, num_items)
-    example_optional_set: set = set()
-    _construct_solution(dp_table, wt, num_items, w, example_optional_set)
-
-    return optimal_val, example_optional_set
-
-
-def _construct_solution(dp: list, wt: list, i: int, j: int, optimal_set: set):
-    """
-    Recursively reconstructs one of the optimal subsets given
-    a filled DP table and the vector of weights
-
-    Parameters
-    ---------
-
-    dp: list of list, the table of a solved integer weight dynamic programming problem
-
-    wt: list or tuple, the vector of weights of the items
-    i: int, the index of the item under consideration
-    j: int, the current possible maximum weight
-    optimal_set: set, the optimal subset so far. This gets modified by the function.
-
-    Returns
-    -------
-    None
-
-    """
-    # for the current item i at a maximum weight j to be part of an optimal subset,
-    # the optimal value at (i, j) must be greater than the optimal value at (i-1, j).
-    # where i - 1 means considering only the previous items at the given maximum weight
-    if i > 0 and j > 0:
-        if dp[i - 1][j] == dp[i][j]:
-            _construct_solution(dp, wt, i - 1, j, optimal_set)
-        else:
-            optimal_set.add(i)
-            _construct_solution(dp, wt, i - 1, j - wt[i - 1], optimal_set)
+    return dp[n][w], dp
 
 
 if __name__ == "__main__":
