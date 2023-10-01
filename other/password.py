@@ -3,6 +3,9 @@ from random import shuffle
 from string import ascii_letters, ascii_lowercase, ascii_uppercase, digits, punctuation
 
 
+from string import ascii_lowercase, ascii_uppercase, digits, punctuation
+
+
 def password_generator(length: int = 8) -> str:
     """
     Password Generator allows you to generate a random password of length N.
@@ -62,12 +65,30 @@ def random_letters(chars_incl, i):
 def random_characters(chars_incl, i):
     pass  # Put your code here...
 
-
-# This Will Check Whether A Given Password Is Strong Or Not
-# It Follows The Rule that Length Of Password Should Be At Least 8 Characters
-# And At Least 1 Lower, 1 Upper, 1 Number And 1 Special Character
 def is_strong_password(password: str, min_length: int = 8) -> bool:
     """
+    Check the strength of a password.
+
+    This function determines the strength of a given password.
+    The password is considered strong if it has a minimum length,
+    includes at least one lowercase letter, one uppercase letter,
+    one digit, and one special character.
+
+    Parameters
+    ----------
+    password: str
+        The password string to be tested.
+    min_length: int, optional
+        The minimum length for the password to be considered strong
+        (default is 8)
+
+    Returns
+    -------
+    bool
+        True if password is strong, False otherwise.
+
+    Examples
+    --------
     >>> is_strong_password('Hwea7$2!')
     True
     >>> is_strong_password('Sh0r1')
@@ -79,19 +100,20 @@ def is_strong_password(password: str, min_length: int = 8) -> bool:
     >>> is_strong_password('0')
     False
     """
+    password_conditions = [
+        # Check length
+        lambda s: len(s) >= min_length,
+        # Check uppercase
+        lambda s: any(char in ascii_uppercase for char in s),
+        # Check lowercase
+        lambda s: any(char in ascii_lowercase for char in s),
+        # Check digits
+        lambda s: any(char in digits for char in s),
+        # Check special characters
+        lambda s: any(char in punctuation for char in s),
+    ]
 
-    if len(password) < min_length:
-        # Your Password must be at least 8 characters long
-        return False
-
-    upper = any(char in ascii_uppercase for char in password)
-    lower = any(char in ascii_lowercase for char in password)
-    num = any(char in digits for char in password)
-    spec_char = any(char in punctuation for char in password)
-
-    return upper and lower and num and spec_char
-    # Passwords should contain UPPERCASE, lowerase
-    # numbers, and special characters
+    return all(condition(password) for condition in password_conditions)
 
 
 def main():
