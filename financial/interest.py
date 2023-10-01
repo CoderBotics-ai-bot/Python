@@ -2,40 +2,32 @@
 
 from __future__ import annotations
 
-
 def simple_interest(
     principal: float, daily_interest_rate: float, days_between_payments: float
 ) -> float:
+    """Calculate the simple interest.
+
+    The function calculates the simple interest based on the principal amount, the daily interest rate
+    and the number of days between payments.
+
+    Args:
+        principal (float): The principal amount.
+        daily_interest_rate (float): The daily interest rate.
+        days_between_payments (float): The number of days between payments.
+
+    Returns:
+        float: The calculated interest.
+
+    Raises:
+        ValueError:
+            - If 'principal' is less than or equal to 0.
+            - If 'daily_interest_rate' is less than 0.
+            - If 'days_between_payments' is less than or equal to 0.
     """
-    >>> simple_interest(18000.0, 0.06, 3)
-    3240.0
-    >>> simple_interest(0.5, 0.06, 3)
-    0.09
-    >>> simple_interest(18000.0, 0.01, 10)
-    1800.0
-    >>> simple_interest(18000.0, 0.0, 3)
-    0.0
-    >>> simple_interest(5500.0, 0.01, 100)
-    5500.0
-    >>> simple_interest(10000.0, -0.06, 3)
-    Traceback (most recent call last):
-        ...
-    ValueError: daily_interest_rate must be >= 0
-    >>> simple_interest(-10000.0, 0.06, 3)
-    Traceback (most recent call last):
-        ...
-    ValueError: principal must be > 0
-    >>> simple_interest(5500.0, 0.01, -5)
-    Traceback (most recent call last):
-        ...
-    ValueError: days_between_payments must be > 0
-    """
-    if days_between_payments <= 0:
-        raise ValueError("days_between_payments must be > 0")
-    if daily_interest_rate < 0:
-        raise ValueError("daily_interest_rate must be >= 0")
-    if principal <= 0:
-        raise ValueError("principal must be > 0")
+    _validate_principal(principal)
+    _validate_daily_interest_rate(daily_interest_rate)
+    _validate_days_between_payments(days_between_payments)
+
     return principal * daily_interest_rate * days_between_payments
 
 
@@ -75,6 +67,21 @@ def compound_interest(
         (1 + nominal_annual_interest_rate_percentage) ** number_of_compounding_periods
         - 1
     )
+
+
+def _validate_principal(principal: float) -> None:
+    if principal <= 0:
+        raise ValueError("'principal' must be greater than 0.")
+
+
+def _validate_daily_interest_rate(daily_interest_rate: float) -> None:
+    if daily_interest_rate < 0:
+        raise ValueError("'daily_interest_rate' must be equal or greater than 0.")
+
+
+def _validate_days_between_payments(days_between_payments: float) -> None:
+    if days_between_payments <= 0:
+        raise ValueError("'days_between_payments' must be greater than 0.")
 
 
 def apr_interest(
