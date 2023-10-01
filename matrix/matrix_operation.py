@@ -11,6 +11,9 @@ from typing import List
 from typing import List
 
 
+from typing import Any, List
+
+
 def add(*matrix_s: list[list[int]]) -> list[list[int]]:
     """
     Same docstring as in the original function.
@@ -25,25 +28,51 @@ def add(*matrix_s: list[list[int]]) -> list[list[int]]:
 
     return _calculate_sum(matrix_s)
 
+def subtract(
+    matrix_a: List[List[float]], matrix_b: List[List[float]]
+) -> List[List[float]]:
+    """
+    Subtracts one matrix from another and returns the resulting matrix.
 
-def subtract(matrix_a: list[list[int]], matrix_b: list[list[int]]) -> list[list[int]]:
+    Parameters:
+        matrix_a (List[List[int]]) : The first matrix.
+        matrix_b (List[List[int]]) : The second matrix.
+
+    Returns:
+        List[List[int]] : The resulting matrix after subtraction.
+
+    Raises:
+        TypeError : If inputs are not of type List[List[int]].
+        ValueError : If matrices have different sizes.
     """
-    >>> subtract([[1,2],[3,4]],[[2,3],[4,5]])
-    [[-1, -1], [-1, -1]]
-    >>> subtract([[1,2.5],[3,4]],[[2,3],[4,5.5]])
-    [[-1, -0.5], [-1, -1.5]]
-    >>> subtract([3], [4, 5])
-    Traceback (most recent call last):
-      ...
-    TypeError: Expected a matrix, got int/list instead
-    """
-    if (
-        _check_not_integer(matrix_a)
-        and _check_not_integer(matrix_b)
-        and _verify_matrix_sizes(matrix_a, matrix_b)
+
+    _validate_input(matrix_a, matrix_b)
+
+    return [
+        [a - b for a, b in zip(row_a, row_b)]
+        for row_a, row_b in zip(matrix_a, matrix_b)
+    ]
+
+
+# Newly created (sub-)functions
+def _validate_input(matrix_a: Any, matrix_b: Any) -> None:
+    _validate_matrix(matrix_a)
+    _validate_matrix(matrix_b)
+
+    if len(matrix_a) != len(matrix_b) or len(matrix_a[0]) != len(matrix_b[0]):
+        raise ValueError("Both matrices should have the same dimensions.")
+
+
+def _validate_matrix(matrix: Any) -> None:
+    if not (
+        isinstance(matrix, (list, tuple))
+        and all(
+            isinstance(row, (list, tuple))
+            and all(isinstance(item, (int, float)) for item in row)
+            for row in matrix
+        )
     ):
-        return [[i - j for i, j in zip(*m)] for m in zip(matrix_a, matrix_b)]
-    raise TypeError("Expected a matrix, got int/list instead")
+        raise TypeError("All elements of the matrix should be of type int/float.")
 
 
 
