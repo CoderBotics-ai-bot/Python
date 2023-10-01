@@ -46,29 +46,27 @@ def decompress_data(data_bits: str) -> str:
 
     return result
 
-
 def write_file_binary(file_path: str, to_write: str) -> None:
     """
-    Writes given to_write string (should only consist of 0's and 1's) as bytes in the
-    file
+    Write a binary string to a file as bytes.
+
+    This function takes a binary string (i.e., a string consisting only of '0's and '1's)
+    and writes it as bytes to a specified file.
+    If the length of the binary string is not a multiple of 8,
+    the function append '1' followed by enough '0's to make it multiple of 8.
+    If the file cannot be accessed, the function will print an error message and terminate the process.
+
+    Args:
+        file_path (str): The path to the file where the bytes will be written.
+        to_write (str): The binary string that will be written to the file.
+
+    Raises:
+        OSError: If the file is not accessible.
     """
-    byte_length = 8
+    bytes_to_write = preprocess_writable_content(to_write)
     try:
-        with open(file_path, "wb") as opened_file:
-            result_byte_array = [
-                to_write[i : i + byte_length]
-                for i in range(0, len(to_write), byte_length)
-            ]
-
-            if len(result_byte_array[-1]) % byte_length == 0:
-                result_byte_array.append("10000000")
-            else:
-                result_byte_array[-1] += "1" + "0" * (
-                    byte_length - len(result_byte_array[-1]) - 1
-                )
-
-            for elem in result_byte_array[:-1]:
-                opened_file.write(int(elem, 2).to_bytes(1, byteorder="big"))
+        with open(file_path, "wb") as file:
+            file.write(bytes_to_write)
     except OSError:
         print("File not accessible")
         sys.exit()
@@ -83,6 +81,22 @@ def initialize_lexicon() -> dict:
 
     """
     return {"0": "0", "1": "1"}
+
+
+def preprocess_writable_content(to_write: str) -> bytes:
+    byte_length = 8
+    result_byte_array = [
+        to_write[i : i + byte_length] for i in range(0, len(to_write), byte_length)
+    ]
+
+    if len(result_byte_array[-1]) % byte_length != 0:
+        result_byte_array[-1] += "1" + "0" * (
+            byte_length - len(result_byte_array[-1]) - 1
+        )
+    else:
+        result_byte_array.append("10000000")
+
+    return b"".join(bytes([int(bits, 2)]) for bits in result_byte_array)
 
 
 def add_bit_to_current_string(
