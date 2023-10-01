@@ -14,6 +14,11 @@ WEEK_DAY_NAMES = {
 }
 
 
+if __name__ == "__main__":
+    import doctest
+
+    doctest.testmod()
+
 def get_week_day(year: int, month: int, day: int) -> str:
     """Returns the week-day name out of a given date.
 
@@ -29,31 +34,39 @@ def get_week_day(year: int, month: int, day: int) -> str:
     'Saturday'
     >>> get_week_day(2040, 3, 14)
     'Wednesday'
-
     """
-    # minimal input check:
-    assert len(str(year)) > 2, "year should be in YYYY format"
-    assert 1 <= month <= 12, "month should be between 1 to 12"
-    assert 1 <= day <= 31, "day should be between 1 to 31"
+    validate_year(year)
+    validate_month(month)
+    validate_day(day)
 
-    # Doomsday algorithm:
-    century = year // 100
-    century_anchor = (5 * (century % 4) + 2) % 7
-    centurian = year % 100
-    centurian_m = centurian % 12
-    dooms_day = (
-        (centurian // 12) + centurian_m + (centurian_m // 4) + century_anchor
-    ) % 7
-    day_anchor = (
-        DOOMSDAY_NOT_LEAP[month - 1]
-        if (year % 4 != 0) or (centurian == 0 and (year % 400) == 0)
-        else DOOMSDAY_LEAP[month - 1]
-    )
+    dooms_day = calculate_dooms_day(year)
+    day_anchor = calculate_day_anchor(year, month)
+
     week_day = (dooms_day + day - day_anchor) % 7
     return WEEK_DAY_NAMES[week_day]
 
 
-if __name__ == "__main__":
-    import doctest
+def validate_year(year: int) -> None:
+    assert len(str(year)) > 2, "Year should be in YYYY format."
 
-    doctest.testmod()
+
+def validate_month(month: int) -> None:
+    assert 1 <= month <= 12, "Month should be between 1 to 12."
+
+
+def validate_day(day: int) -> None:
+    assert 1 <= day <= 31, "Day should be between 1 to 31."
+
+
+def calculate_dooms_day(year: int) -> int:
+    century = year // 100
+    century_anchor = (5 * (century % 4) + 2) % 7
+    centurian = year % 100
+    centurian_m = centurian % 12
+    return ((centurian // 12) + centurian_m + (centurian_m // 4) + century_anchor) % 7
+
+
+def calculate_day_anchor(year: int, month: int) -> int:
+    if (year % 4 != 0) or (year % 100 == 0 and year % 400 == 0):
+        return DOOMSDAY_NOT_LEAP[month - 1]
+    return DOOMSDAY_LEAP[month - 1]
