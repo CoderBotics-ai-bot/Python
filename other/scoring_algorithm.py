@@ -23,18 +23,29 @@ Thus the weights for each column are as follows:
 """
 
 
-def get_data(source_data: list[list[float]]) -> list[list[float]]:
+from typing import List
+
+def get_data(source_data: List[List[float]]) -> List[List[float]]:
     """
-    >>> get_data([[20, 60, 2012],[23, 90, 2015],[22, 50, 2011]])
-    [[20.0, 23.0, 22.0], [60.0, 90.0, 50.0], [2012.0, 2015.0, 2011.0]]
+    Transpose the input two-dimensional list.
+
+    This function takes a two-dimensional list and returns another list
+    where each inner list corresponds to a column in the original list.
+    It also ensures that all elements in the resulting list are floats.
+
+    Args:
+        source_data: A two-dimensional list of mixed numerical data.
+                     Each inner list corresponds to a row of data.
+
+    Returns:
+        A two-dimensional list where each inner list corresponds to a column
+        in the original list. All the elements are converted to floats.
+
+    Example:
+        >>> get_data([[20, 60, 2012],[23, 90, 2015],[22, 50, 2011]])
+        [[20.0, 23.0, 22.0], [60.0, 90.0, 50.0], [2012.0, 2015.0, 2011.0]]
     """
-    data_lists: list[list[float]] = []
-    for data in source_data:
-        for i, el in enumerate(data):
-            if len(data_lists) < i + 1:
-                data_lists.append([])
-            data_lists[i].append(float(el))
-    return data_lists
+    return [list(map(float, item)) for item in zip(*source_data)]
 
 
 def calculate_each_score(
