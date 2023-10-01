@@ -1,33 +1,7 @@
-# Print all subset combinations of n element in given set of r element.
+from typing import List
 
 
-def combination_util(arr, n, r, index, data, i):
-    """
-    Current combination is ready to be printed, print it
-    arr[]  ---> Input Array
-    data[] ---> Temporary array to store current combination
-    start & end ---> Staring and Ending indexes in arr[]
-    index  ---> Current index in data[]
-    r ---> Size of a combination to be printed
-    """
-    if index == r:
-        for j in range(r):
-            print(data[j], end=" ")
-        print(" ")
-        return
-    #  When no more elements are there to put in data[]
-    if i >= n:
-        return
-    # current is included, put next at next location
-    data[index] = arr[i]
-    combination_util(arr, n, r, index + 1, data, i + 1)
-    # current is excluded, replace it with
-    # next (Note that i+1 is passed, but
-    # index is not changed)
-    combination_util(arr, n, r, index, data, i + 1)
-    # The main function that prints all combinations
-    # of size r in arr[] of size n. This function
-    # mainly uses combinationUtil()
+from typing import List
 
 
 def print_combination(arr, n, r):
@@ -35,6 +9,39 @@ def print_combination(arr, n, r):
     data = [0] * r
     # Print all combination using temporary array 'data[]'
     combination_util(arr, n, r, 0, data, 0)
+
+
+
+def combination_util(
+    arr: List[int], n: int, r: int, index: int, data: List[int], i: int
+) -> None:
+    """
+    Generate all possible combinations of a given size from an input array.
+
+    :param arr: The input array.
+    :type arr: List[int]
+    :param n: The size of the input array.
+    :type n: int
+    :param r: The desired combination size.
+    :type r: int
+    :param index: The current index in the temporary data array that stores the current combination.
+    :type index: int
+    :param data: The temporary array to store current combination.
+    :type data: List[int]
+    :param i: The current index in input array.
+    :type i: int
+    """
+    if index == r:
+        print(*data[:r])
+        return
+
+    if i >= n:
+        return
+
+    data[index] = arr[i]
+
+    combination_util(arr, n, r, index + 1, data, i + 1)  # Include current element
+    combination_util(arr, n, r, index, data, i + 1)  # Exclude current element
 
 
 if __name__ == "__main__":
