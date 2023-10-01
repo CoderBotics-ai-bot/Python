@@ -14,6 +14,12 @@ from typing import None
 
 from typing import List
 
+
+from typing import List, Union, Tuple
+
+
+from typing import List, Tuple, Union
+
 # Parrameters
 OUTPUT_SIZE = (720, 1280)  # Height, Width
 SCALE_RANGE = (0.4, 0.6)  # if height or width lower than this scale, drop it.
@@ -46,29 +52,18 @@ def main() -> None:
         save_annos(file_root, annos_list)
 
 
-def get_dataset(label_dir: str, img_dir: str) -> tuple[list, list]:
-    """
-    - label_dir <type: str>: Path to label include annotation of images
-    - img_dir <type: str>: Path to folder contain images
-    Return <type: list>: List of images path and labels
-    """
+def get_dataset(
+    label_dir: str, img_dir: str
+) -> Tuple[List[str], List[List[List[Union[int, float]]]]]:
     img_paths = []
     labels = []
     for label_file in glob.glob(os.path.join(label_dir, "*.txt")):
-        label_name = label_file.split(os.sep)[-1].rsplit(".", 1)[0]
-        with open(label_file) as in_file:
-            obj_lists = in_file.readlines()
+        label_name = os.path.basename(label_file).rsplit(".", 1)[0]
         img_path = os.path.join(img_dir, f"{label_name}.jpg")
 
-        boxes = []
-        for obj_list in obj_lists:
-            obj = obj_list.rstrip("\n").split(" ")
-            xmin = float(obj[1]) - float(obj[3]) / 2
-            ymin = float(obj[2]) - float(obj[4]) / 2
-            xmax = float(obj[1]) + float(obj[3]) / 2
-            ymax = float(obj[2]) + float(obj[4]) / 2
+        obj_lists = getParsedObjects(label_file)
+        boxes = getBoundingBoxes(obj_lists)
 
-            boxes.append([int(obj[0]), xmin, ymin, xmax, ymax])
         if not boxes:
             continue
         img_paths.append(img_path)
@@ -78,6 +73,42 @@ def get_dataset(label_dir: str, img_dir: str) -> tuple[list, list]:
 def generate_file_root(output_dir: str, path: str, letter_code: str) -> str:
     file_name = path.split(os.sep)[-1].rsplit(".", 1)[0]
     return f"{output_dir}/{file_name}_MOSAIC_{letter_code}"
+
+def getParsedObjects(label_file: str) -> List[str]:
+    """Reads and parses object lists from a given label file.
+
+    Args:
+        label_file (str): The path to the label file.
+
+    Returns:
+        List[str]: A list of parsed objects.
+    """
+    with open(label_file) as in_file:
+        obj_lists = in_file.readlines()
+    return obj_lists
+
+
+def getBoundingBoxes(obj_lists: List[str]) -> List[List[Union[int, float]]]:
+    """Calculates bounding boxes coordinates for given list of parsed objects.
+
+    Args:
+        obj_lists (List[str]): A list of parsed objects.
+
+    Returns:
+        List[List[Union[int, float]]]: A list of bounding boxes.
+            Each bounding box is a list where first element is an object id
+            and rest elements represent bounding box coordinates.
+    """
+    boxes = []
+    for obj_list in obj_lists:
+        obj = obj_list.rstrip("\n").split(" ")
+        xmin = float(obj[1]) - float(obj[3]) / 2
+        ymin = float(obj[2]) - float(obj[4]) / 2
+        xmax = float(obj[1]) + float(obj[3]) / 2
+        ymax = float(obj[2]) + float(obj[4]) / 2
+
+        boxes.append([int(obj[0]), xmin, ymin, xmax, ymax])
+    return boxes
 
 
 def save_image(file_root: str, new_image) -> None:
