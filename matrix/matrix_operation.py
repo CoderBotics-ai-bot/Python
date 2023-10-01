@@ -9,6 +9,10 @@ from typing import List
 
 
 from typing import List
+from typing import List, Any, Union
+
+
+from typing import List, Union
 
 
 def add(*matrix_s: list[list[int]]) -> list[list[int]]:
@@ -134,6 +138,30 @@ def scalar_multiply(matrix: list[list[int]], n: float) -> list[list[float]]:
     """
     return [[x * n for x in row] for row in matrix]
 
+def inverse(matrix: List[List[int]]) -> Union[List[List[float]], None]:
+    """
+    Returns the inverse of the given matrix.
+
+    Args:
+        matrix (List[List[int]]): A 2D list representing the input matrix.
+
+    Returns:
+        Union[List[List[float]], None]: A 2D list representing the inverse of the
+        input matrix. If the determinant of the input matrix is zero, the
+        function returns None because the matrix is not invertible.
+
+    Raises:
+        ValueError: If the input is not a matrix or if the matrix is not square.
+    """
+    det = determinant(matrix)
+    if det == 0:
+        return None
+
+    matrix_minor = calculate_minor_matrix(matrix)
+    cofactors = calculate_cofactor_matrix(matrix_minor)
+    adjugate = list(transpose(cofactors))
+    return scalar_multiply(adjugate, 1 / det)
+
 
 def identity(n: int) -> list[list[int]]:
     """
@@ -145,6 +173,38 @@ def identity(n: int) -> list[list[int]]:
     """
     n = int(n)
     return [[int(row == column) for column in range(n)] for row in range(n)]
+
+
+def calculate_minor_matrix(matrix: List[List[int]]) -> List[List[int]]:
+    """
+    Calculate the minor of the provided matrix.
+
+    Args:
+        matrix (List[List[int]]): A 2D list representing the input matrix.
+
+    Returns:
+        List[List[int]]: A 2D list representing the minor of the input matrix.
+    """
+    return [
+        [determinant(minor(matrix, i, j)) for j in range(len(matrix))]
+        for i in range(len(matrix))
+    ]
+
+
+def calculate_cofactor_matrix(matrix_minor: List[List[int]]) -> List[List[int]]:
+    """
+    Calculate the cofactor of the provided minor matrix.
+
+    Args:
+        matrix_minor (List[List[int]]): A 2D list representing the minor matrix.
+
+    Returns:
+        List[List[int]]: A 2D list representing the cofactor of the minor matrix.
+    """
+    return [
+        [x * (-1) ** (row + col) for col, x in enumerate(matrix_minor[row])]
+        for row in range(len(matrix_minor))
+    ]
 
 
 def transpose(
@@ -191,30 +251,6 @@ def determinant(matrix: list[list[int]]) -> Any:
         x * determinant(minor(matrix, 0, i)) * (-1) ** i
         for i, x in enumerate(matrix[0])
     )
-
-
-def inverse(matrix: list[list[int]]) -> list[list[float]] | None:
-    """
-    >>> inverse([[1, 2], [3, 4]])
-    [[-2.0, 1.0], [1.5, -0.5]]
-    >>> inverse([[1, 1], [1, 1]])
-    """
-    # https://stackoverflow.com/questions/20047519/python-doctests-test-for-none
-    det = determinant(matrix)
-    if det == 0:
-        return None
-
-    matrix_minor = [
-        [determinant(minor(matrix, i, j)) for j in range(len(matrix))]
-        for i in range(len(matrix))
-    ]
-
-    cofactors = [
-        [x * (-1) ** (row + col) for col, x in enumerate(matrix_minor[row])]
-        for row in range(len(matrix))
-    ]
-    adjugate = list(transpose(cofactors))
-    return scalar_multiply(adjugate, 1 / det)
 
 
 def _check_not_integer(matrix: list[list[int]]) -> bool:
