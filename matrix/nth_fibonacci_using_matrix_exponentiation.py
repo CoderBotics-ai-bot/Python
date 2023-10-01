@@ -123,20 +123,16 @@ def fibonacci_helper(
 
 
 def main() -> None:
+    """
+    Test and compares the performance of the 'nth_fibonacci_matrix' and 'nth_fibonacci_bruteforce' functions.
+    """
     for ordinal in "0th 1st 2nd 3rd 10th 100th 1000th".split():
-        n = int("".join(c for c in ordinal if c in "0123456789"))  # 1000th --> 1000
-        print(
-            f"{ordinal} fibonacci number using matrix exponentiation is "
-            f"{nth_fibonacci_matrix(n)} and using bruteforce is "
-            f"{nth_fibonacci_bruteforce(n)}\n"
-        )
+        n = parse_ordinal_number(ordinal)
+        print_fibonacci_results(n, nth_fibonacci_matrix(n), nth_fibonacci_bruteforce(n))
+    # Uncomment these when running timing tests.
     # from timeit import timeit
-    # print(timeit("nth_fibonacci_matrix(1000000)",
-    #              "from main import nth_fibonacci_matrix", number=5))
-    # print(timeit("nth_fibonacci_bruteforce(1000000)",
-    #              "from main import nth_fibonacci_bruteforce", number=5))
-    # 2.3342058970001744
-    # 57.256506615000035
+    # print(timeit("nth_fibonacci_matrix(1000000)", "from main import nth_fibonacci_matrix", number=5))
+    # print(timeit("nth_fibonacci_bruteforce(1000000)", "from main import nth_fibonacci_bruteforce", number=5))
 
 
 if __name__ == "__main__":
@@ -144,3 +140,32 @@ if __name__ == "__main__":
 
     doctest.testmod()
     main()
+
+def parse_ordinal_number(ordinal_number: str) -> int:
+    """
+    Convert an ordinal number string (like "1st", "2nd") to an integer.
+
+    Args:
+        ordinal_number: String representing the ordinal number.
+
+    Returns:
+        Integer representation of the ordinal number.
+    """
+    return int("".join(c for c in ordinal_number if c in "0123456789"))
+
+
+def print_fibonacci_results(
+    n: int, nth_fibonacci_matrix: int, nth_fibonacci_bruteforce: int
+) -> None:
+    """
+    Print the fibonacci results obtained by different methods.
+
+    Args:
+        n: Integer input for calculating fibonacci.
+        nth_fibonacci_matrix: Result from the matrix method.
+        nth_fibonacci_bruteforce: Result from the brute force method.
+    """
+    print(
+        f"Fibonacci number for {n} using matrix exponentiation is {nth_fibonacci_matrix}"
+        f" and using bruteforce is {nth_fibonacci_bruteforce}\n"
+    )
