@@ -7,29 +7,38 @@ A Pascal's triangle is a triangular array containing binomial coefficients.
 https://en.wikipedia.org/wiki/Pascal%27s_triangle
 """
 
-
 def print_pascal_triangle(num_rows: int) -> None:
     """
-    Print Pascal's triangle for different number of rows
-    >>> print_pascal_triangle(5)
-        1
-       1 1
-      1 2 1
-     1 3 3 1
-    1 4 6 4 1
+    Prints a formatted Pascal's triangle for a given number of rows.
+
+    The function takes an integer as input which represents the number of rows in the Pascal's triangle.
+    It generates the Pascal's triangle using the `generate_pascal_triangle` function, then prints it
+    in a triangle format where each value is separated by a space and each row is centered.
+
+    Args:
+        num_rows (int): The number of rows in the Pascal's triangle.
+
+    Returns:
+        None
+
+    Raises:
+        TypeError: An error occurs if the input argument is not of 'int' type.
+        ValueError: An error occurs if the input value is less than zero.
+
+    Doctest:
+        >>> print_pascal_triangle(5)
+            1
+           1 1
+          1 2 1
+         1 3 3 1
+        1 4 6 4 1
     """
     triangle = generate_pascal_triangle(num_rows)
-    for row_idx in range(num_rows):
-        # Print left spaces
-        for _ in range(num_rows - row_idx - 1):
-            print(end=" ")
-        # Print row values
-        for col_idx in range(row_idx + 1):
-            if col_idx != row_idx:
-                print(triangle[row_idx][col_idx], end=" ")
-            else:
-                print(triangle[row_idx][col_idx], end="")
-        print()
+    max_len = len(" ".join(map(str, triangle[-1])))
+
+    for row in triangle:
+        row_str = " ".join(map(str, row))
+        print(row_str.center(max_len))
 
 
 def generate_pascal_triangle(num_rows: int) -> list[list[int]]:
