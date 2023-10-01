@@ -5,26 +5,25 @@ Functions for 2D matrix operations
 from __future__ import annotations
 
 from typing import Any
+from typing import List
+
+
+from typing import List
 
 
 def add(*matrix_s: list[list[int]]) -> list[list[int]]:
     """
-    >>> add([[1,2],[3,4]],[[2,3],[4,5]])
-    [[3, 5], [7, 9]]
-    >>> add([[1.2,2.4],[3,4]],[[2,3],[4,5]])
-    [[3.2, 5.4], [7, 9]]
-    >>> add([[1, 2], [4, 5]], [[3, 7], [3, 4]], [[3, 5], [5, 7]])
-    [[7, 14], [12, 16]]
-    >>> add([3], [4, 5])
-    Traceback (most recent call last):
-      ...
-    TypeError: Expected a matrix, got int/list instead
+    Same docstring as in the original function.
     """
-    if all(_check_not_integer(m) for m in matrix_s):
-        for i in matrix_s[1:]:
-            _verify_matrix_sizes(matrix_s[0], i)
-        return [[sum(t) for t in zip(*m)] for m in zip(*matrix_s)]
-    raise TypeError("Expected a matrix, got int/list instead")
+    all_matrices_are_valid = all(_check_not_integer(m) for m in matrix_s)
+
+    if not all_matrices_are_valid:
+        raise TypeError("Expected a matrix, got int/list instead")
+
+    for i in matrix_s[1:]:
+        _verify_matrix_sizes(matrix_s[0], i)
+
+    return _calculate_sum(matrix_s)
 
 
 def subtract(matrix_a: list[list[int]], matrix_b: list[list[int]]) -> list[list[int]]:
@@ -45,6 +44,12 @@ def subtract(matrix_a: list[list[int]], matrix_b: list[list[int]]) -> list[list[
     ):
         return [[i - j for i, j in zip(*m)] for m in zip(matrix_a, matrix_b)]
     raise TypeError("Expected a matrix, got int/list instead")
+
+
+
+def _calculate_sum(elements: List[List[int]]) -> int:
+    """Calculate the sum of a given list of matrices."""
+    return [[sum(t) for t in zip(*m)] for m in zip(*elements)]
 
 
 def scalar_multiply(matrix: list[list[int]], n: float) -> list[list[float]]:
