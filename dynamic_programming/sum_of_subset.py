@@ -1,30 +1,36 @@
+
+
+from typing import List
+
+
 def is_sum_subset(arr: list[int], required_sum: int) -> bool:
     """
-    >>> is_sum_subset([2, 4, 6, 8], 5)
-    False
-    >>> is_sum_subset([2, 4, 6, 8], 14)
-    True
+    Checks if a subset exists within a given array of integers which carries up to a specified target sum.
+
+    Args:
+        arr (list[int]): List of integers to search for subsets.
+        required_sum (int): The target sum for the subset to reach.
+
+    Returns:
+        bool: Returns True if a subset that adds to the required_sum is found, otherwise False.
     """
-    # a subset value says 1 if that subset sum can be formed else 0
-    # initially no subsets can be formed hence False/0
     arr_len = len(arr)
-    subset = [[False] * (required_sum + 1) for _ in range(arr_len + 1)]
+    subset = initialize_subset(arr_len, required_sum)
 
     # for each arr value, a sum of zero(0) can be formed by not taking any element
     # hence True/1
     for i in range(arr_len + 1):
         subset[i][0] = True
 
-    # sum is not zero and set is empty then false
-    for i in range(1, required_sum + 1):
-        subset[0][i] = False
-
+    # start from 1 since we already handled case for sum 0
     for i in range(1, arr_len + 1):
         for j in range(1, required_sum + 1):
-            if arr[i - 1] > j:
-                subset[i][j] = subset[i - 1][j]
+            subset_value = subset[i - 1][j]
+
             if arr[i - 1] <= j:
-                subset[i][j] = subset[i - 1][j] or subset[i - 1][j - arr[i - 1]]
+                subset_value = subset_value or subset[i - 1][j - arr[i - 1]]
+
+            subset[i][j] = subset_value
 
     return subset[arr_len][required_sum]
 
@@ -33,3 +39,9 @@ if __name__ == "__main__":
     import doctest
 
     doctest.testmod()
+
+def initialize_subset(arr_len: int, required_sum: int) -> list[list[bool]]:
+    """
+    Initializes and returns a 2D list (subset) with dimensions arr_len+1 and required_sum+1
+    """
+    return [[False for _ in range(required_sum + 1)] for _ in range(arr_len + 1)]
