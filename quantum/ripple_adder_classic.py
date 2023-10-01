@@ -6,31 +6,23 @@ import qiskit
 from qiskit.providers import Backend
 
 
+import qiskit
+
+
 def store_two_classics(val1: int, val2: int) -> tuple[qiskit.QuantumCircuit, str, str]:
     """
-    Generates a Quantum Circuit which stores two classical integers
-    Returns the circuit and binary representation of the integers
+    Generates a Quantum Circuit that stores the binary natural representations of two given integer values.
+
+    Args:
+        val1 (int): The first integer value to be stored in the Quantum Circuit.
+        val2 (int): The second integer value to be stored in the Quantum Circuit.
+
+    Returns:
+        tuple[qiskit.QuantumCircuit, str, str]: A tuple containing the Quantum Circuit and the binary string
+                                               representations of the two integers.
     """
-    x, y = bin(val1)[2:], bin(val2)[2:]  # Remove leading '0b'
-
-    # Ensure that both strings are of the same length
-    if len(x) > len(y):
-        y = y.zfill(len(x))
-    else:
-        x = x.zfill(len(y))
-
-    # We need (3 * number of bits in the larger number)+1 qBits
-    # The second parameter is the number of classical registers, to measure the result
-    circuit = qiskit.QuantumCircuit((len(x) * 3) + 1, len(x) + 1)
-
-    # We are essentially "not-ing" the bits that are 1
-    # Reversed because it's easier to perform ops on more significant bits
-    for i in range(len(x)):
-        if x[::-1][i] == "1":
-            circuit.x(i)
-    for j in range(len(y)):
-        if y[::-1][j] == "1":
-            circuit.x(len(x) + j)
+    x, y = to_same_len_bin(val1, val2)
+    circuit = initialize_circuit(x, y)
 
     return circuit, x, y
 
@@ -51,6 +43,53 @@ def full_adder(
     circuit.ccx(input2_loc, carry_in, carry_out)
     circuit.cx(input2_loc, carry_in)
     circuit.cx(input1_loc, input2_loc)
+
+def to_same_len_bin(val1: int, val2: int) -> tuple[str, str]:
+    """
+    Converts two integer values into binary strings of the same length.
+
+    Args:
+        val1 (int): The first integer value to convert.
+        val2 (int): The second integer value to convert.
+
+    Returns:
+        tuple[str, str]: The binary representations of the two integers in strings of equal length.
+    """
+    x, y = bin(val1)[2:], bin(val2)[2:]  # Remove leading '0b'
+
+    # Equalize lengths of x and y
+    len_diff = len(x) - len(y)
+    if len_diff > 0:
+        y = y.zfill(len(x))
+    elif len_diff < 0:
+        x = x.zfill(len(y))
+
+    return x, y
+
+
+def initialize_circuit(x: str, y: str) -> qiskit.QuantumCircuit:
+    """
+    Initializes a Quantum Circuit based on two binary strings.
+
+    Args:
+        x (str): The binary representation of the first integer.
+        y (str): The binary representation of the second integer.
+
+    Returns:
+        qiskit.QuantumCircuit: A Quantum Circuit initialized based on the binary representations.
+    """
+    n_qbits = (len(x) * 3) + 1
+    circuit = qiskit.QuantumCircuit(n_qbits, len(x) + 1)
+
+    for idx, bit in enumerate(reversed(x)):
+        if bit == "1":
+            circuit.x(idx)
+
+    for idx, bit in enumerate(reversed(y)):
+        if bit == "1":
+            circuit.x(len(x) + idx)
+
+    return circuit
 
 
 # The default value for **backend** is the result of a function call which is not
