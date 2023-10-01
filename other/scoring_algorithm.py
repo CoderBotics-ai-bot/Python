@@ -48,60 +48,88 @@ def get_data(source_data: List[List[float]]) -> List[List[float]]:
     return [list(map(float, item)) for item in zip(*source_data)]
 
 
+
 def calculate_each_score(
-    data_lists: list[list[float]], weights: list[int]
-) -> list[list[float]]:
+    data_lists: List[List[float]], weights: List[int]
+) -> List[List[float]]:
     """
     >>> calculate_each_score([[20, 23, 22], [60, 90, 50], [2012, 2015, 2011]],
     ...                      [0, 0, 1])
     [[1.0, 0.0, 0.33333333333333337], [0.75, 0.0, 1.0], [0.25, 1.0, 0.0]]
     """
-    score_lists: list[list[float]] = []
-    for dlist, weight in zip(data_lists, weights):
-        mind = min(dlist)
-        maxd = max(dlist)
-
-        score: list[float] = []
-        # for weight 0 score is 1 - actual score
-        if weight == 0:
-            for item in dlist:
-                try:
-                    score.append(1 - ((item - mind) / (maxd - mind)))
-                except ZeroDivisionError:
-                    score.append(1)
-
-        elif weight == 1:
-            for item in dlist:
-                try:
-                    score.append((item - mind) / (maxd - mind))
-                except ZeroDivisionError:
-                    score.append(0)
-
-        # weight not 0 or 1
-        else:
-            msg = f"Invalid weight of {weight:f} provided"
-            raise ValueError(msg)
-
-        score_lists.append(score)
-
-    return score_lists
+    return [calculate_score(data, weight) for data, weight in zip(data_lists, weights)]
 
 
-def generate_final_scores(score_lists: list[list[float]]) -> list[float]:
+
+def generate_final_scores(score_lists: List[List[float]]) -> List[float]:
     """
+    Compute the sum of corresponding elements from multiple lists.
+
+    This function generates the final scores by adding up the
+    corresponding elements of sub-lists of floats in the `score_lists`.
+
+    The output list's nth element is the sum of the nth elements from
+    each input sub-list.
+
+    Parameters
+    ----------
+    score_lists : list of list of float
+        A list of lists of floats for which the corresponding elements
+        are to be summed. All sub-lists must be of equal length.
+
+    Returns
+    -------
+    list of float
+        A new list where the nth element is the sum of nth elements from
+        each sub-list in the input list.
+
+    Raises
+    ------
+    IndexError
+        If lists in `score_lists` have different lengths.
+
+    Examples
+    --------
     >>> generate_final_scores([[1.0, 0.0, 0.33333333333333337],
     ...                        [0.75, 0.0, 1.0],
     ...                        [0.25, 1.0, 0.0]])
     [2.0, 1.0, 1.3333333333333335]
-    """
-    # initialize final scores
-    final_scores: list[float] = [0 for i in range(len(score_lists[0]))]
 
-    for slist in score_lists:
-        for j, ele in enumerate(slist):
-            final_scores[j] = final_scores[j] + ele
+    """
+    # use zip() to iterate over the sublists in parallel
+    # use map() along with sum() to find the sum of the corresponding elements from each sublist
+    final_scores = list(map(sum, zip(*score_lists)))
 
     return final_scores
+
+
+def calculate_score(dlist: List[float], weight: int) -> List[float]:
+    validate_weight(weight)
+    mind = min(dlist)
+    maxd = max(dlist)
+    scores = calculate_scores_based_on_weight(dlist, mind, maxd, weight)
+    return scores
+
+
+def calculate_scores_based_on_weight(
+    dlist: List[float], min_d: float, max_d: float, weight: int
+) -> List[float]:
+    return [(item_weight_based_score(item, min_d, max_d, weight)) for item in dlist]
+
+
+def item_weight_based_score(
+    item: float, min_d: float, max_d: float, weight: int
+) -> float:
+    try:
+        score = (item - min_d) / (max_d - min_d)
+    except ZeroDivisionError:
+        score = 0
+    return 1 - score if weight == 0 else score
+
+
+def validate_weight(weight: int) -> None:
+    if weight not in [0, 1]:
+        raise ValueError(f"Invalid weight of {weight}: Weight can only be 0 or 1.")
 
 
 def procentual_proximity(
