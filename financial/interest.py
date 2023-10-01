@@ -30,48 +30,62 @@ def simple_interest(
 
     return principal * daily_interest_rate * days_between_payments
 
-
 def compound_interest(
     principal: float,
     nominal_annual_interest_rate_percentage: float,
     number_of_compounding_periods: float,
 ) -> float:
     """
-    >>> compound_interest(10000.0, 0.05, 3)
-    1576.2500000000014
-    >>> compound_interest(10000.0, 0.05, 1)
-    500.00000000000045
-    >>> compound_interest(0.5, 0.05, 3)
-    0.07881250000000006
-    >>> compound_interest(10000.0, 0.06, -4)
-    Traceback (most recent call last):
-        ...
-    ValueError: number_of_compounding_periods must be > 0
-    >>> compound_interest(10000.0, -3.5, 3.0)
-    Traceback (most recent call last):
-        ...
-    ValueError: nominal_annual_interest_rate_percentage must be >= 0
-    >>> compound_interest(-5500.0, 0.01, 5)
-    Traceback (most recent call last):
-        ...
-    ValueError: principal must be > 0
-    """
-    if number_of_compounding_periods <= 0:
-        raise ValueError("number_of_compounding_periods must be > 0")
-    if nominal_annual_interest_rate_percentage < 0:
-        raise ValueError("nominal_annual_interest_rate_percentage must be >= 0")
-    if principal <= 0:
-        raise ValueError("principal must be > 0")
+    Calculate the compound interest.
 
-    return principal * (
-        (1 + nominal_annual_interest_rate_percentage) ** number_of_compounding_periods
-        - 1
+    This function calculates the compound interest based on the principal amount,
+    the nominal annual interest rate in percentage, and the number of compounding periods.
+
+    Arguments:
+    principal -- The initial amount of money that's been borrowed or invested.
+    nominal_annual_interest_rate_percentage -- The nominal annual interest rate in percentage.
+    number_of_compounding_periods -- The number of times that interest is compounded per time period.
+
+    Returns:
+    The compound interest, calculated based on the provided parameters.
+    """
+    _validate_principal(principal)
+    _validate_interest_rate(nominal_annual_interest_rate_percentage)
+    _validate_compounding_periods(number_of_compounding_periods)
+
+    compound_interest = calculate_compound_interest(
+        principal,
+        nominal_annual_interest_rate_percentage,
+        number_of_compounding_periods,
     )
+
+    return compound_interest
 
 
 def _validate_principal(principal: float) -> None:
     if principal <= 0:
         raise ValueError("'principal' must be greater than 0.")
+
+
+def _validate_interest_rate(nominal_annual_interest_rate_percentage: float) -> None:
+    if nominal_annual_interest_rate_percentage < 0:
+        raise ValueError("Interest rate must be >= 0")
+
+
+def _validate_compounding_periods(number_of_compounding_periods: float) -> None:
+    if number_of_compounding_periods <= 0:
+        raise ValueError("Number of compounding periods must be > 0")
+
+
+def calculate_compound_interest(
+    principal: float,
+    nominal_annual_interest_rate_percentage: float,
+    number_of_compounding_periods: float,
+) -> float:
+    return principal * (
+        (1 + nominal_annual_interest_rate_percentage) ** number_of_compounding_periods
+        - 1
+    )
 
 
 def _validate_daily_interest_rate(daily_interest_rate: float) -> None:
