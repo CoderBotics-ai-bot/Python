@@ -38,25 +38,35 @@ def real_power(apparent_power: float, power_factor: float) -> float:
         )
     return apparent_power * power_factor
 
-
 def reactive_power(apparent_power: float, power_factor: float) -> float:
     """
-    Calculate reactive power from apparent power and power factor.
+    Calculate the reactive power from the apparent power and power factor.
+
+    Args:
+        apparent_power (float): The total power in an AC circuit.
+        power_factor (float): The ratio of the actual electrical power dissipated by an AC circuit.
+
+    Returns:
+        float: The reactive power in the AC circuit.
+
+    Raises:
+        TypeError: If apparent_power is not a float
+        ValueError: If power_factor isn't a number or within the range -1 and 1.
 
     Examples:
-    >>> reactive_power(100, 0.9)
-    43.58898943540673
-    >>> reactive_power(0, 0.8)
-    0.0
-    >>> reactive_power(100, -0.9)
-    43.58898943540673
+        >>> reactive_power(100, 0.9)
+        43.58898943540673
+        >>> reactive_power(0, 0.8)
+        0.0
+        >>> reactive_power(100, -0.9)
+        43.58898943540673
     """
-    if (
-        not isinstance(power_factor, (int, float))
-        or power_factor < -1
-        or power_factor > 1
-    ):
-        raise ValueError("power_factor must be a valid float value between -1 and 1.")
+    if not isinstance(apparent_power, (int, float)):
+        raise TypeError("apparent_power must be of type float.")
+
+    if not isinstance(power_factor, (int, float)) or not -1 <= power_factor <= 1:
+        raise ValueError("power_factor must be a valid number between -1 and 1.")
+
     return apparent_power * math.sqrt(1 - power_factor**2)
 
 
