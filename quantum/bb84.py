@@ -48,6 +48,20 @@ https://qiskit.org/textbook/ch-algorithms/quantum-key-distribution.html
 """
 import numpy as np
 import qiskit
+from typing import List, Tuple
+from qiskit import QuantumCircuit, Aer, execute
+
+
+from typing import List, Tuple
+from qiskit import QuantumCircuit, Aer, execute
+
+
+if __name__ == "__main__":
+    print(f"The generated key is : {bb84(8, seed=0)}")
+    from doctest import testmod
+
+    testmod()
+
 
 
 def bb84(key_len: int = 8, seed: int | None = None) -> str:
@@ -69,65 +83,75 @@ def bb84(key_len: int = 8, seed: int | None = None) -> str:
     >>> bb84(8, seed=0)
     '10110001'
     """
-    # Set up the random number generator.
-    rng = np.random.default_rng(seed=seed)
-
-    # Roughly 25% of the qubits will contribute to the key.
-    # So we take more than we need.
     num_qubits = 6 * key_len
-    # Measurement basis for Alice's qubits.
-    alice_basis = rng.integers(2, size=num_qubits)
-    # The set of states Alice will prepare.
-    alice_state = rng.integers(2, size=num_qubits)
-    # Measurement basis for Bob's qubits.
-    bob_basis = rng.integers(2, size=num_qubits)
-
-    # Quantum Circuit to simulate BB84
-    bb84_circ = qiskit.QuantumCircuit(num_qubits, name="BB84")
-
-    # Alice prepares her qubits according to rules above.
-    for index, _ in enumerate(alice_basis):
-        if alice_state[index] == 1:
-            bb84_circ.x(index)
-        if alice_basis[index] == 1:
-            bb84_circ.h(index)
-    bb84_circ.barrier()
-
-    # Bob measures the received qubits according to rules above.
-    for index, _ in enumerate(bob_basis):
-        if bob_basis[index] == 1:
-            bb84_circ.h(index)
-
-    bb84_circ.barrier()
-    bb84_circ.measure_all()
-
-    # Simulate the quantum circuit.
-    sim = qiskit.Aer.get_backend("aer_simulator")
-    # We only need to run one shot because the key is unique.
-    # Multiple shots will produce the same key.
-    job = qiskit.execute(bb84_circ, sim, shots=1, seed_simulator=seed)
-    # Returns the result of measurement.
-    result = job.result().get_counts(bb84_circ).most_frequent()
-
-    # Extracting the generated key from the simulation results.
-    # Only keep measurement results where Alice and Bob chose the same basis.
-    gen_key = "".join(
-        [
-            result_bit
-            for alice_basis_bit, bob_basis_bit, result_bit in zip(
-                alice_basis, bob_basis, result
-            )
-            if alice_basis_bit == bob_basis_bit
-        ]
+    alice_basis, alice_state, bob_basis = generate_random_bases_and_states(
+        num_qubits, seed
     )
 
-    # Get final key. Pad with 0 if too short, otherwise truncate.
-    key = gen_key[:key_len] if len(gen_key) >= key_len else gen_key.ljust(key_len, "0")
+    bb84_circuit = construct_bb84_circuit(
+        num_qubits, alice_basis, alice_state, bob_basis
+    )
+
+    result = simulate_circuit(bb84_circuit, seed)
+
+    key = extract_key_from_result(alice_basis, bob_basis, result, key_len)
+
     return key
 
 
-if __name__ == "__main__":
-    print(f"The generated key is : {bb84(8, seed=0)}")
-    from doctest import testmod
+def generate_random_bases_and_states(
+    num_qubits: int, seed: int | None
+) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+    rng = np.random.default_rng(seed=seed)
+    alice_basis = rng.integers(2, size=num_qubits)
+    alice_state = rng.integers(2, size=num_qubits)
+    bob_basis = rng.integers(2, size=num_qubits)
 
-    testmod()
+    return alice_basis, alice_state, bob_basis
+
+
+def construct_bb84_circuit(
+    num_qubits: int,
+    alice_basis: np.ndarray,
+    alice_state: np.ndarray,
+    bob_basis: np.ndarray,
+) -> QuantumCircuit:
+    bb84_circuit = QuantumCircuit(num_qubits, num_qubits, name="BB84")
+
+    for index in range(num_qubits):
+        if alice_state[index] == 1:
+            bb84_circuit.x(index)
+
+        if alice_basis[index] == 1:
+            bb84_circuit.h(index)
+
+    bb84_circuit.barrier()
+
+    for index in range(num_qubits):
+        if bob_basis[index] == 1:
+            bb84_circuit.h(index)
+
+    bb84_circuit.barrier()
+    bb84_circuit.measure(range(num_qubits), range(num_qubits))
+
+    return bb84_circuit
+
+
+def simulate_circuit(bb84_circuit: QuantumCircuit, seed: int | None) -> str:
+    simulator = Aer.get_backend("aer_simulator")
+    result = execute(bb84_circuit, simulator, shots=1, seed_simulator=seed).result()
+
+    return result.get_counts().most_frequent()
+
+
+def extract_key_from_result(
+    alice_basis: np.ndarray, bob_basis: np.ndarray, result: str, key_len: int
+) -> str:
+    key = [
+        bit
+        for alice_bit, bob_bit, bit in zip(alice_basis, bob_basis, result)
+        if alice_bit == bob_bit
+    ]
+    key = "".join(key[:key_len]).ljust(key_len, "0")
+
+    return key
