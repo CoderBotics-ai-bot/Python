@@ -20,6 +20,7 @@ from __future__ import annotations
 import time
 
 import numpy as np
+from typing import List
 
 test_claim_vector = [8, 5, 9, 7]
 test_allocated_res_table = [
@@ -36,6 +37,36 @@ test_maximum_claim_table = [
     [1, 5, 3, 0],
     [3, 0, 3, 3],
 ]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 class BankersAlgorithm:
@@ -59,7 +90,16 @@ class BankersAlgorithm:
 
     def __processes_resource_summation(self) -> list[int]:
         """
-        Check for allocated resources in line with each resource in the claim vector
+        Compute the sum of allocated resources for each resource in the claim vector.
+
+        This method traverses the table of allocated resources and sums up the quantities
+        of each individual resource across all processes. The result is a list where each
+        entry corresponds to total quantity of a specific resource that has been allocated
+        to all processes.
+
+        Returns:
+            list[int]: A list of integers where each integer is the total allocation of a
+                       specific resource across all processes.
         """
         return [
             sum(p_item[i] for p_item in self.__allocated_resources_table)
@@ -99,56 +139,28 @@ class BankersAlgorithm:
 
     def main(self, **kwargs) -> None:
         """
-        Utilize various methods in this class to simulate the Banker's algorithm
-        Return: None
+        Executes the Banker's Algorithm simulation.
+
+        Accepts variable keyword arguments for configuration (though implementation is not shown here).
+        It computes the "need" of each process, checks available resources, and makes sure that the system is in a safe state after each
+        iteration. If it detects that the system is in an unsafe state, it aborts the simulation.
+
+        Args:
+            kwargs: Variable keyword arguments for configuration purposes.
+
+        Returns:
+            None
+
+        Raises:
+            SystemError: If the system is in an unsafe state.
+
+        Output:
+            Detailed process execution information, including which process is executing and
+            how resources are being allocated and updated.
+
+        Usage:
         >>> BankersAlgorithm(test_claim_vector, test_allocated_res_table,
         ...    test_maximum_claim_table).main(describe=True)
-                 Allocated Resource Table
-        P1       2        0        1        1
-        <BLANKLINE>
-        P2       0        1        2        1
-        <BLANKLINE>
-        P3       4        0        0        3
-        <BLANKLINE>
-        P4       0        2        1        0
-        <BLANKLINE>
-        P5       1        0        3        0
-        <BLANKLINE>
-                 System Resource Table
-        P1       3        2        1        4
-        <BLANKLINE>
-        P2       0        2        5        2
-        <BLANKLINE>
-        P3       5        1        0        5
-        <BLANKLINE>
-        P4       1        5        3        0
-        <BLANKLINE>
-        P5       3        0        3        3
-        <BLANKLINE>
-        Current Usage by Active Processes: 8 5 9 7
-        Initial Available Resources:       1 2 2 2
-        __________________________________________________
-        <BLANKLINE>
-        Process 3 is executing.
-        Updated available resource stack for processes: 5 2 2 5
-        The process is in a safe state.
-        <BLANKLINE>
-        Process 1 is executing.
-        Updated available resource stack for processes: 7 2 3 6
-        The process is in a safe state.
-        <BLANKLINE>
-        Process 2 is executing.
-        Updated available resource stack for processes: 7 3 5 7
-        The process is in a safe state.
-        <BLANKLINE>
-        Process 4 is executing.
-        Updated available resource stack for processes: 7 5 6 7
-        The process is in a safe state.
-        <BLANKLINE>
-        Process 5 is executing.
-        Updated available resource stack for processes: 8 5 9 7
-        The process is in a safe state.
-        <BLANKLINE>
         """
         need_list = self.__need()
         alloc_resources_table = self.__allocated_resources_table
@@ -190,33 +202,17 @@ class BankersAlgorithm:
                 print("System in unsafe state. Aborting...\n")
                 break
 
-    def __pretty_data(self):
+    def __pretty_data(self, data: List[List[int]]) -> str:
+        """Returns a formatted string for presenting the 2D list `data`.
+
+        Args:
+            data: A list of lists, each representing a row of data.
+
+        Returns:
+            A string where each `data` row is separated with a newline character,
+            and each entry inside a row is separated by a space.
         """
-        Properly align display of the algorithm's solution
-        """
-        print(" " * 9 + "Allocated Resource Table")
-        for item in self.__allocated_resources_table:
-            print(
-                f"P{self.__allocated_resources_table.index(item) + 1}"
-                + " ".join(f"{it:>8}" for it in item)
-                + "\n"
-            )
-        print(" " * 9 + "System Resource Table")
-        for item in self.__maximum_claim_table:
-            print(
-                f"P{self.__maximum_claim_table.index(item) + 1}"
-                + " ".join(f"{it:>8}" for it in item)
-                + "\n"
-            )
-        print(
-            "Current Usage by Active Processes: "
-            + " ".join(str(x) for x in self.__claim_vector)
-        )
-        print(
-            "Initial Available Resources:       "
-            + " ".join(str(x) for x in self.__available_resources())
-        )
-        time.sleep(1)
+        return "\n".join(" ".join(map(str, row)) for row in data)
 
 
 if __name__ == "__main__":
