@@ -7,6 +7,7 @@ import cv2
 
 
 from pathlib import Path
+from typing import List, Tuple
 
 """
 Flip image and bounding box for computer vision task
@@ -43,45 +44,40 @@ def main() -> None:
         save_annotations(new_annos[index], file_root)
 
 
-def get_dataset(label_dir: str, img_dir: str) -> tuple[list, list]:
-    """
-    - label_dir <type: str>: Path to label include annotation of images
-    - img_dir <type: str>: Path to folder contain images
-    Return <type: list>: List of images path and labels
-    """
-    img_paths = []
-    labels = []
-    for label_file in glob.glob(os.path.join(label_dir, "*.txt")):
-        label_name = label_file.split(os.sep)[-1].rsplit(".", 1)[0]
-        with open(label_file) as in_file:
-            obj_lists = in_file.readlines()
-        img_path = os.path.join(img_dir, f"{label_name}.jpg")
-
-        boxes = []
-        for obj_list in obj_lists:
-            obj = obj_list.rstrip("\n").split(" ")
-            boxes.append(
-                [
-                    int(obj[0]),
-                    float(obj[1]),
-                    float(obj[2]),
-                    float(obj[3]),
-                    float(obj[4]),
-                ]
-            )
-        if not boxes:
-            continue
-        img_paths.append(img_path)
-        labels.append(boxes)
-    return img_paths, labels
-
-
 def get_file_name(path: str) -> str:
     return Path(path).stem
+
+def get_dataset(
+    label_dir: str, img_dir: str
+) -> Tuple[List[str], List[List[List[float]]]]:
+    img_paths, labels = [], []
+
+    for label_file in sorted(glob.glob(f"{label_dir}/*.txt")):
+        label_name = Path(label_file).stem
+        boxes = parse_boxes_from_file(label_file)
+        if not boxes:
+            continue
+        img_path = str(Path(img_dir) / f"{label_name}.jpg")
+        img_paths.append(img_path)
+        labels.append(boxes)
+
+    return img_paths, labels
 
 
 def save_image(image, file_root: str) -> None:
     cv2.imwrite(f"/{file_root}.jpg", image, [cv2.IMWRITE_JPEG_QUALITY, 85])
+
+
+def parse_boxes_from_file(file_path: str) -> List[List[float]]:
+    with open(file_path) as in_file:
+        obj_lists = in_file.readlines()
+
+    return [parse_single_box(obj_list) for obj_list in obj_lists]
+
+
+def parse_single_box(obj_list: str) -> List[float]:
+    obj = obj_list.rstrip("\n").split(" ")
+    return [int(obj[0])] + [float(x) for x in obj[1:]]
 
 
 def save_annotations(annotations: list, file_root: str) -> None:
