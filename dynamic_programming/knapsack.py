@@ -7,6 +7,9 @@ using dynamic programming.
 """
 
 
+from typing import List, Tuple
+
+
 def mf_knapsack(i, wt, val, j):
     """
     This code involves the concept of memory functions. Here we solve the subproblems
@@ -26,17 +29,17 @@ def mf_knapsack(i, wt, val, j):
     return f[i][j]
 
 
-def knapsack(w, wt, val, n):
-    dp = [[0] * (w + 1) for _ in range(n + 1)]
 
-    for i in range(1, n + 1):
-        for w_ in range(1, w + 1):
-            if wt[i - 1] <= w_:
-                dp[i][w_] = max(val[i - 1] + dp[i - 1][w_ - wt[i - 1]], dp[i - 1][w_])
-            else:
-                dp[i][w_] = dp[i - 1][w_]
+def knapsack(
+    w: int, wt: List[int], val: List[int], n: int
+) -> Tuple[int, List[List[int]]]:
+    """
+    Refactored knapsack 0/1 problem solver. Utilizing helper functions initialize_dp and calculate_dp.
+    """
 
-    return dp[n][w_], dp
+    dp = initialize_dp(w, n)
+
+    return calculate_dp(dp, wt, val, w, n)
 
 
 def knapsack_with_example_solution(w: int, wt: list, val: list):
@@ -96,6 +99,29 @@ def knapsack_with_example_solution(w: int, wt: list, val: list):
     _construct_solution(dp_table, wt, num_items, w, example_optional_set)
 
     return optimal_val, example_optional_set
+
+
+def initialize_dp(w: int, n: int) -> List[List[int]]:
+    """
+    Initialize a 2D array dp of size (n+1) x (w+1) filled with zeros.
+    """
+    return [[0 for _ in range(w + 1)] for _ in range(n + 1)]
+
+
+def calculate_dp(
+    dp: List[List[int]], wt: List[int], val: List[int], w: int, n: int
+) -> Tuple[int, List[List[int]]]:
+    """
+    Utilize dynamic programming approach to calculate the maximum value that could be put in a knapsack of capacity w.
+    """
+    for i in range(1, n + 1):
+        for w_ in range(1, w + 1):
+            if wt[i - 1] <= w_:
+                dp[i][w_] = max(val[i - 1] + dp[i - 1][w_ - wt[i - 1]], dp[i - 1][w_])
+            else:
+                dp[i][w_] = dp[i - 1][w_]
+
+    return dp[n][w], dp
 
 
 def _construct_solution(dp: list, wt: list, i: int, j: int, optimal_set: set):
