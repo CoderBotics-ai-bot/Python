@@ -8,6 +8,10 @@ frequent subgraphs and maximum common subgraphs.
 
 URL: https://www.researchgate.net/publication/235255851
 """
+from typing import List
+
+
+from typing import List
 # fmt: off
 edge_array = [
     ['ab-e1', 'ac-e3', 'ad-e5', 'bc-e4', 'bd-e2', 'be-e6', 'bh-e12', 'cd-e2', 'ce-e4',
@@ -36,19 +40,6 @@ def get_distinct_edge(edge_array):
     return list(distinct_edge)
 
 
-def get_bitcode(edge_array, distinct_edge):
-    """
-    Return bitcode of distinct_edge
-    """
-    bitcode = ["0"] * len(edge_array)
-    for i, row in enumerate(edge_array):
-        for item in row:
-            if distinct_edge in item[0]:
-                bitcode[i] = "1"
-                break
-    return "".join(bitcode)
-
-
 def get_frequency_table(edge_array):
     """
     Returns Frequency Table
@@ -68,6 +59,31 @@ def get_frequency_table(edge_array):
         for k, v in sorted(frequency_table.items(), key=lambda v: v[1][0], reverse=True)
     ]
     return sorted_frequency_table
+
+
+
+def get_bitcode(edge_array: List[List[str]], distinct_edge: str) -> str:
+    """
+    Returns the bitcode of the distinct_edge in the edge array.
+
+    The bitcode represents the presence of an edge in each row of the edge array.
+    It is a string of 1's and 0's, where '1' represents the presence of distinct_edge
+    in the row and '0' represents the absence.
+
+    Args:
+        edge_array (List[List[str]]): The array of edge lists.
+        distinct_edge (str): The distinct edge for which to compute the bitcode.
+
+    Returns:
+        str: The bitcode represented as a string.
+    """
+    bitcode = ["0"] * len(edge_array)  # Initialize bitcode with '0's
+    for i, row in enumerate(edge_array):
+        for item in row:
+            if distinct_edge in item:
+                bitcode[i] = "1"
+                break
+    return "".join(bitcode)
 
 
 def get_nodes(frequency_table):
