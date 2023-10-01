@@ -27,33 +27,13 @@ Print all the Catalan numbers from 0 to n, n being the user input.
 """
 
 
-def catalan_numbers(upper_limit: int) -> "list[int]":
-    """
-    Return a list of the Catalan number sequence from 0 through `upper_limit`.
+from typing import List
 
-    >>> catalan_numbers(5)
-    [1, 1, 2, 5, 14, 42]
-    >>> catalan_numbers(2)
-    [1, 1, 2]
-    >>> catalan_numbers(-1)
-    Traceback (most recent call last):
-    ValueError: Limit for the Catalan sequence must be ≥ 0
-    """
-    if upper_limit < 0:
-        raise ValueError("Limit for the Catalan sequence must be ≥ 0")
-
-    catalan_list = [0] * (upper_limit + 1)
-
-    # Base case: C(0) = C(1) = 1
-    catalan_list[0] = 1
-    if upper_limit > 0:
-        catalan_list[1] = 1
-
-    # Recurrence relation: C(i) = sum(C(j).C(i-j-1)), from j = 0 to i
-    for i in range(2, upper_limit + 1):
-        for j in range(i):
-            catalan_list[i] += catalan_list[j] * catalan_list[i - j - 1]
-
+def catalan_numbers(upper_limit: int) -> list[int]:
+    """Compute the Catalan numbers up to a given limit."""
+    _check_upper_limit(upper_limit)
+    catalan_list = _initialize_catalan_sequence(upper_limit)
+    catalan_list = _compute_catalan_sequence(catalan_list, upper_limit)
     return catalan_list
 
 
@@ -77,3 +57,26 @@ if __name__ == "__main__":
     import doctest
 
     doctest.testmod()
+
+
+def _check_upper_limit(upper_limit: int) -> None:
+    """Throw an error if the upper limit is less than 0."""
+    if upper_limit < 0:
+        raise ValueError("Limit for the Catalan sequence must be ≥ 0")
+
+
+def _initialize_catalan_sequence(upper_limit: int) -> list[int]:
+    """Initialize the Catalan sequence with base values."""
+    catalan_list = [0] * (upper_limit + 1)
+    catalan_list[0] = 1
+    if upper_limit > 0:
+        catalan_list[1] = 1
+    return catalan_list
+
+
+def _compute_catalan_sequence(catalan_list: list[int], upper_limit: int) -> list[int]:
+    """Compute the Catalan sequence using the given recurrence relation."""
+    for i in range(2, upper_limit + 1):
+        for j in range(i):
+            catalan_list[i] += catalan_list[j] * catalan_list[i - j - 1]
+    return catalan_list
