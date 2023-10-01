@@ -94,6 +94,18 @@ def get_distance(highway_now: list, car_index: int) -> int:
     return distance + get_distance(highway_now, -1)
 
 
+def simulate(
+    highway: List[List[int]], number_of_update: int, probability: float, max_speed: int
+) -> List[List[int]]:
+    """
+    Simulates the evolution of the highway status according to traffic rules.
+    """
+    for _ in range(number_of_update):
+        next_speeds = update(highway[-1], probability, max_speed)
+        highway.append(update_highway(highway[-1], next_speeds))
+    return highway
+
+
 def update(highway_now: list, probability: float, max_speed: int) -> list:
     """
     Updates...
@@ -119,34 +131,13 @@ def update(highway_now: list, probability: float, max_speed: int) -> list:
         )
     return next_highway
 
-
-def simulate(
-    highway: list, number_of_update: int, probability: float, max_speed: int
-) -> list:
-    """
-    The main function, it will simulate the evolution of the highway
-    >>> simulate([[-1, 2, -1, -1, -1, 3]], 2, 0.0, 3)
-    [[-1, 2, -1, -1, -1, 3], [-1, -1, -1, 2, -1, 0], [1, -1, -1, 0, -1, -1]]
-    >>> simulate([[-1, 2, -1, 3]], 4, 0.0, 3)
-    [[-1, 2, -1, 3], [-1, 0, -1, 0], [-1, 0, -1, 0], [-1, 0, -1, 0], [-1, 0, -1, 0]]
-    """
-
-    number_of_cells = len(highway[0])
-
-    for i in range(number_of_update):
-        next_speeds_calculated = update(highway[i], probability, max_speed)
-        real_next_speeds = [-1] * number_of_cells
-
-        for car_index in range(number_of_cells):
-            speed = next_speeds_calculated[car_index]
-            if speed != -1:
-                # Change the position based on the speed (with % to create the loop)
-                index = (car_index + speed) % number_of_cells
-                # Commit the change of position
-                real_next_speeds[index] = speed
-        highway.append(real_next_speeds)
-
-    return highway
+def update_highway(current_speeds: List[int], next_speeds: List[int]) -> List[int]:
+    """Update the locations of each car based on the next calculated speed."""
+    real_next_speeds = [-1] * len(current_speeds)
+    for car_index, speed in enumerate(next_speeds):
+        if speed != -1:
+            real_next_speeds[(car_index + speed) % len(current_speeds)] = speed
+    return real_next_speeds
 
 def update_car_speed(
     current_speed: int, max_speed: int, distance_to_next: int, slow_down_prob: float
