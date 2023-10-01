@@ -6,6 +6,9 @@ a value 1 in the island. Return the maximum area of an island in a grid. If ther
 island, return 0.
 """
 
+
+from typing import List, Set
+
 matrix = [
     [0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0],
     [0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0],
@@ -29,27 +32,40 @@ def is_safe(row: int, col: int, rows: int, cols: int) -> bool:
     """
     return 0 <= row < rows and 0 <= col < cols
 
-
 def depth_first_search(row: int, col: int, seen: set, mat: list[list[int]]) -> int:
     """
-    Returns the current area of the island
+    Uses Depth-First Search (DFS) algorithm to compute the size of an island in a matrix.
+    The island is defined as a group of '1's connected either horizontally or vertically (not diagonally).
+    The function begins the search from a specific point (specified by 'row' and 'col' arguments),
+    exploring as far as possible along each branch before backtracking.
 
-    >>> depth_first_search(0, 0, set(), matrix)
-    0
+    Args:
+    row (int): Row index from where the DFS should start.
+    col (int): Column index from where the DFS should start.
+    seen (set): A set storing all the matrix positions ((row, col) tuples) that have been visited.
+    mat (list[list[int]]): 2D list of integers representing the matrix (1 represents land, 0 represents water).
+
+    Returns:
+    int: The size of the island.
+
+    Examples:
+    >>> depth_first_search(0, 0, set(), [[0, 0, 1, 0], [1, 1, 0, 0], [0, 1, 1, 0], [0, 0, 0, 1]])
+    1
+    >>> depth_first_search(1, 1, set(), [[0, 0, 1, 0], [1, 1, 0, 0], [0, 1, 1, 0], [0, 0, 0, 1]])
+    4
     """
     rows = len(mat)
     cols = len(mat[0])
-    if is_safe(row, col, rows, cols) and (row, col) not in seen and mat[row][col] == 1:
-        seen.add((row, col))
-        return (
-            1
-            + depth_first_search(row + 1, col, seen, mat)
-            + depth_first_search(row - 1, col, seen, mat)
-            + depth_first_search(row, col + 1, seen, mat)
-            + depth_first_search(row, col - 1, seen, mat)
-        )
-    else:
+
+    if not is_safe(row, col, rows, cols) or (row, col) in seen or mat[row][col] != 1:
         return 0
+
+    seen.add((row, col))
+
+    directions = [(1, 0), (-1, 0), (0, 1), (0, -1)]
+    return 1 + sum(
+        depth_first_search(row + dr, col + dc, seen, mat) for dr, dc in directions
+    )
 
 
 def find_max_area(mat: list[list[int]]) -> int:
