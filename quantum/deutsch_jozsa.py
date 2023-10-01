@@ -68,24 +68,33 @@ def dj_algorithm(
 ) -> qiskit.QuantumCircuit:
     """
     Returns the complete Deutsch-Jozsa Quantum Circuit,
-    adding Input & Output registers and Hadamard & Measurement Gates,
-    to the Oracle Circuit passed in arguments
+    which includes the input and output registers, and Hadamard and Measurement Gates,
+    added to the Oracle Circuit passed in arguments.
+
+    The Deutsch-Jozsa algorithm is a deterministic quantum algorithm
+    devised by David Deutsch and Richard Jozsa. Given a black box quantum computer
+    (known as an oracle) that implements a certain function, the task is to determine
+    whether this function is constant or balanced.
+
+    Parameters:
+    oracle (qiskit.QuantumCircuit): The oracle circuit which represents the function to be evaluated.
+    num_qubits (int): The number of qubits to be used in the quantum circuit.
+
+    Returns:
+    qiskit.QuantumCircuit: The complete Deutsch-Jozsa Quantum Circuit.
+
     """
     dj_circuit = qiskit.QuantumCircuit(num_qubits + 1, num_qubits)
     # Set up the output qubit:
     dj_circuit.x(num_qubits)
     dj_circuit.h(num_qubits)
     # And set up the input register:
-    for qubit in range(num_qubits):
-        dj_circuit.h(qubit)
+    apply_hadamard_to_all(dj_circuit, num_qubits)
     # Let's append the oracle gate to our circuit:
     dj_circuit.append(oracle, range(num_qubits + 1))
     # Finally, perform the H-gates again and measure:
-    for qubit in range(num_qubits):
-        dj_circuit.h(qubit)
-
-    for i in range(num_qubits):
-        dj_circuit.measure(i, i)
+    apply_hadamard_to_all(dj_circuit, num_qubits)
+    measure_all_qubits(dj_circuit, num_qubits)
 
     return dj_circuit
 
@@ -96,6 +105,23 @@ def handle_balanced_case(oracle_qc: qiskit.QuantumCircuit, num_qubits: int) -> N
     x_gates(oracle_qc, b_str)
     controlled_not_gates(oracle_qc, num_qubits)
     x_gates(oracle_qc, b_str)
+
+
+
+def apply_hadamard_to_all(qc: qiskit.QuantumCircuit, num_qubits: int) -> None:
+    """
+    Applies the hadarmard gate to all qubits in the circuit.
+    """
+    for i in range(num_qubits):
+        qc.h(i)
+
+
+def measure_all_qubits(qc: qiskit.QuantumCircuit, num_qubits: int) -> None:
+    """
+    Measures all qubits in the circuit.
+    """
+    for i in range(num_qubits):
+        qc.measure(i, i)
 
 
 def get_random_binary_string(num_qubits: int) -> str:
