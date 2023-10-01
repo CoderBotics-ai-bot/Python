@@ -8,6 +8,12 @@ import os
 import sys
 
 
+from typing import Tuple, Dict
+
+
+from typing import List
+
+
 def read_file_binary(file_path: str) -> str:
     """
     Reads given file as bytes and returns them as a long string
@@ -40,35 +46,12 @@ def add_key_to_lexicon(
 
     lexicon[curr_string + "1"] = bin(index)[2:]
 
-
 def compress_data(data_bits: str) -> str:
-    """
-    Compresses given data_bits using Lempel–Ziv–Welch compression algorithm
-    and returns the result as a string
-    """
-    lexicon = {"0": "0", "1": "1"}
-    result, curr_string = "", ""
-    index = len(lexicon)
-
-    for i in range(len(data_bits)):
-        curr_string += data_bits[i]
-        if curr_string not in lexicon:
-            continue
-
-        last_match_id = lexicon[curr_string]
-        result += last_match_id
-        add_key_to_lexicon(lexicon, curr_string, index, last_match_id)
-        index += 1
-        curr_string = ""
-
-    while curr_string != "" and curr_string not in lexicon:
-        curr_string += "0"
-
-    if curr_string != "":
-        last_match_id = lexicon[curr_string]
-        result += last_match_id
-
-    return result
+    lexicon = initialize_lexicon()
+    compressed_data, remainder = compress_bits(data_bits, lexicon)
+    if remainder:
+        compressed_data += process_remainder(remainder, lexicon)
+    return compressed_data
 
 
 def add_file_length(source_path: str, compressed: str) -> str:
@@ -82,32 +65,102 @@ def add_file_length(source_path: str, compressed: str) -> str:
 
     return "0" * (length_length - 1) + file_length_binary + compressed
 
-
 def write_file_binary(file_path: str, to_write: str) -> None:
     """
-    Writes given to_write string (should only consist of 0's and 1's) as bytes in the
-    file
+    Writes given binary string to a file as bytes.
+
+    Args:
+        file_path (str): Path to the file where bytes will be written.
+        to_write (str): Binary string that will be written in the file as bytes.
+                        Should only consist of '0' and '1'.
+
+    Raises:
+        OSError: If the file specified by file_path is not accessible.
+        SystemExit: If the OSError is raised.
     """
     byte_length = 8
     try:
         with open(file_path, "wb") as opened_file:
-            result_byte_array = [
-                to_write[i : i + byte_length]
-                for i in range(0, len(to_write), byte_length)
-            ]
-
-            if len(result_byte_array[-1]) % byte_length == 0:
-                result_byte_array.append("10000000")
-            else:
-                result_byte_array[-1] += "1" + "0" * (
-                    byte_length - len(result_byte_array[-1]) - 1
-                )
-
-            for elem in result_byte_array:
-                opened_file.write(int(elem, 2).to_bytes(1, byteorder="big"))
+            write_bytes_array_to_file(
+                convert_string_to_byte_array(to_write, byte_length), opened_file
+            )
     except OSError:
         print("File not accessible")
         sys.exit()
+
+
+def initialize_lexicon() -> dict[str, str]:
+    return {"0": "0", "1": "1"}
+
+
+def convert_string_to_byte_array(binary_data: str, byte_length: int) -> List[str]:
+    """
+    Convert a binary string into a list of bytes (as strings).
+
+    Args:
+        binary_data (str): Binary string to be converted.
+        byte_length (int): Length of a byte in bits.
+
+    Returns:
+        List of bytes (as strings).
+    """
+    byte_array = [
+        binary_data[i : i + byte_length]
+        for i in range(0, len(binary_data), byte_length)
+    ]
+    return pad_incomplete_byte(byte_array, byte_length)
+
+
+def pad_incomplete_byte(byte_array: List[str], byte_length: int) -> List[str]:
+    """
+    Pad incomplete byte with required number of bits.
+
+    Args:
+        byte_array (List[str]): Array with bytes represented as strings.
+        byte_length (int): Length of a byte in bits.
+
+    Returns:
+        Array with padded incomplete byte.
+    """
+    last_byte = byte_array[-1]
+    if len(last_byte) % byte_length == 0:
+        byte_array.append("10000000")
+    else:
+        byte_array[-1] = last_byte + "1" + "0" * (byte_length - len(last_byte) - 1)
+
+    return byte_array
+
+
+def write_bytes_array_to_file(byte_array: List[str], file_object) -> None:
+    """
+    Write an array of bytes to a file.
+
+    Args:
+        byte_array (List[str]): Array with bytes represented as strings.
+        file_object: Object representing a file where to write bytes.
+    """
+    for byte in byte_array:
+        file_object.write(int(byte, 2).to_bytes(1, byteorder="big"))
+
+
+def compress_bits(data_bits: str, lexicon: dict[str, str]) -> Tuple[str, str]:
+    index = len(lexicon)
+    result, curr_string = "", ""
+    for i in range(len(data_bits)):
+        curr_string += data_bits[i]
+        if curr_string not in lexicon:
+            continue
+        result += lexicon[curr_string]
+        add_key_to_lexicon(lexicon, curr_string, index, lexicon[curr_string])
+        index += 1
+        curr_string = ""
+    return result, curr_string
+
+
+def process_remainder(remainder: str, lexicon: dict[str, str]) -> str:
+    while remainder and remainder not in lexicon:
+        remainder += "0"
+    return lexicon[remainder] if remainder else ""
 
 
 def compress(source_path: str, destination_path: str) -> None:
