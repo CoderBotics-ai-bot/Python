@@ -6,6 +6,9 @@ from __future__ import annotations
 
 import random
 
+
+from typing import Dict, List, Set, Tuple
+
 # Adjacency list representation of this graph:
 # https://en.wikipedia.org/wiki/File:Single_run_of_Karger%E2%80%99s_Mincut_algorithm.svg
 TEST_GRAPH = {
@@ -21,65 +24,94 @@ TEST_GRAPH = {
     "10": ["6", "7", "8", "9", "3"],
 }
 
-
-def partition_graph(graph: dict[str, list[str]]) -> set[tuple[str, str]]:
+def partition_graph(graph: Dict[str, List[str]]) -> Set[Tuple[str, str]]:
     """
-    Partitions a graph using Karger's Algorithm. Implemented from
-    pseudocode found here:
-    https://en.wikipedia.org/wiki/Karger%27s_algorithm.
-    This function involves random choices, meaning it will not give
-    consistent outputs.
-
-    Args:
-        graph: A dictionary containing adacency lists for the graph.
-            Nodes must be strings.
-
-    Returns:
-        The cutset of the cut found by Karger's Algorithm.
-
-    >>> graph = {'0':['1'], '1':['0']}
-    >>> partition_graph(graph)
-    {('0', '1')}
+    Contract the graph until only two nodes exist and return the cutset.
     """
-    # Dict that maps contracted nodes to a list of all the nodes it "contains."
-    contracted_nodes = {node: {node} for node in graph}
+    graph_copy = get_copy_with_all_nodes(graph)
+    contract_all_edges(graph_copy)
 
-    graph_copy = {node: graph[node][:] for node in graph}
+    groups = get_nodes_in_each_group(graph_copy)
 
-    while len(graph_copy) > 2:
-        # Choose a random edge.
-        u = random.choice(list(graph_copy.keys()))
-        v = random.choice(graph_copy[u])
+    return get_cutset(graph, groups)
 
-        # Contract edge (u, v) to new node uv
-        uv = u + v
-        uv_neighbors = list(set(graph_copy[u] + graph_copy[v]))
-        uv_neighbors.remove(u)
-        uv_neighbors.remove(v)
-        graph_copy[uv] = uv_neighbors
-        for neighbor in uv_neighbors:
-            graph_copy[neighbor].append(uv)
 
-        contracted_nodes[uv] = set(contracted_nodes[u].union(contracted_nodes[v]))
+if __name__ == "__main__":
+    print(partition_graph(TEST_GRAPH))
 
-        # Remove nodes u and v.
-        del graph_copy[u]
-        del graph_copy[v]
-        for neighbor in uv_neighbors:
-            if u in graph_copy[neighbor]:
-                graph_copy[neighbor].remove(u)
-            if v in graph_copy[neighbor]:
-                graph_copy[neighbor].remove(v)
 
-    # Find cutset.
-    groups = [contracted_nodes[node] for node in graph_copy]
+def get_copy_with_all_nodes(graph: Dict[str, List[str]]) -> Dict[str, List[str]]:
+    """
+    Get a copy of the graph with mapping of all nodes to themselves.
+    Each node in the graph is represented as a list of strings.
+    """
+    return {node: graph[node][:] for node in graph}
+
+
+def get_random_nodes(graph: Dict[str, List[str]]) -> Tuple[str, str]:
+    """
+    In a given graph, select a random edge and return the nodes.
+    """
+    node_u = random.choice(list(graph.keys()))
+    node_v = random.choice(graph[node_u])
+
+    return node_u, node_v
+
+
+def contract_edge(graph: Dict[str, List[str]], node_u: str, node_v: str) -> None:
+    """
+    Contract the selected edge to a new node and update its neighbors.
+    """
+    contracted_node = node_u + node_v
+    contracted_node_neighbors = set(graph[node_u] + graph[node_v])
+
+    graph[contracted_node] = list(
+        contracted_node_neighbors.difference({node_u, node_v})
+    )
+
+    for neighbor in graph[contracted_node]:
+        graph[neighbor].append(contracted_node)
+
+
+def remove_nodes(graph: Dict[str, List[str]], node_u: str, node_v: str) -> None:
+    """
+    Remove the selected nodes from the given graph.
+    """
+    del graph[node_u]
+    del graph[node_v]
+
+    for node in graph.keys():
+        graph[node] = [
+            neighbor for neighbor in graph[node] if neighbor not in {node_u, node_v}
+        ]
+
+
+def contract_all_edges(graph: Dict[str, List[str]]) -> None:
+    """
+    Keep contracting the edges until only two nodes exist in the given graph.
+    """
+    while len(graph) > 2:
+        node_u, node_v = get_random_nodes(graph)
+        contract_edge(graph, node_u, node_v)
+        remove_nodes(graph, node_u, node_v)
+
+
+def get_nodes_in_each_group(graph: Dict[str, List[str]]) -> List[List[str]]:
+    """
+    Make a list of all nodes present in each of the remaining nodes in the graph.
+    """
+    return [list(node) for node in graph.keys()]
+
+
+def get_cutset(
+    graph: Dict[str, List[str]], groups: List[List[str]]
+) -> Set[Tuple[str, str]]:
+    """
+    Get a set of tuple pairs representing the edges in the partition cutset.
+    """
     return {
         (node, neighbor)
         for node in groups[0]
         for neighbor in graph[node]
         if neighbor in groups[1]
     }
-
-
-if __name__ == "__main__":
-    print(partition_graph(TEST_GRAPH))
