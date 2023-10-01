@@ -29,6 +29,85 @@ IMG_DIR = ""
 OUTPUT_DIR = ""
 NUMBER_IMAGES = 250
 
+def update_image_and_anno(
+    all_img_list: List[str],
+    all_annos: List[List[List[Union[int, float]]]],
+    idxs: List[int],
+    output_size: Tuple[int, int],
+    scale_range: Tuple[float, float],
+    filter_scale: float = 0.0,
+) -> Tuple[np.ndarray, List[List[Union[int, float]]], str]:
+    """
+    Updates the image and its corresponding annotations based on scaling.
+    Parameters:
+        all_img_list: List of all image file paths.
+        all_annos: List of lists of annotations corresponding to each image.
+        idxs: List of indices of images from `all_img_list` to be considered.
+        output_size: Tuple specifying the desired output size (Height, Width).
+        scale_range: Tuple specifying the scaling range.
+        filter_scale: Minimum filter scale. Default value is 0.0.
+    Returns:
+        A tuple containing the updated image array, new annotations, and the file path of the first image.
+    """
+
+    def _update_quadrant(
+        scale_x: float,
+        scale_y: float,
+        img: np.ndarray,
+        img_annos: List[List[Union[int, float]]],
+        i: int,
+    ) -> Tuple[np.ndarray, List[List[Union[int, float]]]]:
+        coords_bounds = [
+            (scale_x, scale_y),
+            (1 - scale_x, scale_y),
+            (scale_x, 1 - scale_y),
+            (1 - scale_x, 1 - scale_y),
+        ]
+        x_mul, y_mul = coords_bounds[i]
+        new_size = (int(x_mul * output_size[1]), int(y_mul * output_size[0]))
+        img = cv2.resize(img, new_size)
+        new_annos = [
+            [
+                bbox[0],
+                bbox[1] * x_mul,
+                bbox[2] * y_mul,
+                bbox[3] * x_mul,
+                bbox[4] * y_mul,
+            ]
+            for bbox in img_annos
+        ]
+        return img, new_annos
+
+    output_img = np.zeros([output_size[0], output_size[1], 3], dtype=np.uint8)
+    scale_x = scale_range[0] + random.random() * (scale_range[1] - scale_range[0])
+    scale_y = scale_range[0] + random.random() * (scale_range[1] - scale_range[0])
+    divid_point_x = int(scale_x * output_size[1])
+    divid_point_y = int(scale_y * output_size[0])
+
+    scale_bounds = [
+        (0, divid_point_y, 0, divid_point_x),
+        (0, divid_point_y, divid_point_x, output_size[1]),
+        (divid_point_y, output_size[0], 0, divid_point_x),
+        (divid_point_y, output_size[0], divid_point_x, output_size[1]),
+    ]
+    new_anno = []
+    path_list = []
+    for i, index in enumerate(idxs):
+        path = all_img_list[index]
+        path_list.append(path)
+        img = cv2.imread(path)
+        img, img_annos = _update_quadrant(scale_x, scale_y, img, all_annos[index], i)
+        y1, y2, x1, x2 = scale_bounds[i]
+        output_img[y1:y2, x1:x2, :] = img
+        new_anno.extend(img_annos)
+
+    new_anno = [
+        anno
+        for anno in new_anno
+        if filter_scale < (anno[3] - anno[1]) and filter_scale < (anno[4] - anno[2])
+    ]
+    return output_img, new_anno, path_list[0]
+
 
 def main() -> None:
     img_paths, annos = get_dataset(LABEL_DIR, IMG_DIR)
@@ -130,91 +209,6 @@ def generate_annos_list(new_annos) -> list:
 def save_annos(file_root: str, annos_list: list) -> None:
     with open(f"{file_root}.txt", "w") as outfile:
         outfile.write("\n".join(line for line in annos_list))
-
-
-def update_image_and_anno(
-    all_img_list: list,
-    all_annos: list,
-    idxs: list[int],
-    output_size: tuple[int, int],
-    scale_range: tuple[float, float],
-    filter_scale: float = 0.0,
-) -> tuple[list, list, str]:
-    """
-    - all_img_list <type: list>: list of all images
-    - all_annos <type: list>: list of all annotations of specific image
-    - idxs <type: list>: index of image in list
-    - output_size <type: tuple>: size of output image (Height, Width)
-    - scale_range <type: tuple>: range of scale image
-    - filter_scale <type: float>: the condition of downscale image and bounding box
-    Return:
-        - output_img <type: narray>: image after resize
-        - new_anno <type: list>: list of new annotation after scale
-        - path[0] <type: string>: get the name of image file
-    """
-    output_img = np.zeros([output_size[0], output_size[1], 3], dtype=np.uint8)
-    scale_x = scale_range[0] + random.random() * (scale_range[1] - scale_range[0])
-    scale_y = scale_range[0] + random.random() * (scale_range[1] - scale_range[0])
-    divid_point_x = int(scale_x * output_size[1])
-    divid_point_y = int(scale_y * output_size[0])
-
-    new_anno = []
-    path_list = []
-    for i, index in enumerate(idxs):
-        path = all_img_list[index]
-        path_list.append(path)
-        img_annos = all_annos[index]
-        img = cv2.imread(path)
-        if i == 0:  # top-left
-            img = cv2.resize(img, (divid_point_x, divid_point_y))
-            output_img[:divid_point_y, :divid_point_x, :] = img
-            for bbox in img_annos:
-                xmin = bbox[1] * scale_x
-                ymin = bbox[2] * scale_y
-                xmax = bbox[3] * scale_x
-                ymax = bbox[4] * scale_y
-                new_anno.append([bbox[0], xmin, ymin, xmax, ymax])
-        elif i == 1:  # top-right
-            img = cv2.resize(img, (output_size[1] - divid_point_x, divid_point_y))
-            output_img[:divid_point_y, divid_point_x : output_size[1], :] = img
-            for bbox in img_annos:
-                xmin = scale_x + bbox[1] * (1 - scale_x)
-                ymin = bbox[2] * scale_y
-                xmax = scale_x + bbox[3] * (1 - scale_x)
-                ymax = bbox[4] * scale_y
-                new_anno.append([bbox[0], xmin, ymin, xmax, ymax])
-        elif i == 2:  # bottom-left
-            img = cv2.resize(img, (divid_point_x, output_size[0] - divid_point_y))
-            output_img[divid_point_y : output_size[0], :divid_point_x, :] = img
-            for bbox in img_annos:
-                xmin = bbox[1] * scale_x
-                ymin = scale_y + bbox[2] * (1 - scale_y)
-                xmax = bbox[3] * scale_x
-                ymax = scale_y + bbox[4] * (1 - scale_y)
-                new_anno.append([bbox[0], xmin, ymin, xmax, ymax])
-        else:  # bottom-right
-            img = cv2.resize(
-                img, (output_size[1] - divid_point_x, output_size[0] - divid_point_y)
-            )
-            output_img[
-                divid_point_y : output_size[0], divid_point_x : output_size[1], :
-            ] = img
-            for bbox in img_annos:
-                xmin = scale_x + bbox[1] * (1 - scale_x)
-                ymin = scale_y + bbox[2] * (1 - scale_y)
-                xmax = scale_x + bbox[3] * (1 - scale_x)
-                ymax = scale_y + bbox[4] * (1 - scale_y)
-                new_anno.append([bbox[0], xmin, ymin, xmax, ymax])
-
-    # Remove bounding box small than scale of filter
-    if filter_scale > 0:
-        new_anno = [
-            anno
-            for anno in new_anno
-            if filter_scale < (anno[3] - anno[1]) and filter_scale < (anno[4] - anno[2])
-        ]
-
-    return output_img, new_anno, path_list[0]
 
 
 def random_chars(number_char: int) -> str:
