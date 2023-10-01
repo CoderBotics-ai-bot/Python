@@ -8,6 +8,12 @@ from string import ascii_lowercase, digits
 import cv2
 import numpy as np
 
+
+from typing import None
+
+
+from typing import List
+
 # Parrameters
 OUTPUT_SIZE = (720, 1280)  # Height, Width
 SCALE_RANGE = (0.4, 0.6)  # if height or width lower than this scale, drop it.
@@ -19,11 +25,6 @@ NUMBER_IMAGES = 250
 
 
 def main() -> None:
-    """
-    Get images list and annotations list from input dir.
-    Update new images and annotations.
-    Save images and annotations in output dir.
-    """
     img_paths, annos = get_dataset(LABEL_DIR, IMG_DIR)
     for index in range(NUMBER_IMAGES):
         idxs = random.sample(range(len(annos)), 4)
@@ -36,22 +37,13 @@ def main() -> None:
             filter_scale=FILTER_TINY_SCALE,
         )
 
-        # Get random string code: '7b7ad245cdff75241935e4dd860f3bad'
         letter_code = random_chars(32)
-        file_name = path.split(os.sep)[-1].rsplit(".", 1)[0]
-        file_root = f"{OUTPUT_DIR}/{file_name}_MOSAIC_{letter_code}"
-        cv2.imwrite(f"{file_root}.jpg", new_image, [cv2.IMWRITE_JPEG_QUALITY, 85])
-        print(f"Succeeded {index+1}/{NUMBER_IMAGES} with {file_name}")
-        annos_list = []
-        for anno in new_annos:
-            width = anno[3] - anno[1]
-            height = anno[4] - anno[2]
-            x_center = anno[1] + width / 2
-            y_center = anno[2] + height / 2
-            obj = f"{anno[0]} {x_center} {y_center} {width} {height}"
-            annos_list.append(obj)
-        with open(f"{file_root}.txt", "w") as outfile:
-            outfile.write("\n".join(line for line in annos_list))
+        file_root = generate_file_root(OUTPUT_DIR, path, letter_code)
+
+        save_image(file_root, new_image)
+        print(f"Succeeded {index+1}/{NUMBER_IMAGES}")
+        annos_list = generate_annos_list(new_annos)
+        save_annos(file_root, annos_list)
 
 
 def get_dataset(label_dir: str, img_dir: str) -> tuple[list, list]:
@@ -82,6 +74,31 @@ def get_dataset(label_dir: str, img_dir: str) -> tuple[list, list]:
         img_paths.append(img_path)
         labels.append(boxes)
     return img_paths, labels
+
+def generate_file_root(output_dir: str, path: str, letter_code: str) -> str:
+    file_name = path.split(os.sep)[-1].rsplit(".", 1)[0]
+    return f"{output_dir}/{file_name}_MOSAIC_{letter_code}"
+
+
+def save_image(file_root: str, new_image) -> None:
+    cv2.imwrite(f"{file_root}.jpg", new_image, [cv2.IMWRITE_JPEG_QUALITY, 85])
+
+
+def generate_annos_list(new_annos) -> list:
+    annos_list = []
+    for anno in new_annos:
+        width = anno[3] - anno[1]
+        height = anno[4] - anno[2]
+        x_center = anno[1] + width / 2
+        y_center = anno[2] + height / 2
+        obj = f"{anno[0]} {x_center} {y_center} {width} {height}"
+        annos_list.append(obj)
+    return annos_list
+
+
+def save_annos(file_root: str, annos_list: list) -> None:
+    with open(f"{file_root}.txt", "w") as outfile:
+        outfile.write("\n".join(line for line in annos_list))
 
 
 def update_image_and_anno(
