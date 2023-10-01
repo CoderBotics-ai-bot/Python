@@ -7,6 +7,7 @@ https://mathworld.wolfram.com/ElementaryCellularAutomaton.html
 from __future__ import annotations
 
 from PIL import Image
+from typing import List
 
 # Define the first generation of cells
 # fmt: off
@@ -27,17 +28,33 @@ def format_ruleset(ruleset: int) -> list[int]:
     return [int(c) for c in f"{ruleset:08}"[:8]]
 
 
-def new_generation(cells: list[list[int]], rule: list[int], time: int) -> list[int]:
-    population = len(cells[0])  # 31
+
+def new_generation(cells: List[List[int]], rule: List[int], time: int) -> List[int]:
+    """
+    Generates the next generation of cells in a cellular automaton based on the given rules.
+
+    Args:
+    cells (List[List[int]]): Current states of cells.
+    rule (List[int]): The automaton evolution rules.
+    time (int): Current time step.
+
+    Returns:
+    List[int]: The state of each cell within the next generation.
+    """
+    population = len(cells[0])
+    current_generation = cells[time]
+
     next_generation = []
     for i in range(population):
-        # Get the neighbors of each cell
-        # Handle neighbours outside bounds by using 0 as their value
-        left_neighbor = 0 if i == 0 else cells[time][i - 1]
-        right_neighbor = 0 if i == population - 1 else cells[time][i + 1]
-        # Define a new cell and add it to the new generation
-        situation = 7 - int(f"{left_neighbor}{cells[time][i]}{right_neighbor}", 2)
+        # obtain 'left', 'current' and 'right' cell values
+        left = current_generation[i - 1] if i != 0 else 0
+        current = current_generation[i]
+        right = current_generation[i + 1] if i != population - 1 else 0
+
+        # determine the new cell state by the rule set, converting binary to decimal
+        situation = 7 - int(f"{left}{current}{right}", 2)
         next_generation.append(rule[situation])
+
     return next_generation
 
 
