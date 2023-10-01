@@ -6,6 +6,9 @@ import sys
 from typing import List
 
 
+from typing import Dict, Union
+
+
 class Letter:
     def __init__(self, letter: str, freq: int):
         self.letter: str = letter
@@ -88,18 +91,42 @@ def traverse_tree(root: Letter | TreeNode, bitstring: str) -> list[Letter]:
     letters += traverse_tree(treenode.right, bitstring + "1")
     return letters
 
-
 def huffman(file_path: str) -> None:
     """
-    Parse the file, build the tree, then run through the file
-    again, using the letters dictionary to find and print out the
-    bitstring for each letter.
+    Run the Huffman coding algorithm on a given file.
+
+    This function carries out the Huffman coding algorithm on a file.
+    The steps involved in the algorithm are:
+
+    1. Parse the file and create a list of Letter objects.
+    2. Build a Huffman Tree with the Letter objects.
+    3. Assign a unique bitstring to each Letter object.
+    4. Display the bitstring associated with each character.
+
+    Args:
+        file_path (str): The path of the file to encode using Huffman coding.
+
+    Raises:
+        IOError: If the file is not accessible.
     """
     letters_list = parse_file(file_path)
     root = build_tree(letters_list)
-    letters = {
+    letters = extract_bitstrings(root)
+    display_coding(file_path, letters)
+
+
+if __name__ == "__main__":
+    # pass the file path to the huffman function
+    huffman(sys.argv[1])
+
+
+def extract_bitstrings(root: Union[Letter, TreeNode]) -> Dict[str, str]:
+    return {
         k: v for letter in traverse_tree(root, "") for k, v in letter.bitstring.items()
     }
+
+
+def display_coding(file_path: str, letters: Dict[str, str]) -> None:
     print(f"Huffman Coding  of {file_path}: ")
     with open(file_path) as f:
         while True:
@@ -107,9 +134,4 @@ def huffman(file_path: str) -> None:
             if not c:
                 break
             print(letters[c], end=" ")
-    print()
-
-
-if __name__ == "__main__":
-    # pass the file path to the huffman function
-    huffman(sys.argv[1])
+    print("\n")
