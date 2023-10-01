@@ -4,18 +4,67 @@ import os
 from collections.abc import Iterator
 
 
+import os
+from typing import Iterator
+from typing import Iterator, List
+
 def good_file_paths(top_dir: str = ".") -> Iterator[str]:
+    """
+    This function generates file paths of certain file types from a specified directory.
+    It excludes files from certain subdirectories and files with certain names.
+
+    Arguments:
+    top_dir: str, optional, default is ".".
+             The root directory from which to start the search.
+
+    Returns:
+    An iterator yielding file paths as strings.
+
+    Note:
+    - Skips directories named 'scripts' and those starting with '.' or '_'.
+    - Excludes files named '__init__.py'
+    - Only includes '.py' or '.ipynb' files.
+    """
     for dir_path, dir_names, filenames in os.walk(top_dir):
-        dir_names[:] = [d for d in dir_names if d != "scripts" and d[0] not in "._"]
+        dir_names[:] = do_not_recurse_in(dir_names)
         for filename in filenames:
-            if filename == "__init__.py":
-                continue
-            if os.path.splitext(filename)[1] in (".py", ".ipynb"):
+            if is_valid_file(filename):
                 yield os.path.join(dir_path, filename).lstrip("./")
 
 
 def md_prefix(i):
     return f"{i * '  '}*" if i else "\n##"
+
+
+def do_not_recurse_in(dir_names: list) -> list:
+    """
+    Helper function to filter out unwanted directories.
+
+    Arguments:
+    dir_names: list
+               The list of directory names.
+
+    Returns:
+    A list of directory names to traverse in for os.walk.
+    """
+    return [d for d in dir_names if d != "scripts" and d[0] not in "._"]
+
+
+def is_valid_file(filename: str) -> bool:
+    """
+    Helper function to check if a file is valid.
+
+    Arguments:
+    filename: str
+              The name of the file.
+
+    Returns:
+    Bool. True if the file is valid; False otherwise.
+    """
+    return filename != "__init__.py" and os.path.splitext(filename)[1] in (
+        ".py",
+        ".ipynb",
+    )
 
 
 def print_path(old_path: str, new_path: str) -> str:
