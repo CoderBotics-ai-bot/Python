@@ -3,6 +3,12 @@ from __future__ import annotations
 import sys
 
 
+from typing import List
+
+
+from typing import Dict, Union
+
+
 class Letter:
     def __init__(self, letter: str, freq: int):
         self.letter: str = letter
@@ -20,19 +26,20 @@ class TreeNode:
         self.right: Letter | TreeNode = right
 
 
-def parse_file(file_path: str) -> list[Letter]:
+def parse_file(file_path: str) -> List[Letter]:
     """
-    Read the file and build a dict of all letters and their
-    frequencies, then convert the dict into a list of Letters.
+    Parse a file and return a sorted list of Letter objects.
+
+    Args:
+        file_path (str): The path to the file.
+
+    Returns:
+        List[Letter]: A sorted list of Letter objects representing each character
+                      in the file sorted by frequency.
     """
-    chars: dict[str, int] = {}
-    with open(file_path) as f:
-        while True:
-            c = f.read(1)
-            if not c:
-                break
-            chars[c] = chars[c] + 1 if c in chars else 1
-    return sorted((Letter(c, f) for c, f in chars.items()), key=lambda x: x.freq)
+    char_freq = _get_char_freq(file_path)
+    letters = [Letter(char, freq) for char, freq in char_freq.items()]
+    return sorted(letters, key=lambda letter: letter.freq)
 
 
 def build_tree(letters: list[Letter]) -> Letter | TreeNode:
@@ -50,6 +57,25 @@ def build_tree(letters: list[Letter]) -> Letter | TreeNode:
         response.sort(key=lambda x: x.freq)
     return response[0]
 
+def _get_char_freq(file_path: str) -> dict[str, int]:
+    """
+    Extracts characters from a file and calculates their frequency.
+
+    Args:
+        file_path (str): The path to the file.
+
+    Returns:
+        dict[str, int]: A dictionary mapping each character to its frequency.
+    """
+    char_freq = {}
+    with open(file_path) as input_file:
+        while True:
+            char = input_file.read(1)
+            if not char:
+                break
+            char_freq[char] = char_freq.get(char, 0) + 1
+    return char_freq
+
 
 def traverse_tree(root: Letter | TreeNode, bitstring: str) -> list[Letter]:
     """
@@ -65,18 +91,42 @@ def traverse_tree(root: Letter | TreeNode, bitstring: str) -> list[Letter]:
     letters += traverse_tree(treenode.right, bitstring + "1")
     return letters
 
-
 def huffman(file_path: str) -> None:
     """
-    Parse the file, build the tree, then run through the file
-    again, using the letters dictionary to find and print out the
-    bitstring for each letter.
+    Run the Huffman coding algorithm on a given file.
+
+    This function carries out the Huffman coding algorithm on a file.
+    The steps involved in the algorithm are:
+
+    1. Parse the file and create a list of Letter objects.
+    2. Build a Huffman Tree with the Letter objects.
+    3. Assign a unique bitstring to each Letter object.
+    4. Display the bitstring associated with each character.
+
+    Args:
+        file_path (str): The path of the file to encode using Huffman coding.
+
+    Raises:
+        IOError: If the file is not accessible.
     """
     letters_list = parse_file(file_path)
     root = build_tree(letters_list)
-    letters = {
+    letters = extract_bitstrings(root)
+    display_coding(file_path, letters)
+
+
+if __name__ == "__main__":
+    # pass the file path to the huffman function
+    huffman(sys.argv[1])
+
+
+def extract_bitstrings(root: Union[Letter, TreeNode]) -> Dict[str, str]:
+    return {
         k: v for letter in traverse_tree(root, "") for k, v in letter.bitstring.items()
     }
+
+
+def display_coding(file_path: str, letters: Dict[str, str]) -> None:
     print(f"Huffman Coding  of {file_path}: ")
     with open(file_path) as f:
         while True:
@@ -84,9 +134,4 @@ def huffman(file_path: str) -> None:
             if not c:
                 break
             print(letters[c], end=" ")
-    print()
-
-
-if __name__ == "__main__":
-    # pass the file path to the huffman function
-    huffman(sys.argv[1])
+    print("\n")
