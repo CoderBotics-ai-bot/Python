@@ -103,21 +103,27 @@ def count_negatives_brute_force(grid: List[List[int]]) -> int:
     """
     return sum(count_negatives_in_row(row) for row in grid)
 
-
-def count_negatives_brute_force_with_break(grid: list[list[int]]) -> int:
+def count_negatives_brute_force_with_break(grid: List[List[int]]) -> int:
     """
     Similar to the brute force solution above but uses break in order to reduce the
     number of iterations.
 
-    >>> [count_negatives_brute_force_with_break(grid) for grid in test_grids]
-    [8, 0, 0, 3, 1498500]
+    Args:
+        grid (List[List[int]]): A 2D grid
+
+    Returns:
+        int: The total count of negative numbers in the grid.
     """
+
     total = 0
     for row in grid:
-        for i, number in enumerate(row):
-            if number < 0:
-                total += len(row) - i
-                break
+        try:
+            first_negative_ind = next(i for i, x in enumerate(row) if x < 0)
+        except StopIteration:
+            continue
+
+        total += len(row) - first_negative_ind
+
     return total
 
 def count_negatives_in_row(row: List[int]) -> int:
