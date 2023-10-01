@@ -9,6 +9,9 @@ from types import ModuleType
 import pytest
 import requests
 
+
+from typing import List
+
 PROJECT_EULER_DIR_PATH = pathlib.Path.cwd().joinpath("project_euler")
 PROJECT_EULER_ANSWERS_PATH = pathlib.Path.cwd().joinpath(
     "scripts", "project_euler_answers.json"
@@ -25,17 +28,24 @@ def convert_path_to_module(file_path: pathlib.Path) -> ModuleType:
     spec.loader.exec_module(module)  # type: ignore
     return module
 
+def all_solution_file_paths() -> List[pathlib.Path]:
+    """
+    Collects all the solution file paths in the Project Euler directory.
 
-def all_solution_file_paths() -> list[pathlib.Path]:
-    """Collects all the solution file path in the Project Euler directory"""
-    solution_file_paths = []
-    for problem_dir_path in PROJECT_EULER_DIR_PATH.iterdir():
-        if problem_dir_path.is_file() or problem_dir_path.name.startswith("_"):
-            continue
-        for file_path in problem_dir_path.iterdir():
-            if file_path.suffix != ".py" or file_path.name.startswith(("_", "test")):
-                continue
-            solution_file_paths.append(file_path)
+    It traverses through the directory and checks each file. If the file is a
+    Python file and its name doesn't start with either underscore or "test",
+    then it is considered a solution file.
+
+    Returns:
+        List[pathlib.Path]: A list of solution file paths.
+    """
+    solution_file_paths = [
+        file_path
+        for problem_dir_path in PROJECT_EULER_DIR_PATH.iterdir()
+        if problem_dir_path.is_dir() and not problem_dir_path.name.startswith("_")
+        for file_path in problem_dir_path.iterdir()
+        if file_path.suffix == ".py" and not file_path.name.startswith(("_", "test"))
+    ]
     return solution_file_paths
 
 
