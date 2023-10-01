@@ -25,48 +25,41 @@ import numpy as np
 import qiskit
 
 
+from typing import List
+
 def dj_oracle(case: str, num_qubits: int) -> qiskit.QuantumCircuit:
     """
-    Returns a Quantum Circuit for the Oracle function.
-    The circuit returned can represent balanced or constant function,
-    according to the arguments passed
+    Returns Quantum Circuit for the Oracle function in Deutsch-Jozsa algorithm.
+
+    This function generates a quantum oracle for a given function. The function (oracle)
+    can either be constant or balanced over its inputs. If the function is constant, the
+    oracle returns the same output for all inputs. If the function is balanced, then it
+    returns equilibrium of 0s and 1s for all possible inputs.
+
+    Parameters:
+    case (str): It specifies whether the oracle is 'balanced' or 'constant'.
+    num_qubits (int): The number of qubits in the input string to the oracle circuit.
+
+    Returns:
+    qiskit.QuantumCircuit: A quantum circuit implementing the given oracle function.
+
+    Raises:
+    ValueError: If `case` is not 'balanced' or 'constant'.
     """
-    # This circuit has num_qubits+1 qubits: the size of the input,
-    # plus one output qubit
     oracle_qc = qiskit.QuantumCircuit(num_qubits + 1)
 
-    # First, let's deal with the case in which oracle is balanced
     if case == "balanced":
-        # First generate a random number that tells us which CNOTs to
-        # wrap in X-gates:
-        b = np.random.randint(1, 2**num_qubits)
-        # Next, format 'b' as a binary string of length 'n', padded with zeros:
-        b_str = format(b, f"0{num_qubits}b")
-        # Next, we place the first X-gates. Each digit in our binary string
-        # corresponds to a qubit, if the digit is 0, we do nothing, if it's 1
-        # we apply an X-gate to that qubit:
-        for index, bit in enumerate(b_str):
-            if bit == "1":
-                oracle_qc.x(index)
-        # Do the controlled-NOT gates for each qubit, using the output qubit
-        # as the target:
-        for index in range(num_qubits):
-            oracle_qc.cx(index, num_qubits)
-        # Next, place the final X-gates
-        for index, bit in enumerate(b_str):
-            if bit == "1":
-                oracle_qc.x(index)
-
-    # Case in which oracle is constant
-    if case == "constant":
-        # First decide what the fixed output of the oracle will be
-        # (either always 0 or always 1)
-        output = np.random.randint(2)
-        if output == 1:
-            oracle_qc.x(num_qubits)
+        handle_balanced_case(oracle_qc, num_qubits)
+    elif case == "constant":
+        handle_constant_case(oracle_qc, num_qubits)
+    else:
+        raise ValueError(
+            f"Invalid case: {case}, case must be either 'balanced' or 'constant'."
+        )
 
     oracle_gate = oracle_qc.to_gate()
-    oracle_gate.name = "Oracle"  # To show when we display the circuit
+    oracle_gate.name = "Oracle"
+
     return oracle_gate
 
 
@@ -95,6 +88,37 @@ def dj_algorithm(
         dj_circuit.measure(i, i)
 
     return dj_circuit
+
+
+def handle_balanced_case(oracle_qc: qiskit.QuantumCircuit, num_qubits: int) -> None:
+    b_str = get_random_binary_string(num_qubits)
+
+    x_gates(oracle_qc, b_str)
+    controlled_not_gates(oracle_qc, num_qubits)
+    x_gates(oracle_qc, b_str)
+
+
+def get_random_binary_string(num_qubits: int) -> str:
+    b = np.random.randint(1, 2**num_qubits)
+    return format(b, f"0{num_qubits}b")
+
+
+def x_gates(oracle_qc: qiskit.QuantumCircuit, binary_string: str) -> None:
+    for i, bit in enumerate(binary_string):
+        if bit == "1":
+            oracle_qc.x(i)
+
+
+def controlled_not_gates(oracle_qc: qiskit.QuantumCircuit, num_qubits: int) -> None:
+    for i in range(num_qubits):
+        oracle_qc.cx(i, num_qubits)
+
+
+def handle_constant_case(oracle_qc: qiskit.QuantumCircuit, num_qubits: int) -> None:
+    output = np.random.randint(2)
+
+    if output == 1:
+        oracle_qc.x(num_qubits)
 
 
 def deutsch_jozsa(case: str, num_qubits: int) -> qiskit.result.counts.Counts:
