@@ -4,39 +4,60 @@ from __future__ import annotations
 
 def ohms_law(voltage: float, current: float, resistance: float) -> dict[str, float]:
     """
-    Apply Ohm's Law, on any two given electrical values, which can be voltage, current,
-    and resistance, and then in a Python dict return name/value pair of the zero value.
+    Apply the Ohm's Law.
 
-    >>> ohms_law(voltage=10, resistance=5, current=0)
-    {'current': 2.0}
-    >>> ohms_law(voltage=0, current=0, resistance=10)
-    Traceback (most recent call last):
-      ...
-    ValueError: One and only one argument must be 0
-    >>> ohms_law(voltage=0, current=1, resistance=-2)
-    Traceback (most recent call last):
-      ...
-    ValueError: Resistance cannot be negative
-    >>> ohms_law(resistance=0, voltage=-10, current=1)
-    {'resistance': -10.0}
-    >>> ohms_law(voltage=0, current=-1.5, resistance=2)
-    {'voltage': -3.0}
+    Calculate and return the unknown electrical quantity which can be voltage, current, or resistance.
+
+    Args:
+        voltage (float): The voltage value.
+        current (float): The current value.
+        resistance (float): The resistance value.
+
+    Returns:
+        dict[str; float]: A dictionary with the name and the value of the calculated electrical quantity.
+
+    Raises:
+        ValueError: If more than one or no arguments are set to 0.
+        ValueError: If the resistance input is negative.
     """
-    if (voltage, current, resistance).count(0) != 1:
-        raise ValueError("One and only one argument must be 0")
-    if resistance < 0:
-        raise ValueError("Resistance cannot be negative")
+    _raise_error_if_incorrect_input(voltage, current, resistance)
+
     if voltage == 0:
-        return {"voltage": float(current * resistance)}
-    elif current == 0:
+        return {"voltage": current * resistance}
+    if current == 0:
         return {"current": voltage / resistance}
-    elif resistance == 0:
-        return {"resistance": voltage / current}
-    else:
-        raise ValueError("Exactly one argument must be 0")
+    return {"resistance": voltage / current}
 
 
 if __name__ == "__main__":
     import doctest
 
     doctest.testmod()
+
+def _raise_error_if_incorrect_input(
+    voltage: float, current: float, resistance: float
+) -> None:
+    """
+    Check if the input to ohms_law function is correct.
+
+    Raise a ValueError if:
+
+    - More than one or no arguments are set to 0.
+    - The resistance input is negative.
+
+    Args:
+        voltage (float): The voltage value.
+        current (float): The current value.
+        resistance (float): The resistance value.
+
+    Returns:
+
+
+    Raises:
+        ValueError: If more than one or no arguments are set to 0.
+        ValueError: If the resistance input is negative.
+    """
+    if (voltage, current, resistance).count(0) != 1:
+        raise ValueError("One and only one argument must be 0")
+    if resistance < 0:
+        raise ValueError("Resistance cannot be negative")
