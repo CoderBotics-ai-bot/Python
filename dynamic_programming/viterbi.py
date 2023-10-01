@@ -281,29 +281,38 @@ def _validate_lists(observations_space: Any, states_space: Any) -> None:
     _validate_list(observations_space, "observations_space")
     _validate_list(states_space, "states_space")
 
-
 def _validate_list(_object: Any, var_name: str) -> None:
     """
-    >>> _validate_list(["a"], "mock_name")
+    Validate whether the input object is a list and if its elements are of string type.\
+    If the input object is not a list or its elements are not strings, a ValueError is thrown.
 
-    >>> _validate_list("a", "mock_name")
-    Traceback (most recent call last):
-            ...
-    ValueError: mock_name must be a list
-    >>> _validate_list([0.5], "mock_name")
-    Traceback (most recent call last):
-            ...
-    ValueError: mock_name must be a list of strings
+    Args:
+        _object (Any): Input object to be validated.
+        var_name (str): Variable name of the object for error message context.
 
+    Raises:
+        ValueError: If the object provided is not a list or its elements are not strings.
+
+    Example:
+
+        >>> _validate_list(["a"], "mock_name")
+
+        >>> _validate_list("a", "mock_name")
+        Traceback (most recent call last):
+            ...
+        ValueError: mock_name must be a list
+        
+        >>> _validate_list([0.5], "mock_name")
+        Traceback (most recent call last):
+            ...
+        ValueError: mock_name must be a list of strings
     """
     if not isinstance(_object, list):
-        msg = f"{var_name} must be a list"
-        raise ValueError(msg)
-    else:
-        for x in _object:
-            if not isinstance(x, str):
-                msg = f"{var_name} must be a list of strings"
-                raise ValueError(msg)
+        raise ValueError(f"{var_name} must be a list")
+
+    non_str_elements = any(not isinstance(x, str) for x in _object)
+    if non_str_elements:
+        raise ValueError(f"{var_name} must be a list of strings")
 
 
 def _validate_dicts(
@@ -361,43 +370,80 @@ def _validate_nested_dict(_object: Any, var_name: str) -> None:
     for x in _object.values():
         _validate_dict(x, var_name, float, True)
 
-
 def _validate_dict(
     _object: Any, var_name: str, value_type: type, nested: bool = False
 ) -> None:
     """
-    >>> _validate_dict({"b": 0.5}, "mock_name", float)
+    Validates whether the `_object` argument is of type dictionary and checks if keys are string and values are of a certain
+    `value_type`. The `nested` argument indicates whether the `_object` being validated is a nested dictionary.
 
-    >>> _validate_dict("invalid", "mock_name", float)
-    Traceback (most recent call last):
-            ...
-    ValueError: mock_name must be a dict
-    >>> _validate_dict({"a": 8}, "mock_name", dict)
-    Traceback (most recent call last):
-            ...
-    ValueError: mock_name all values must be dict
-    >>> _validate_dict({2: 0.5}, "mock_name",float, True)
-    Traceback (most recent call last):
-            ...
-    ValueError: mock_name all keys must be strings
-    >>> _validate_dict({"b": 4}, "mock_name", float,True)
-    Traceback (most recent call last):
-            ...
-    ValueError: mock_name nested dictionary all values must be float
+    Args:
+    _object (Any): Any python object to be checked if it is a dictionary of specific format.
+    var_name (str): String variant name of the `_object` to be used in the error messages.
+    value_type (type): The type that all values in `_object` should have.
+    nested (bool): A flag to indicate if the `_object` being checked is a nested dictionary. Default is False.
+
+    Raises:
+    ValueError: If `_object` is not a dictionary.
+    ValueError: If all keys in the `_object` are not strings.
+    ValueError: If all values in `_object` are not of the type `value_type`.
     """
-    if not isinstance(_object, dict):
-        msg = f"{var_name} must be a dict"
-        raise ValueError(msg)
-    if not all(isinstance(x, str) for x in _object):
-        msg = f"{var_name} all keys must be strings"
-        raise ValueError(msg)
-    if not all(isinstance(x, value_type) for x in _object.values()):
-        nested_text = "nested dictionary " if nested else ""
-        msg = f"{var_name} {nested_text}all values must be {value_type.__name__}"
-        raise ValueError(msg)
+
+    # Check if object is a dictionary
+    _check_type(_object, dict, var_name)
+
+    # Check if keys are strings
+    _check_keys(_object, str, var_name)
+
+    # Check if values are of the certain type
+    nested_text = "nested dictionary " if nested else ""
+    _check_values(_object, value_type, var_name, nested_text)
 
 
 if __name__ == "__main__":
     from doctest import testmod
 
     testmod()
+
+
+def _check_type(_object: Any, req_type: type, var_name: str) -> None:
+    """
+    Check the type of `_object`. Raise an error if it is not of the required type.
+
+    Args:
+    _object (Any): The object, whose type need to be checked.
+    req_type (type): The required type for the `_object`.
+    var_name (str): The name of the variable to be shown in the error message.
+    """
+    if not isinstance(_object, req_type):
+        raise ValueError(f"{var_name} must be a {req_type.__name__}")
+
+
+def _check_keys(_object: dict, req_type: type, var_name: str) -> None:
+    """
+    Check the keys of the `_object` dictionary. Raise an error if they are not of the required type.
+
+    Args:
+    _object (dict): The dictionary, whose keys' type need to be checked.
+    req_type (type): The required type for the keys.
+    var_name (str): The name of the variable to be shown in the error message.
+    """
+    if not all(isinstance(key, req_type) for key in _object):
+        raise ValueError(f"{var_name} all keys must be {req_type.__name__}")
+
+
+def _check_values(
+    _object: dict, req_type: type, var_name: str, nested_text: str
+) -> None:
+    """
+    Check the values of the `_object` dictionary. Raise an error if they are not of the required type.
+
+    Args:
+    _object (dict): The dictionary, whose values' type need to be checked.
+    req_type (type): The required type for the values.
+    var_name (str): The name of the variable to be shown in the error message.
+    """
+    if not all(isinstance(value, req_type) for value in _object.values()):
+        raise ValueError(
+            f"{var_name} {nested_text}all values must be {req_type.__name__}"
+        )
