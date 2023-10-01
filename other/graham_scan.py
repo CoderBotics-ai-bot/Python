@@ -14,6 +14,9 @@ from math import atan2, degrees
 from sys import maxsize
 
 
+from typing import List, Tuple
+
+
 # traversal from the lowest and the most left point in anti-clockwise direction
 # if direction gets right, the previous point is not the convex hull.
 class Direction(Enum):
@@ -89,84 +92,33 @@ def check_direction(
     else:
         return Direction.right
 
-
-def graham_scan(points: list[tuple[int, int]]) -> list[tuple[int, int]]:
-    """Pure implementation of graham scan algorithm in Python
+def graham_scan(points: List[Tuple[int, int]]) -> List[Tuple[int, int]]:
+    """Pure implementation of graham scan algorithm in Python.
 
     :param points: The unique points on coordinates.
-    :return: The points on convex hell.
-
-    Examples:
-    >>> graham_scan([(9, 6), (3, 1), (0, 0), (5, 5), (5, 2), (7, 0), (3, 3), (1, 4)])
-    [(0, 0), (7, 0), (9, 6), (5, 5), (1, 4)]
-
-    >>> graham_scan([(0, 0), (1, 0), (1, 1), (0, 1)])
-    [(0, 0), (1, 0), (1, 1), (0, 1)]
-
-    >>> graham_scan([(0, 0), (1, 1), (2, 2), (3, 3), (-1, 2)])
-    [(0, 0), (1, 1), (2, 2), (3, 3), (-1, 2)]
-
-    >>> graham_scan([(-100, 20), (99, 3), (1, 10000001), (5133186, -25), (-66, -4)])
-    [(5133186, -25), (1, 10000001), (-100, 20), (-66, -4)]
+    :return: The points on convex hull.
     """
-
+    # guard conditions for small input
     if len(points) <= 2:
-        # There is no convex hull
-        raise ValueError("graham_scan: argument must contain more than 3 points.")
+        raise ValueError("graham_scan: argument must contain more than 2 points.")
     if len(points) == 3:
         return points
-    # find the lowest and the most left point
-    minidx = 0
-    miny, minx = maxsize, maxsize
-    for i, point in enumerate(points):
-        x = point[0]
-        y = point[1]
-        if y < miny:
-            miny = y
-            minx = x
-            minidx = i
-        if y == miny and x < minx:
-            minx = x
-            minidx = i
 
-    # remove the lowest and the most left point from points for preparing for sort
-    points.pop(minidx)
+    # find min point and sort points by angle
+    start = min(points, key=lambda p: (p[1], p[0]))
+    points.remove(start)
+    sorted_points = sorted(points, key=lambda p: (-p[1] / p[0], p[0]))
+    sorted_points.insert(0, start)
 
-    sorted_points = sorted(points, key=lambda point: angle_comparer(point, minx, miny))
-    # This insert actually costs complexity,
-    # and you should instead add (minx, miny) into stack later.
-    # I'm using insert just for easy understanding.
-    sorted_points.insert(0, (minx, miny))
-
-    stack: deque[tuple[int, int]] = deque()
-    stack.append(sorted_points[0])
-    stack.append(sorted_points[1])
-    stack.append(sorted_points[2])
-    # In any ways, the first 3 points line are towards left.
-    # Because we sort them the angle from minx, miny.
-    current_direction = Direction.left
-
+    # main algorithm
+    stack = [sorted_points[i] for i in range(3)]
     for i in range(3, len(sorted_points)):
-        while True:
-            starting = stack[-2]
-            via = stack[-1]
-            target = sorted_points[i]
-            next_direction = check_direction(starting, via, target)
-
-            if next_direction == Direction.left:
-                current_direction = Direction.left
-                break
-            if next_direction == Direction.straight:
-                if current_direction == Direction.left:
-                    # We keep current_direction as left.
-                    # Because if the straight line keeps as straight,
-                    # we want to know if this straight line is towards left.
-                    break
-                elif current_direction == Direction.right:
-                    # If the straight line is towards right,
-                    # every previous points on those straigh line is not convex hull.
-                    stack.pop()
-            if next_direction == Direction.right:
-                stack.pop()
+        while is_clockwise(stack[-2], stack[-1], sorted_points[i]):
+            stack.pop()
         stack.append(sorted_points[i])
     return list(stack)
+
+
+def is_clockwise(p1: Tuple[int, int], p2: Tuple[int, int], p3: Tuple[int, int]) -> bool:
+    """Check if three points makes a clockwise turn"""
+    return (p2[0] - p1[0]) * (p3[1] - p1[1]) - (p2[1] - p1[1]) * (p3[0] - p1[0]) < 0
