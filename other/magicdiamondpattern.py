@@ -1,18 +1,25 @@
-# Python program for generating diamond pattern in Python 3.7+
 
+def floyd(n: int) -> None:
+    """
+    Prints the upper half of the diamond (pyramid) for a given size.
 
-# Function to print upper half of diamond (pyramid)
-def floyd(n):
+    This function generates and prints the upper half of a diamond (pyramid)
+    shape made up of "*" characters. The diamond is pyramid-shaped, with a
+    number of rows equal to the inputted size.
+
+    Each row of the diamond consists of a series of spaces followed by a series
+    of "* " (star and space). The number of spaces decreases with each subsequent
+    line, while the number of "* " increases, creating a pyramid effect.
+
+    Parameters:
+    n (int): The size of the pattern. Determines the number of rows in the upper
+             half of the diamond and the number of "* " in the middle row.
+
+    Returns:
+    None: This function only prints to the console and does not have a return value.
     """
-        Parameters:
-    n : size of pattern
-    """
-    for i in range(0, n):
-        for _ in range(0, n - i - 1):  # printing spaces
-            print(" ", end="")
-        for _ in range(0, i + 1):  # printing stars
-            print("* ", end="")
-        print()
+    for i in range(n):
+        print(" " * (n - i - 1) + "* " * (i + 1))
 
 
 # Function to print lower half of diamond (pyramid)
