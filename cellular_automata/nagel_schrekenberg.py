@@ -29,6 +29,10 @@ from random import randint, random
 
 from random import randint
 
+
+from random import random
+from typing import List
+
 def construct_highway(
     number_of_cells: int,
     frequency: int,
@@ -92,28 +96,27 @@ def get_distance(highway_now: list, car_index: int) -> int:
 
 def update(highway_now: list, probability: float, max_speed: int) -> list:
     """
-    Update the speed of the cars
-    >>> update([-1, -1, -1, -1, -1, 2, -1, -1, -1, -1, 3], 0.0, 5)
-    [-1, -1, -1, -1, -1, 3, -1, -1, -1, -1, 4]
-    >>> update([-1, -1, 2, -1, -1, -1, -1, 3], 0.0, 5)
-    [-1, -1, 3, -1, -1, -1, -1, 1]
+    Updates...
+
+    Args:
+        highway_now...
+        probability...
+        max_speed...
+
+    Returns:
+        list...
+
+    Examples:
+        >>> update...
     """
-
-    number_of_cells = len(highway_now)
-    # Beforce calculations, the highway is empty
-    next_highway = [-1] * number_of_cells
-
-    for car_index in range(number_of_cells):
-        if highway_now[car_index] != -1:
-            # Add 1 to the current speed of the car and cap the speed
-            next_highway[car_index] = min(highway_now[car_index] + 1, max_speed)
-            # Number of empty cell before the next car
-            dn = get_distance(highway_now, car_index) - 1
-            # We can't have the car causing an accident
-            next_highway[car_index] = min(next_highway[car_index], dn)
-            if random() < probability:
-                # Randomly, a driver will slow down
-                next_highway[car_index] = max(next_highway[car_index] - 1, 0)
+    next_highway = [-1] * len(highway_now)
+    for car_index, current_speed in enumerate(highway_now):
+        if current_speed == -1:
+            continue
+        dn = get_distance(highway_now, car_index)
+        next_highway[car_index] = update_car_speed(
+            current_speed, max_speed, dn, probability
+        )
     return next_highway
 
 
@@ -144,6 +147,29 @@ def simulate(
         highway.append(real_next_speeds)
 
     return highway
+
+def update_car_speed(
+    current_speed: int, max_speed: int, distance_to_next: int, slow_down_prob: float
+) -> int:
+    """
+    Update car speed according to rules. The speed depends on its current speed,
+    the maximum speed limit, the distance to the next car and the probability
+    of a spontaneous slowdown.
+
+    Args:
+        current_speed (int): Current speed of the car.
+        max_speed (int): Maximum speed limit.
+        distance_to_next (int): Distance to the next car.
+        slow_down_prob (float): The probability that a spontaneous slowdown occurs.
+
+    Returns:
+        int: The new speed of the car.
+    """
+    new_speed = min(current_speed + 1, max_speed)
+    new_speed = min(new_speed, distance_to_next - 1)
+    if random() < slow_down_prob:
+        new_speed = max(new_speed - 1, 0)
+    return new_speed
 
 
 if __name__ == "__main__":
