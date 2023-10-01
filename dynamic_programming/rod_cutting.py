@@ -11,6 +11,9 @@ pieces separately or not cutting it at all if the price of it is the maximum obt
 """
 
 
+from typing import List
+
+
 def naive_cut_rod_recursive(n: int, prices: list):
     """
     Solves the rod-cutting problem via naively without using the benefit of dynamic
@@ -86,39 +89,31 @@ def top_down_cut_rod(n: int, prices: list):
     return _top_down_cut_rod_recursive(n, prices, max_rev)
 
 
-def _top_down_cut_rod_recursive(n: int, prices: list, max_rev: list):
+def _top_down_cut_rod_recursive(n: int, prices: List[int], max_rev: List[int]) -> int:
     """
-    Constructs a top-down dynamic programming solution for the rod-cutting problem
-    via memoization.
+    Construct and implement a top-down recursive approach for the rod-cutting problem using dynamic programming and memoization.
 
-    Runtime: O(n^2)
+    The function takes in the total length of the rod (n), a list of prices for the rods of different lengths (prices) and
+    a list to store the maximum revenue calculated for each rod length (max_rev).
+    It calculates the maximum revenue possible by cutting the rod into different lengths and considering the various prices for each length.
 
-    Arguments
-    --------
-    n: int, the length of the rod
-    prices: list, the prices for each piece of rod. ``p[i-i]`` is the
-    price for a rod of length ``i``
-    max_rev: list, the computed maximum revenue for a piece of rod.
-    ``max_rev[i]`` is the maximum revenue obtainable for a rod of length ``i``
+    Arguments:
+    n : int - The total length of the rod.
+    prices : List[int] - A list where the element at index i represents the price of the rod of length i + 1.
+    max_rev : List[int] - A list where the element at index i represents the maximum revenue which could be gathered for the rod of length i.
 
-    Returns
-    -------
-    The maximum revenue obtainable for a rod of length n given the list of prices
-    for each piece.
+    Returns:
+    int - The maximum revenue which can be gathered by cutting and selling the rod of length 'n'.
+
+    Example:
+    _top_down_cut_rod_recursive(5, [1, 5, 8, 9, 10], [0, 0, 0, 0, 0, 0]) --> 13
     """
     if max_rev[n] >= 0:
         return max_rev[n]
     elif n == 0:
         return 0
     else:
-        max_revenue = float("-inf")
-        for i in range(1, n + 1):
-            max_revenue = max(
-                max_revenue,
-                prices[i - 1] + _top_down_cut_rod_recursive(n - i, prices, max_rev),
-            )
-
-        max_rev[n] = max_revenue
+        max_rev[n] = _calculate_max_revenue(n, prices, max_rev)
 
     return max_rev[n]
 
@@ -162,6 +157,18 @@ def bottom_up_cut_rod(n: int, prices: list):
         max_rev[i] = max_revenue_i
 
     return max_rev[n]
+
+
+
+def _calculate_max_revenue(n: int, prices: List[int], max_rev: List[int]) -> int:
+    """Helper function to calculate maximum revenue."""
+    max_revenue = float("-inf")
+    for i in range(1, n + 1):
+        max_revenue = max(
+            max_revenue,
+            prices[i - 1] + _top_down_cut_rod_recursive(n - i, prices, max_rev),
+        )
+    return max_revenue
 
 
 def _enforce_args(n: int, prices: list):
