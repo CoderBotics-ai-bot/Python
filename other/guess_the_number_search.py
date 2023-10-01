@@ -12,7 +12,6 @@ details : [505, 257, 133, 71, 40, 25, 17]
 
 """
 
-
 def temp_input_value(
     min_val: int = 10, max_val: int = 1000, option: bool = True
 ) -> int:
@@ -51,7 +50,10 @@ def temp_input_value(
     ), "Invalid type of value(s) specified to function!"
 
     if min_val > max_val:
-        raise ValueError("Invalid value for min_val or max_val (min_value < max_value)")
+        raise ValueError(
+            "Invalid value for min_val and max_val (min_value < max_value)"
+        )
+
     return min_val if option else max_val
 
 
