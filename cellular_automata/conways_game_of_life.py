@@ -6,6 +6,9 @@ from __future__ import annotations
 
 from PIL import Image
 
+
+from typing import List
+
 # Define glider example
 GLIDER = [
     [0, 1, 0, 0, 0, 0, 0, 0],
@@ -22,51 +25,20 @@ GLIDER = [
 BLINKER = [[0, 1, 0], [0, 1, 0], [0, 1, 0]]
 
 
-def new_generation(cells: list[list[int]]) -> list[list[int]]:
-    """
-    Generates the next generation for a given state of Conway's Game of Life.
-    >>> new_generation(BLINKER)
-    [[0, 0, 0], [1, 1, 1], [0, 0, 0]]
-    """
-    next_generation = []
-    for i in range(len(cells)):
-        next_generation_row = []
-        for j in range(len(cells[i])):
-            # Get the number of live neighbours
-            neighbour_count = 0
-            if i > 0 and j > 0:
-                neighbour_count += cells[i - 1][j - 1]
-            if i > 0:
-                neighbour_count += cells[i - 1][j]
-            if i > 0 and j < len(cells[i]) - 1:
-                neighbour_count += cells[i - 1][j + 1]
-            if j > 0:
-                neighbour_count += cells[i][j - 1]
-            if j < len(cells[i]) - 1:
-                neighbour_count += cells[i][j + 1]
-            if i < len(cells) - 1 and j > 0:
-                neighbour_count += cells[i + 1][j - 1]
-            if i < len(cells) - 1:
-                neighbour_count += cells[i + 1][j]
-            if i < len(cells) - 1 and j < len(cells[i]) - 1:
-                neighbour_count += cells[i + 1][j + 1]
+def new_generation(cells: List[List[int]]) -> List[List[int]]:
+    rows, cols = len(cells), len(cells[0])
+    next_generation = [[0] * cols for _ in range(rows)]
 
-            # Rules of the game of life (excerpt from Wikipedia):
-            # 1. Any live cell with two or three live neighbours survives.
-            # 2. Any dead cell with three live neighbours becomes a live cell.
-            # 3. All other live cells die in the next generation.
-            #    Similarly, all other dead cells stay dead.
-            alive = cells[i][j] == 1
-            if (
-                (alive and 2 <= neighbour_count <= 3)
-                or not alive
-                and neighbour_count == 3
+    for i in range(rows):
+        for j in range(cols):
+            neighbour_count = _get_neighbour_count(cells, i, j)
+            is_alive = cells[i][j] == 1
+
+            if (is_alive and 2 <= neighbour_count <= 3) or (
+                not is_alive and neighbour_count == 3
             ):
-                next_generation_row.append(1)
-            else:
-                next_generation_row.append(0)
+                next_generation[i][j] = 1
 
-        next_generation.append(next_generation_row)
     return next_generation
 
 
@@ -90,6 +62,18 @@ def generate_images(cells: list[list[int]], frames: int) -> list[Image.Image]:
         images.append(img)
         cells = new_generation(cells)
     return images
+
+def _get_neighbour_count(cells: List[List[int]], i: int, j: int) -> int:
+    """A helper function to compute the number of alive neighbors of a cell."""
+    neighbour_count = 0
+    rows, cols = len(cells), len(cells[0])
+
+    for a in range(max(0, i - 1), min(rows, i + 2)):
+        for b in range(max(0, j - 1), min(cols, j + 2)):
+            neighbour_count += cells[a][b]
+
+    neighbour_count -= cells[i][j]  # Do not count the cell itself
+    return neighbour_count
 
 
 if __name__ == "__main__":
