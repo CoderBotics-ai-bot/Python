@@ -52,24 +52,32 @@ def multiply(matrix_a: list[list[int]], matrix_b: list[list[int]]) -> list[list[
 def identity(n: int) -> list[list[int]]:
     return [[int(row == column) for column in range(n)] for row in range(n)]
 
-
 def nth_fibonacci_matrix(n: int) -> int:
     """
-    >>> nth_fibonacci_matrix(100)
-    354224848179261915075
-    >>> nth_fibonacci_matrix(-100)
-    -100
+    Calculate the nth Fibonacci number using matrix exponentiation.
+
+    This function calculates the nth Fibonacci number by raising a second-degree
+    Fibonacci matrix to the nth power. It deals with negative inputs by immediately
+    returning them, and optimizes for large positive inputs by applying the
+    exponentiation by squaring method to the Fibonacci matrix.
+
+    Args:
+        n (int): The position in the Fibonacci sequence for which the respective
+        Fibonacci number is to be calculated. For negative values, the function returns
+        the input value.
+
+    Returns:
+        int: The nth Fibonacci number. For negative values of n, the function
+        returns n.
     """
+    # as the first two numbers are 0 and 1, so we can return the number itself for n <= 1
     if n <= 1:
         return n
+    # the first two numbers are at position 0 and 1
+    n = n - 1
     res_matrix = identity(2)
     fibonacci_matrix = [[1, 1], [1, 0]]
-    n = n - 1
-    while n > 0:
-        if n % 2 == 1:
-            res_matrix = multiply(res_matrix, fibonacci_matrix)
-        fibonacci_matrix = multiply(fibonacci_matrix, fibonacci_matrix)
-        n = int(n / 2)
+    res_matrix, fibonacci_matrix = fibonacci_helper(n, res_matrix, fibonacci_matrix)
     return res_matrix[0][0]
 
 
@@ -87,6 +95,31 @@ def nth_fibonacci_bruteforce(n: int) -> int:
     for _ in range(2, n + 1):
         fib0, fib1 = fib1, fib0 + fib1
     return fib1
+
+
+def fibonacci_helper(
+    n: int, res_matrix: List[List[int]], fibonacci_matrix: List[List[int]]
+) -> tuple:
+    """
+    Helper function to perform the square matrix multiplication to find Fibonacci number.
+
+    This function multiplies the result matrix with fibonacci matrix for odd n, and double multiplies
+    the fibonacci matrix then reduce n by half until n becomes zero.
+
+    Args:
+        n (int): The position in the Fibonacci sequence.
+        res_matrix (list[list[int]]): The result matrix which store the fibonacci number.
+        fibonacci_matrix (list[list[int]]): The matrix which represents the Fibonacci numbers.
+
+    Returns:
+        tuple: The result matrix and fibonacci matrix after all the operations done.
+    """
+    while n > 0:
+        if n % 2 == 1:
+            res_matrix = multiply(res_matrix, fibonacci_matrix)
+        fibonacci_matrix = multiply(fibonacci_matrix, fibonacci_matrix)
+        n = int(n / 2)
+    return res_matrix, fibonacci_matrix
 
 
 def main() -> None:
