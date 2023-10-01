@@ -45,6 +45,30 @@ test_maximum_claim_table = [
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 class BankersAlgorithm:
     def __init__(
         self,
@@ -178,33 +202,17 @@ class BankersAlgorithm:
                 print("System in unsafe state. Aborting...\n")
                 break
 
-    def __pretty_data(self):
+    def __pretty_data(self, data: List[List[int]]) -> str:
+        """Returns a formatted string for presenting the 2D list `data`.
+
+        Args:
+            data: A list of lists, each representing a row of data.
+
+        Returns:
+            A string where each `data` row is separated with a newline character,
+            and each entry inside a row is separated by a space.
         """
-        Properly align display of the algorithm's solution
-        """
-        print(" " * 9 + "Allocated Resource Table")
-        for item in self.__allocated_resources_table:
-            print(
-                f"P{self.__allocated_resources_table.index(item) + 1}"
-                + " ".join(f"{it:>8}" for it in item)
-                + "\n"
-            )
-        print(" " * 9 + "System Resource Table")
-        for item in self.__maximum_claim_table:
-            print(
-                f"P{self.__maximum_claim_table.index(item) + 1}"
-                + " ".join(f"{it:>8}" for it in item)
-                + "\n"
-            )
-        print(
-            "Current Usage by Active Processes: "
-            + " ".join(str(x) for x in self.__claim_vector)
-        )
-        print(
-            "Initial Available Resources:       "
-            + " ".join(str(x) for x in self.__available_resources())
-        )
-        time.sleep(1)
+        return "\n".join(" ".join(map(str, row)) for row in data)
 
 
 if __name__ == "__main__":
