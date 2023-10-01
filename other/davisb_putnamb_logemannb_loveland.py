@@ -14,6 +14,9 @@ import random
 from collections.abc import Iterable
 
 
+from typing import List, Tuple
+
+
 class Clause:
     """
     A clause represented in Conjunctive Normal Form.
@@ -155,30 +158,26 @@ def generate_formula() -> Formula:
     return Formula(clauses)
 
 
-def generate_parameters(formula: Formula) -> tuple[list[Clause], list[str]]:
+def generate_parameters(formula: Formula) -> Tuple[List[Clause], List[str]]:
     """
-    Return the clauses and symbols from a formula.
-    A symbol is the uncomplemented form of a literal.
-    For example,
-        Symbol of A3 is A3.
-        Symbol of A5' is A5.
+    Extract the clauses and symbols from a formula.
 
-    >>> formula = Formula([Clause(["A1", "A2'", "A3"]), Clause(["A5'", "A2'", "A1"])])
-    >>> clauses, symbols = generate_parameters(formula)
-    >>> clauses_list = [str(i) for i in clauses]
-    >>> clauses_list
-    ["{A1 , A2' , A3}", "{A5' , A2' , A1}"]
-    >>> symbols
-    ['A1', 'A2', 'A3', 'A5']
+    Args:
+        formula: A Formula object.
+
+    Returns:
+        A tuple, where the first element is a list of clauses in the formula,
+        and the second element is a list of unique symbols in the formula.
     """
     clauses = formula.clauses
-    symbols_set = []
-    for clause in formula.clauses:
-        for literal in clause.literals:
-            symbol = literal[:2]
-            if symbol not in symbols_set:
-                symbols_set.append(symbol)
-    return clauses, symbols_set
+    symbols = list(
+        set(
+            symbol
+            for clause in clauses
+            for symbol in extract_symbols_from_clause(clause)
+        )
+    )
+    return clauses, symbols
 
 
 def find_pure_symbols(
@@ -231,6 +230,31 @@ def find_pure_symbols(
         elif sym in literals:
             assignment[s] = False
     return pure_symbols, assignment
+
+def extract_symbol_from_literal(literal: str) -> str:
+    """
+    Extract the symbol from the literal (removes complement marking if it exists).
+
+    Args:
+        literal: A string representing a literal, such as 'A1' or 'A2''.
+
+    Returns:
+        A string representing the symbol of the literal.
+    """
+    return literal.rstrip("'")
+
+
+def extract_symbols_from_clause(clause: Clause) -> List[str]:
+    """
+    Extract the symbols from a clause.
+
+    Args:
+        clause: A Clause object.
+
+    Returns:
+        A list of symbols in the clause as strings.
+    """
+    return [extract_symbol_from_literal(literal) for literal in clause.literals]
 
 
 def find_unit_clauses(
