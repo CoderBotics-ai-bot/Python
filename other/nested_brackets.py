@@ -13,23 +13,30 @@ The function called is_balanced takes as input a string S which is a sequence of
 brackets and returns true if S is nested and false otherwise.
 """
 
+def is_balanced(s: str) -> bool:
+    """
+    Check if the given string of brackets is balanced.
 
-def is_balanced(s):
+    This function checks if the given string of brackets is balanced, i.e.
+    any open bracket has a corresponding closing bracket and brackets are properly nested.
+
+    Arguments:
+    s -- The string of brackets to be checked.
+
+    Returns:
+    True if the given string of brackets is balanced, False otherwise.
+    """
     stack = []
-    open_brackets = set({"(", "[", "{"})
-    closed_brackets = set({")", "]", "}"})
-    open_to_closed = {"{": "}", "[": "]", "(": ")"}
+    brackets_mapping = {"}": "{", "]": "[", ")": "("}
 
-    for i in range(len(s)):
-        if s[i] in open_brackets:
-            stack.append(s[i])
+    for char in s:
+        if char in brackets_mapping.values():
+            stack.append(char)
+        elif char in brackets_mapping.keys():
+            if not stack or brackets_mapping[char] != stack.pop():
+                return False
 
-        elif s[i] in closed_brackets and (
-            len(stack) == 0 or (len(stack) > 0 and open_to_closed[stack.pop()] != s[i])
-        ):
-            return False
-
-    return len(stack) == 0
+    return not stack
 
 
 def main():
