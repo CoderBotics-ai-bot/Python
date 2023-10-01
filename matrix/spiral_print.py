@@ -7,24 +7,7 @@ This problem has been solved through recursive way.
 """
 
 
-def check_matrix(matrix: list[list[int]]) -> bool:
-    # must be
-    matrix = [list(row) for row in matrix]
-    if matrix and isinstance(matrix, list):
-        if isinstance(matrix[0], list):
-            prev_len = 0
-            for row in matrix:
-                if prev_len == 0:
-                    prev_len = len(row)
-                    result = True
-                else:
-                    result = prev_len == len(row)
-        else:
-            result = True
-    else:
-        result = False
-
-    return result
+from typing import List
 
 
 def spiral_print_clockwise(a: list[list[int]]) -> None:
@@ -74,6 +57,23 @@ def spiral_print_clockwise(a: list[list[int]]) -> None:
     else:
         print("Not a valid matrix")
         return
+
+def check_matrix(matrix: List[List[int]]) -> bool:
+    """
+    Validate the input matrix.
+
+    This function verifies whether the input matrix is a list of equal-length lists (rows).
+
+    Args:
+        matrix (List[List[int]]): The matrix to check.
+
+    Returns:
+        bool: True if the matrix is valid. Otherwise, False.
+    """
+    if not isinstance(matrix, list) or not matrix or not isinstance(matrix[0], list):
+        return False
+
+    return all(len(row) == len(matrix[0]) for row in matrix)
 
 
 # Other Easy to understand Approach
