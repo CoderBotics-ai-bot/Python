@@ -3,6 +3,9 @@ from __future__ import annotations
 import sys
 
 
+from typing import List
+
+
 class Letter:
     def __init__(self, letter: str, freq: int):
         self.letter: str = letter
@@ -20,19 +23,20 @@ class TreeNode:
         self.right: Letter | TreeNode = right
 
 
-def parse_file(file_path: str) -> list[Letter]:
+def parse_file(file_path: str) -> List[Letter]:
     """
-    Read the file and build a dict of all letters and their
-    frequencies, then convert the dict into a list of Letters.
+    Parse a file and return a sorted list of Letter objects.
+
+    Args:
+        file_path (str): The path to the file.
+
+    Returns:
+        List[Letter]: A sorted list of Letter objects representing each character
+                      in the file sorted by frequency.
     """
-    chars: dict[str, int] = {}
-    with open(file_path) as f:
-        while True:
-            c = f.read(1)
-            if not c:
-                break
-            chars[c] = chars[c] + 1 if c in chars else 1
-    return sorted((Letter(c, f) for c, f in chars.items()), key=lambda x: x.freq)
+    char_freq = _get_char_freq(file_path)
+    letters = [Letter(char, freq) for char, freq in char_freq.items()]
+    return sorted(letters, key=lambda letter: letter.freq)
 
 
 def build_tree(letters: list[Letter]) -> Letter | TreeNode:
@@ -49,6 +53,25 @@ def build_tree(letters: list[Letter]) -> Letter | TreeNode:
         response.append(node)
         response.sort(key=lambda x: x.freq)
     return response[0]
+
+def _get_char_freq(file_path: str) -> dict[str, int]:
+    """
+    Extracts characters from a file and calculates their frequency.
+
+    Args:
+        file_path (str): The path to the file.
+
+    Returns:
+        dict[str, int]: A dictionary mapping each character to its frequency.
+    """
+    char_freq = {}
+    with open(file_path) as input_file:
+        while True:
+            char = input_file.read(1)
+            if not char:
+                break
+            char_freq[char] = char_freq.get(char, 0) + 1
+    return char_freq
 
 
 def traverse_tree(root: Letter | TreeNode, bitstring: str) -> list[Letter]:
