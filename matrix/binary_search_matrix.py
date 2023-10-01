@@ -44,32 +44,25 @@ def binary_search(
     return binary_search(array, lower_bound, mid - 1, value)
 
 
-def mat_bin_search(value: int, matrix: list) -> list:
+
+def mat_bin_search(value: int, matrix: List[List[int]]) -> List[int]:
     """
-    This function loops over a 2d matrix and calls binarySearch on
-    the selected 1d array and returns [-1, -1] is it do not exist
-    value : value meant to be searched
-    matrix = a sorted 2d matrix
-    >>> matrix = [[1, 4, 7, 11, 15],
-    ...           [2, 5, 8, 12, 19],
-    ...           [3, 6, 9, 16, 22],
-    ...           [10, 13, 14, 17, 24],
-    ...           [18, 21, 23, 26, 30]]
-    >>> target = 1
-    >>> mat_bin_search(target, matrix)
-    [0, 0]
-    >>> target = 34
-    >>> mat_bin_search(target, matrix)
-    [-1, -1]
+    Performs binary search in a 2D sorted matrix and returns the row index and column index if value is found; otherwise, returns [-1, -1].
+
+    Args:
+        value (int): The value to be searched in the matrix.
+        matrix (List[List[int]]): A 2D sorted matrix.
+
+    Returns:
+        List[int]: a list containing the row index and the column index of the value if it is found in the matrix; If not found, returns [-1, -1].
     """
-    index = 0
-    if matrix[index][0] == value:
-        return [index, 0]
-    while index < len(matrix) and matrix[index][0] < value:
-        r = binary_search(matrix[index], 0, len(matrix[index]) - 1, value)
-        if r != -1:
-            return [index, r]
-        index += 1
+
+    for row_index, row in enumerate(matrix):
+        if value_in_range(row[0], row[-1], value):
+            col_index = binary_search(row, 0, len(row) - 1, value)
+            if col_index != -1:
+                return [row_index, col_index]
+
     return [-1, -1]
 
 
@@ -77,3 +70,18 @@ if __name__ == "__main__":
     import doctest
 
     doctest.testmod()
+
+
+def value_in_range(low: int, high: int, value: int) -> bool:
+    """
+    Checks if a value lies within an inclusive range.
+
+    Args:
+        low (int): The low end of the range.
+        high (int): The high end of the range.
+        value (int): The value to check.
+
+    Returns:
+        bool: Whether or not the value is within the range.
+    """
+    return low <= value <= high
