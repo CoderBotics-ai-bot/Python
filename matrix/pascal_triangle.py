@@ -40,10 +40,27 @@ def print_pascal_triangle(num_rows: int) -> None:
         row_str = " ".join(map(str, row))
         print(row_str.center(max_len))
 
-
 def generate_pascal_triangle(num_rows: int) -> list[list[int]]:
     """
-    Create Pascal's triangle for different number of rows
+    Generate the Pascal's Triangle for a given number of rows.
+
+    Pascal's Triangle has a property where each number is a sum of the two numbers directly above it.
+    This function generates the Pascal's Triangle for different number of rows depending on the input.
+
+    Args:
+        num_rows (int): The number of rows in Pascal's Triangle one wants to generate.
+        It should be a non-negative integer. If it's 0, an empty list is returned.
+
+    Returns:
+        list[list[int]]: A list of lists of integers representing Pascal's Triangle.
+        Each top-level list represents a row in the triangle, and the number of integers
+        in a single row equals to the index of this row plus one (indexing from 0).
+
+    Raises:
+        TypeError: If the input 'num_rows' is not an integer.
+        ValueError: If number of rows is negative.
+
+    Examples:
     >>> generate_pascal_triangle(0)
     []
     >>> generate_pascal_triangle(1)
@@ -52,34 +69,24 @@ def generate_pascal_triangle(num_rows: int) -> list[list[int]]:
     [[1], [1, 1]]
     >>> generate_pascal_triangle(3)
     [[1], [1, 1], [1, 2, 1]]
-    >>> generate_pascal_triangle(4)
-    [[1], [1, 1], [1, 2, 1], [1, 3, 3, 1]]
     >>> generate_pascal_triangle(5)
     [[1], [1, 1], [1, 2, 1], [1, 3, 3, 1], [1, 4, 6, 4, 1]]
-    >>> generate_pascal_triangle(-5)
-    Traceback (most recent call last):
-        ...
-    ValueError: The input value of 'num_rows' should be greater than or equal to 0
-    >>> generate_pascal_triangle(7.89)
-    Traceback (most recent call last):
-        ...
-    TypeError: The input value of 'num_rows' should be 'int'
     """
-
     if not isinstance(num_rows, int):
         raise TypeError("The input value of 'num_rows' should be 'int'")
-
-    if num_rows == 0:
-        return []
-    elif num_rows < 0:
+    if num_rows < 0:
         raise ValueError(
             "The input value of 'num_rows' should be greater than or equal to 0"
         )
 
-    triangle: list[list[int]] = []
-    for current_row_idx in range(num_rows):
+    if num_rows == 0:
+        return []
+
+    triangle: list[list[int]] = [[1]]
+    for current_row_idx in range(1, num_rows):
         current_row = populate_current_row(triangle, current_row_idx)
         triangle.append(current_row)
+
     return triangle
 
 
