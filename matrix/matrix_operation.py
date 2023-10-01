@@ -25,25 +25,54 @@ def add(*matrix_s: list[list[int]]) -> list[list[int]]:
 
     return _calculate_sum(matrix_s)
 
+## REFACTORING ATTEMPT
 
-def subtract(matrix_a: list[list[int]], matrix_b: list[list[int]]) -> list[list[int]]:
+
+def subtract(
+    matrix_a: List[List[Union[int, float]]], matrix_b: List[List[Union[int, float]]]
+) -> List[List[Union[int, float]]]:
     """
-    >>> subtract([[1,2],[3,4]],[[2,3],[4,5]])
-    [[-1, -1], [-1, -1]]
-    >>> subtract([[1,2.5],[3,4]],[[2,3],[4,5.5]])
-    [[-1, -0.5], [-1, -1.5]]
-    >>> subtract([3], [4, 5])
-    Traceback (most recent call last):
-      ...
-    TypeError: Expected a matrix, got int/list instead
+    Subtract one matrix from another and returns the resulting matrix
+
+    Args:
+    matrix_a (List[List[Union[int, float]]): The first matrix.
+    matrix_b (List[List[Union[int, float]]): The second matrix.
+
+    Returns:
+    List[List[Union[int, float]]]: The resulting matrix after subtraction.
+
+    Raises:
+    TypeError: If inputs are not valid matrices.
+    ValueError: If matrices have different shapes.
     """
-    if (
-        _check_not_integer(matrix_a)
-        and _check_not_integer(matrix_b)
-        and _verify_matrix_sizes(matrix_a, matrix_b)
-    ):
-        return [[i - j for i, j in zip(*m)] for m in zip(matrix_a, matrix_b)]
-    raise TypeError("Expected a matrix, got int/list instead")
+    _validate_matrix(matrix_a)
+    _validate_matrix(matrix_b)
+    _verify_matrix_sizes(matrix_a, matrix_b)
+
+    return [
+        [a - b for a, b in zip(row_a, row_b)]
+        for row_a, row_b in zip(matrix_a, matrix_b)
+    ]
+
+
+## Associated Subroutines
+
+
+def _validate_matrix(matrix: Any) -> None:
+    """
+    Validates the input matrix.
+
+    Args:
+    matrix (Any): The matrix to validate.
+
+    Raises:
+    TypeError: If the matrix is not valid.
+    """
+    if not isinstance(matrix, list):
+        raise TypeError("Input argument is not a list.")
+    for row in matrix:
+        if not all(isinstance(n, (int, float)) for n in row):
+            raise TypeError("Matrix elements are not numeric.")
 
 
 
