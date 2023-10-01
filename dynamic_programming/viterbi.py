@@ -281,29 +281,38 @@ def _validate_lists(observations_space: Any, states_space: Any) -> None:
     _validate_list(observations_space, "observations_space")
     _validate_list(states_space, "states_space")
 
-
 def _validate_list(_object: Any, var_name: str) -> None:
     """
-    >>> _validate_list(["a"], "mock_name")
+    Validate whether the input object is a list and if its elements are of string type.\
+    If the input object is not a list or its elements are not strings, a ValueError is thrown.
 
-    >>> _validate_list("a", "mock_name")
-    Traceback (most recent call last):
-            ...
-    ValueError: mock_name must be a list
-    >>> _validate_list([0.5], "mock_name")
-    Traceback (most recent call last):
-            ...
-    ValueError: mock_name must be a list of strings
+    Args:
+        _object (Any): Input object to be validated.
+        var_name (str): Variable name of the object for error message context.
 
+    Raises:
+        ValueError: If the object provided is not a list or its elements are not strings.
+
+    Example:
+
+        >>> _validate_list(["a"], "mock_name")
+
+        >>> _validate_list("a", "mock_name")
+        Traceback (most recent call last):
+            ...
+        ValueError: mock_name must be a list
+        
+        >>> _validate_list([0.5], "mock_name")
+        Traceback (most recent call last):
+            ...
+        ValueError: mock_name must be a list of strings
     """
     if not isinstance(_object, list):
-        msg = f"{var_name} must be a list"
-        raise ValueError(msg)
-    else:
-        for x in _object:
-            if not isinstance(x, str):
-                msg = f"{var_name} must be a list of strings"
-                raise ValueError(msg)
+        raise ValueError(f"{var_name} must be a list")
+
+    non_str_elements = any(not isinstance(x, str) for x in _object)
+    if non_str_elements:
+        raise ValueError(f"{var_name} must be a list of strings")
 
 
 def _validate_dicts(
