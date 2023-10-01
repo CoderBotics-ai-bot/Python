@@ -75,11 +75,23 @@ def added_solution_file_path() -> List[pathlib.Path]:
     added_files = parse_files_from_payload(get_files_url(), headers)
     return [filepath for filepath in added_files if is_solution_file(filepath)]
 
+def collect_solution_file_paths() -> List[pathlib.Path]:
+    """
+    Collects the file paths of solution files.
 
-def collect_solution_file_paths() -> list[pathlib.Path]:
-    if os.environ.get("CI") and os.environ.get("GITHUB_EVENT_NAME") == "pull_request":
-        # Return only if there are any, otherwise default to all solutions
-        if filepaths := added_solution_file_path():
+    It collects the paths of all solution files if the environment variable CI isn't set
+    or the environment variable GITHUB_EVENT_NAME isn't "pull_request". However, if these conditions
+    are not met (which is typically the case in GitHub Actions environment when a pull request is made),
+    it collects only the file paths of the solution files that are newly added in this pull request.
+
+    Returns:
+        list[pathlib.Path]: A list of solution file paths.
+    """
+    is_ci = os.environ.get("CI")
+    is_pr = os.environ.get("GITHUB_EVENT_NAME") == "pull_request"
+    if is_ci and is_pr:
+        filepaths = added_solution_file_path()
+        if filepaths:  # Guard clause to return early if filepaths exist
             return filepaths
     return all_solution_file_paths()
 
