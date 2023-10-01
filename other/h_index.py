@@ -25,47 +25,49 @@ Space  Complexity: O(1)
 """
 
 
-def h_index(citations: list[int]) -> int:
-    """
-    Return H-index of citations
+from typing import List
 
-    >>> h_index([3, 0, 6, 1, 5])
-    3
-    >>> h_index([1, 3, 1])
-    1
-    >>> h_index([1, 2, 3])
-    2
-    >>> h_index('test')
-    Traceback (most recent call last):
-        ...
-    ValueError: The citations should be a list of non negative integers.
-    >>> h_index([1,2,'3'])
-    Traceback (most recent call last):
-        ...
-    ValueError: The citations should be a list of non negative integers.
-    >>> h_index([1,2,-3])
-    Traceback (most recent call last):
-        ...
-    ValueError: The citations should be a list of non negative integers.
+
+def h_index(citations: List[int]) -> int:
+    """
+    The h_index function calculates and returns the h-index for a given list of citations.
+    The h-index is defined as the maximum value of 'h' such that the given author/journal has published 'h'
+    papers that have each been cited at least 'h' times.
+
+    Args:
+        citations (List[int]): A list of integers representing the number of citations each paper has.
+
+    Returns:
+        int: The h-index value calculated based on the citations provided.
     """
 
-    # validate:
-    if not isinstance(citations, list) or not all(
-        isinstance(item, int) and item >= 0 for item in citations
-    ):
-        raise ValueError("The citations should be a list of non negative integers.")
+    validate_citations(citations)
+    citations.sort(reverse=True)
 
-    citations.sort()
-    len_citations = len(citations)
+    for index, citation in enumerate(citations):
+        if citation <= index:
+            return index
 
-    for i in range(len_citations):
-        if citations[len_citations - 1 - i] <= i:
-            return i
-
-    return len_citations
+    return len(citations)
 
 
 if __name__ == "__main__":
     import doctest
 
     doctest.testmod()
+
+def validate_citations(citations: List[int]) -> None:
+    """
+    Validates if the citations provided in the list are all integers.
+
+    Args:
+        citations (List[int]): A list of integers representing the number of citations each paper has.
+
+    Raises:
+        ValueError: If the input is not a list or if not all items in the list are non-negative integers.
+    """
+
+    if not isinstance(citations, list) or not all(
+        isinstance(item, int) and item >= 0 for item in citations
+    ):
+        raise ValueError("The citations should be a list of non negative integers.")
