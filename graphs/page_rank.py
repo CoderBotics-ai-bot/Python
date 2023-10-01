@@ -1,6 +1,12 @@
 """
 Author: https://github.com/bhushan-borole
 """
+
+
+from typing import Dict, List
+
+
+from typing import Dict, List, Tuple
 """
 The input graph for the algorithm is:
 
@@ -29,23 +35,30 @@ class Node:
     def __repr__(self):
         return f"<node={self.name} inbound={self.inbound} outbound={self.outbound}>"
 
+def page_rank(nodes: List["Node"], limit: int = 3, d: float = 0.85) -> Dict[str, float]:
+    """
+    Calculate the PageRank of nodes in a network.
 
-def page_rank(nodes, limit=3, d=0.85):
-    ranks = {}
-    for node in nodes:
-        ranks[node.name] = 1
+    This function implements the Google PageRank algorithm to determine the importance
+    of nodes (web pages) in a network (the World Wide Web), based on their inbound and
+    outbound connections.
 
-    outbounds = {}
-    for node in nodes:
-        outbounds[node.name] = len(node.outbound)
+    Parameters:
+    nodes (List['Node']): A list of nodes in the network. Each node should have a 'name' attribute,
+                          an 'inbound' attribute (a list of names of nodes from where it receives links),
+                          and an 'outbound' attribute (a list of names of nodes to where it links).
+    limit (int): The maximum number of iterations to perform. Default is 3.
+    d (float): Damping factor, typically set to 0.85. Default is 0.85.
 
-    for i in range(limit):
-        print(f"======= Iteration {i + 1} =======")
-        for _, node in enumerate(nodes):
-            ranks[node.name] = (1 - d) + d * sum(
-                ranks[ib] / outbounds[ib] for ib in node.inbound
-            )
-        print(ranks)
+    Returns:
+    ranks (Dict[str, float]): A dictionary mapping from node name to its calculated PageRank.
+    """
+    ranks, outbounds = initialize_ranks(nodes)
+
+    for _ in range(limit):
+        ranks = iterate_rank_calculation(d, nodes, ranks, outbounds)
+
+    return ranks
 
 
 def main():
@@ -64,6 +77,23 @@ def main():
         print(node)
 
     page_rank(nodes)
+
+
+def initialize_ranks(nodes: List["Node"]) -> Tuple[Dict[str, float], Dict[str, int]]:
+    """Initializes and returns rank values and outbound values for nodes"""
+    ranks = {node.name: 1 for node in nodes}
+    outbounds = {node.name: len(node.outbound) for node in nodes}
+    return ranks, outbounds
+
+
+def iterate_rank_calculation(
+    d: float, nodes: List["Node"], ranks: Dict[str, float], outbounds: Dict[str, int]
+) -> Dict[str, float]:
+    """Calculates rank values for a single iteration"""
+    return {
+        node.name: (1 - d) + d * sum(ranks[ib] / outbounds[ib] for ib in node.inbound)
+        for node in nodes
+    }
 
 
 if __name__ == "__main__":
