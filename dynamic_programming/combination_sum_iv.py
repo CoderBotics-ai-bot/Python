@@ -70,25 +70,20 @@ def combination_sum_iv_dp_array(n: int, array: list[int], target: int) -> int:
     dp_array = [-1] * (target + 1)
     return count_of_possible_combinations_with_dp_array(target, dp_array)
 
-
 def combination_sum_iv_bottom_up(n: int, array: list[int], target: int) -> int:
+    """Compute the number of combinations from `array` that can sum up to `target`.
+
+    This function uses a bottom-up dynamic programming approach.
+
+    Args:
+        n (int): The length of input `array`.
+        array (list[int]): The list of integers.
+        target (int): The target sum to be made up of integers from `array`.
+
+    Returns:
+        int: The number of combinations from `array` that can add up to `target`.
     """
-    Function checks the all possible combinations with using bottom up approach,
-    and returns the count of possible combination in O(N^2) Time Complexity
-    as we are using Dynamic programming array here.
-
-    >>> combination_sum_iv_bottom_up(3, [1,2,5], 5)
-    9
-    """
-
-    dp_array = [0] * (target + 1)
-    dp_array[0] = 1
-
-    for i in range(1, target + 1):
-        for j in range(n):
-            if i - array[j] >= 0:
-                dp_array[i] += dp_array[i - array[j]]
-
+    dp_array = generate_dp_array(n, array, target)
     return dp_array[target]
 
 
@@ -100,3 +95,25 @@ if __name__ == "__main__":
     target = 5
     array = [1, 2, 5]
     print(combination_sum_iv(n, array, target))
+
+
+def generate_dp_array(n: int, array: list[int], target: int) -> list[int]:
+    """Generate a dp array for computing the number of combinations sum to the target.
+
+    Args:
+        n (int): The length of input `array`.
+        array (list[int]): The list of integers.
+        target (int): The target sum to be made up of integers from `array`.
+
+    Returns:
+        list[int]: The dp array for number of combinations sum to the target.
+    """
+    dp_array = [0] * (target + 1)
+    dp_array[0] = 1
+
+    for i in range(1, target + 1):
+        for j in range(n):
+            if array[j] <= i:
+                dp_array[i] += dp_array[i - array[j]]
+
+    return dp_array
