@@ -17,6 +17,13 @@ from random import randint, shuffle
 from time import sleep
 from typing import Literal
 
+
+from typing import List
+from os import system
+
+
+from typing import Union
+
 WIDTH = 50  # Width of the Wa-Tor planet
 HEIGHT = 50  # Height of the Wa-Tor planet
 
@@ -478,65 +485,57 @@ class WaTor:
                 self.time_passed(self, iter_num)
 
 
-def visualise(wt: WaTor, iter_number: int, *, colour: bool = True) -> None:
+def visualise(wt: "WaTor", iter_number: int, *, colour: bool = True) -> None:
     """
-    Visually displays the Wa-Tor planet using
-    an ascii code in terminal to clear and re-print
-    the Wa-Tor planet at intervals.
+    Display the current state of the Wa-Tor planet with the given colors.
 
-    Uses ascii colour codes to colourfully display
-    the predators and prey.
+    Args:
+        wt (WaTor): Wa-Tor simulation object instance.
+        iter_number (int): The current iteration number.
+        colour (bool): Whether or not we should use colored output,
+            False will yield black and white output (default:True).
 
-    (0x60f197) Prey = #
-    (0xfffff) Predator = x
+    Output:
+        Displays a grid representing the Wa-Tor planet where each cell can have
+        one of three states: Empty ('. '), Prey ('# ') or Predator ('X ').
+        At the end of the grid, the current iteration number and the count of Prey
+        and Predatory entities on the planet are printed.
 
-    >>> wt = WaTor(30, 30)
-    >>> wt.set_planet([
-    ... [Entity(True, coords=(0, 0)), Entity(False, coords=(0, 1)), None],
-    ... [Entity(False, coords=(1, 0)), None, Entity(False, coords=(1, 2))],
-    ... [None, Entity(True, coords=(2, 1)), None]
-    ... ])
-    >>> visualise(wt, 0, colour=False)  # doctest: +NORMALIZE_WHITESPACE
-    #  x  .
-    x  .  x
-    .  #  .
-    <BLANKLINE>
-    Iteration: 0 | Prey count: 2 | Predator count: 3 |
+    Examples:
+        from main import WaTor
+        wt = WaTor(30, 30)
+        wt.set_planet([
+            [Entity(True, coords=(0, 0)), Entity(False, coords=(0, 1)), None],
+            [Entity(False, coords=(1, 0)), None, Entity(False, coords=(1, 2))],
+            [None, Entity(True, coords=(2, 1)), None]
+        ])
+        visualise(wt, 0, colour=False)
     """
     if colour:
-        __import__("os").system("")
+        system("")
         print("\x1b[0;0H\x1b[2J\x1b[?25l")
-
     reprint = "\x1b[0;0H" if colour else ""
     ansi_colour_end = "\x1b[0m " if colour else " "
 
-    planet = wt.planet
     output = ""
-
-    # Iterate over every entity in the planet
-    for row in planet:
+    for row in wt.planet:
         for entity in row:
             if entity is None:
                 output += " . "
             else:
-                if colour is True:
-                    output += (
-                        "\x1b[38;2;96;241;151m"
-                        if entity.prey
-                        else "\x1b[38;2;255;255;15m"
-                    )
-                output += f" {'#' if entity.prey else 'x'}{ansi_colour_end}"
-
-        output += "\n"
+                output += (
+                    f"{get_color(entity, colour)} {get_symbol(entity)}{ansi_colour_end}"
+                )
+    output += "\n"
 
     entities = wt.get_entities()
     prey_count = sum(entity.prey for entity in entities)
+    predator_count = len(entities) - prey_count
 
     print(
         f"{output}\n Iteration: {iter_number} | Prey count: {prey_count} | "
-        f"Predator count: {len(entities) - prey_count} | {reprint}"
+        f"Predator count: {predator_count} | {reprint}"
     )
-    # Block the thread to be able to visualise seeing the algorithm
     sleep(0.05)
 
 
@@ -548,3 +547,17 @@ if __name__ == "__main__":
     wt = WaTor(WIDTH, HEIGHT)
     wt.time_passed = visualise
     wt.run(iteration_count=100_000)
+
+def get_color(entity: "Entity", colour: bool) -> str:
+    """Return color string based on entity state and if color is enabled."""
+    if not colour:
+        return " "
+    if entity.prey:
+        return "\x1b[38;2;96;241;151m"
+    else:
+        return "\x1b[38;2;255;255;15m"
+
+
+def get_symbol(entity: "Entity") -> str:
+    """Return symbol string based on entity state."""
+    return "#" if entity.prey else "x"
