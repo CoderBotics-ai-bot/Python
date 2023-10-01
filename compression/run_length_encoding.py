@@ -1,29 +1,34 @@
-# https://en.wikipedia.org/wiki/Run-length_encoding
 
+
+from itertools import groupby
 
 def run_length_encode(text: str) -> list:
     """
-    Performs Run Length Encoding
-    >>> run_length_encode("AAAABBBCCDAA")
-    [('A', 4), ('B', 3), ('C', 2), ('D', 1), ('A', 2)]
-    >>> run_length_encode("A")
-    [('A', 1)]
-    >>> run_length_encode("AA")
-    [('A', 2)]
-    >>> run_length_encode("AAADDDDDDFFFCCCAAVVVV")
-    [('A', 3), ('D', 6), ('F', 3), ('C', 3), ('A', 2), ('V', 4)]
+    Performs Run Length Encoding on a string of characters.
+
+    Args:
+        text (str): A string of characters to encode.
+
+    Returns:
+        list: A list of tuples where each tuple represents an encoded sequence.
+            The first element of the tuple is the character, and the second element is the number of times it repeats.
+
+    Examples:
+        >>> run_length_encode("AAAABBBCCDAA")
+        [('A', 4), ('B', 3), ('C', 2), ('D', 1), ('A', 2)]
+        >>> run_length_encode("A")
+        [('A', 1)]
+        >>> run_length_encode("AA")
+        [('A', 2)]
+        >>> run_length_encode("AAADDDDDDFFFCCCAAVVVV")
+        [('A', 3), ('D', 6), ('F', 3), ('C', 3), ('A', 2), ('V', 4)]
     """
-    encoded = []
-    count = 1
+    # return empty list if text is None or empty
+    if not text:
+        return []
 
-    for i in range(len(text)):
-        if i + 1 < len(text) and text[i] == text[i + 1]:
-            count += 1
-        else:
-            encoded.append((text[i], count))
-            count = 1
-
-    return encoded
+    # Using list comprehension and itertools to simplify the code
+    return [(k, len(list(g))) for k, g in groupby(text)]
 
 
 def run_length_decode(encoded: list) -> str:
