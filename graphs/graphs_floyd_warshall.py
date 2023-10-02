@@ -5,15 +5,32 @@
 """
 
 
-def _print_dist(dist, v):
+from typing import List
+
+def _print_dist(dist: List[List[float]], v: int) -> None:
+    """
+    Print the matrix of shortest path distances.
+
+    This function uses Floyd Warshall algorithm and prints the matrix of shortest paths between all pairs of vertices.
+    The matrix is printed in a human readable format: each row corresponds to a vertex, each column
+    to a destination vertex, and each cell contains the shortest path distance from the corresponding vertex
+    to the destination vertex. If a certain path is not reachable, "INF" is printed in the corresponding cell.
+
+    Arguments:
+    dist -- 2D list representing the distances between each pair of vertices
+    v -- Number of vertices in the graph
+
+    Returns:
+    None
+    """
     print("\nThe shortest path matrix using Floyd Warshall algorithm\n")
-    for i in range(v):
-        for j in range(v):
-            if dist[i][j] != float("inf"):
-                print(int(dist[i][j]), end="\t")
-            else:
-                print("INF", end="\t")
-        print()
+
+    def format_value(value: float) -> str:
+        """Format the value to display"""
+        return str(int(value)) if value != float("inf") else "INF"
+
+    rows = ["\t".join(format_value(dist[i][j]) for j in range(v)) for i in range(v)]
+    print("\n".join(rows))
 
 
 def floyd_warshall(graph, v):
