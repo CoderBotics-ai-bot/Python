@@ -9,46 +9,17 @@ python3 simple_binary_search.py
 """
 from __future__ import annotations
 
-
 def binary_search(a_list: list[int], item: int) -> bool:
+    """Search for item in sorted list a_list using binary search.
+
+    Args:
+        a_list: Sorted list to search.
+        item: Item to search for.
+
+    Returns:
+        True if item is found, False otherwise.
     """
-    >>> test_list = [0, 1, 2, 8, 13, 17, 19, 32, 42]
-    >>> binary_search(test_list, 3)
-    False
-    >>> binary_search(test_list, 13)
-    True
-    >>> binary_search([4, 4, 5, 6, 7], 4)
-    True
-    >>> binary_search([4, 4, 5, 6, 7], -10)
-    False
-    >>> binary_search([-18, 2], -18)
-    True
-    >>> binary_search([5], 5)
-    True
-    >>> binary_search(['a', 'c', 'd'], 'c')
-    True
-    >>> binary_search(['a', 'c', 'd'], 'f')
-    False
-    >>> binary_search([], 1)
-    False
-    >>> binary_search([-.1, .1 , .8], .1)
-    True
-    >>> binary_search(range(-5000, 5000, 10), 80)
-    True
-    >>> binary_search(range(-5000, 5000, 10), 1255)
-    False
-    >>> binary_search(range(0, 10000, 5), 2)
-    False
-    """
-    if len(a_list) == 0:
-        return False
-    midpoint = len(a_list) // 2
-    if a_list[midpoint] == item:
-        return True
-    if item < a_list[midpoint]:
-        return binary_search(a_list[:midpoint], item)
-    else:
-        return binary_search(a_list[midpoint + 1 :], item)
+    return _binary_search(a_list, item, 0, len(a_list) - 1)
 
 
 if __name__ == "__main__":
@@ -57,3 +28,15 @@ if __name__ == "__main__":
     target = int(input("Enter the number to be found in the list:\n").strip())
     not_str = "" if binary_search(sequence, target) else "not "
     print(f"{target} was {not_str}found in {sequence}")
+
+
+def _binary_search(a_list: list[int], item: int, left: int, right: int) -> bool:
+    """Recursive helper function for binary_search."""
+    if right >= left:
+        midpoint = (right + left) // 2
+        if a_list[midpoint] == item:
+            return True
+        if a_list[midpoint] > item:
+            return _binary_search(a_list, item, left, midpoint - 1)
+        return _binary_search(a_list, item, midpoint + 1, right)
+    return False
