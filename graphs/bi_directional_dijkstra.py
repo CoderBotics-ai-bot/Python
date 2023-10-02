@@ -7,15 +7,20 @@ searching algorithm
 
 Reference: shorturl.at/exHM7
 """
+from typing import Any
+
+import numpy as np
+
+
+from queue import PriorityQueue
+
+
+from typing import Any, Dict, List, Optional, Tuple
 
 # Author: Swayam Singh (https://github.com/practice404)
 
 
 from queue import PriorityQueue
-from typing import Any
-
-import numpy as np
-
 
 def pass_and_relaxation(
     graph: dict,
@@ -24,50 +29,43 @@ def pass_and_relaxation(
     visited_backward: set,
     cst_fwd: dict,
     cst_bwd: dict,
-    queue: PriorityQueue,
+    queue: Any,
     parent: dict,
     shortest_distance: float,
 ) -> float:
+    """
+    Perform one iteration of pass and relaxation for Bidirectional Dijkstra's algorithm.
+    """
     for nxt, d in graph[v]:
         if nxt in visited_forward:
             continue
-        old_cost_f = cst_fwd.get(nxt, np.inf)
+
         new_cost_f = cst_fwd[v] + d
+        shortest_distance = update_shortest_distance(
+            nxt, visited_backward, cst_fwd, cst_bwd, new_cost_f, shortest_distance
+        )
+
+        old_cost_f = cst_fwd.get(nxt, np.inf)
         if new_cost_f < old_cost_f:
             queue.put((new_cost_f, nxt))
             cst_fwd[nxt] = new_cost_f
             parent[nxt] = v
-        if nxt in visited_backward:
-            if cst_fwd[v] + d + cst_bwd[nxt] < shortest_distance:
-                shortest_distance = cst_fwd[v] + d + cst_bwd[nxt]
     return shortest_distance
 
 
 def bidirectional_dij(
-    source: str, destination: str, graph_forward: dict, graph_backward: dict
+    source: str,
+    destination: str,
+    graph_forward: Dict[str, List[Tuple[str, int]]],
+    graph_backward: Dict[str, List[Tuple[str, int]]],
 ) -> int:
-    """
-    Bi-directional Dijkstra's algorithm.
-
-    Returns:
-        shortest_path_distance (int): length of the shortest path.
-
-    Warnings:
-        If the destination is not reachable, function returns -1
-
-    >>> bidirectional_dij("E", "F", graph_fwd, graph_bwd)
-    3
-    """
     shortest_path_distance = -1
 
     visited_forward = set()
     visited_backward = set()
-    cst_fwd = {source: 0}
-    cst_bwd = {destination: 0}
-    parent_forward = {source: None}
-    parent_backward = {destination: None}
-    queue_forward: PriorityQueue[Any] = PriorityQueue()
-    queue_backward: PriorityQueue[Any] = PriorityQueue()
+
+    queue_forward: PriorityQueue[Tuple[int, str]] = PriorityQueue()
+    queue_backward: PriorityQueue[Tuple[int, str]] = PriorityQueue()
 
     shortest_distance = np.inf
 
@@ -77,12 +75,17 @@ def bidirectional_dij(
     if source == destination:
         return 0
 
-    while not queue_forward.empty() and not queue_backward.empty():
-        _, v_fwd = queue_forward.get()
-        visited_forward.add(v_fwd)
+    (
+        cst_fwd,
+        cst_bwd,
+        parent_forward,
+        parent_backward,
+    ) = initialize_cost_and_parent_dicts(source, destination)
 
-        _, v_bwd = queue_backward.get()
-        visited_backward.add(v_bwd)
+    continue_loop, shortest_distance = True, np.inf
+    while not queue_forward.empty() and not queue_backward.empty() and continue_loop:
+        _, v_fwd = update_visited_and_queue(visited_forward, queue_forward)
+        _, v_bwd = update_visited_and_queue(visited_backward, queue_backward)
 
         shortest_distance = pass_and_relaxation(
             graph_forward,
@@ -108,12 +111,58 @@ def bidirectional_dij(
             shortest_distance,
         )
 
-        if cst_fwd[v_fwd] + cst_bwd[v_bwd] >= shortest_distance:
-            break
+        continue_loop, shortest_distance = calculate_shortest_distance(
+            shortest_distance, cst_fwd, cst_bwd, v_fwd, v_bwd
+        )
 
     if shortest_distance != np.inf:
         shortest_path_distance = shortest_distance
     return shortest_path_distance
+
+
+def update_shortest_distance(
+    nxt: str,
+    visited_backward: set,
+    cst_fwd: dict,
+    cst_bwd: dict,
+    new_cost_f: float,
+    shortest_distance: float,
+) -> float:
+    """Update shortest distance."""
+    if nxt in visited_backward:
+        shortest_distance = min(shortest_distance, new_cost_f + cst_bwd[nxt])
+    return shortest_distance
+
+def initialize_cost_and_parent_dicts(
+    source: str, destination: str
+) -> Tuple[
+    Dict[str, int], Dict[str, int], Dict[str, Optional[str]], Dict[str, Optional[str]]
+]:
+    cst_fwd = {source: 0}
+    cst_bwd = {destination: 0}
+    parent_forward = {source: None}
+    parent_backward = {destination: None}
+    return cst_fwd, cst_bwd, parent_forward, parent_backward
+
+
+def update_visited_and_queue(
+    v: str, visited: set, queue: PriorityQueue[Tuple[int, str]]
+):
+    visited.add(v)
+    queue.get()
+
+
+def calculate_shortest_distance(
+    shortest_distance: float,
+    cst_fwd: Dict[str, float],
+    cst_bwd: Dict[str, float],
+    v_fwd: str,
+    v_bwd: str,
+) -> float:
+    if cst_fwd[v_fwd] + cst_bwd[v_bwd] >= shortest_distance:
+        return False, shortest_distance
+    else:
+        return True, shortest_distance
 
 
 graph_fwd = {
