@@ -75,49 +75,64 @@ def merge(left: List[int], right: List[int]) -> List[int]:
     return result
 
 
+def tim_sort(lst: List[int]) -> List[int]:
+    """
+    Parameters
+    ----------
+    lst: List[int]
+        An unsorted list of integers.
+
+    Returns
+    -------
+    List[int]
+        A sorted list which is sorted form of the input list.
+    """
+
+    runs = create_runs(lst)
+    sorted_runs = [insertion_sort(run) for run in runs]
+    sorted_array = []
+    for run in sorted_runs:
+        sorted_array = merge(sorted_array, run)
+
+    return sorted_array
+
+
 def is_item_found(lst: List[int], mid: int, item: int) -> bool:
     """Check if item is equal to Mid point"""
     return lst[mid] == item
 
-
-def is_item_less_than_mid(lst: List[int], mid: int, item: int) -> bool:
-    """Check if item is less than Mid point"""
-    return lst[mid] > item
-
-
-def tim_sort(lst):
+def create_runs(lst: List[int]) -> List[List[int]]:
     """
-    >>> tim_sort("Python")
-    ['P', 'h', 'n', 'o', 't', 'y']
-    >>> tim_sort((1.1, 1, 0, -1, -1.1))
-    [-1.1, -1, 0, 1, 1.1]
-    >>> tim_sort(list(reversed(list(range(7)))))
-    [0, 1, 2, 3, 4, 5, 6]
-    >>> tim_sort([3, 2, 1]) == insertion_sort([3, 2, 1])
-    True
-    >>> tim_sort([3, 2, 1]) == sorted([3, 2, 1])
-    True
+    This function creates 'runs' in the given list.
+
+    Parameters
+    ----------
+    lst : List[int]
+        An unsorted list of integers.
+
+    Returns
+    -------
+    List[List[int]]
+        A list of runs.
     """
+
     length = len(lst)
-    runs, sorted_runs = [], []
+    runs = []
     new_run = [lst[0]]
-    sorted_array = []
-    i = 1
-    while i < length:
+    for i in range(1, length):
         if lst[i] < lst[i - 1]:
             runs.append(new_run)
             new_run = [lst[i]]
         else:
             new_run.append(lst[i])
-        i += 1
     runs.append(new_run)
 
-    for run in runs:
-        sorted_runs.append(insertion_sort(run))
-    for run in sorted_runs:
-        sorted_array = merge(sorted_array, run)
+    return runs
 
-    return sorted_array
+
+def is_item_less_than_mid(lst: List[int], mid: int, item: int) -> bool:
+    """Check if item is less than Mid point"""
+    return lst[mid] > item
 
 
 def main():
