@@ -7,6 +7,9 @@ from typing import TypeVar
 
 from typing import List
 
+
+from typing import Tuple, List
+
 num = TypeVar("num", int, float)  # Usually int or float
 """
     Linear Discriminant Analysis
@@ -370,6 +373,56 @@ def main():
             print("\n" + "GoodBye!".center(100, "-") + "\n")
             break
         system("cls" if name == "nt" else "clear")  # noqa: S605
+
+def gather_inputs() -> Tuple[int, float, List[int], List[float]]:
+    """Gather user inputs from console"""
+    print("First of all we should specify the number of classes that")
+    print("we want to generate as training dataset")
+
+    n_classes = valid_input(
+        input_type=int,
+        condition=lambda x: x > 0,
+        input_msg="Enter the number of classes (Data Groupings): ",
+        err_msg="Number of classes should be positive!",
+    )
+
+    print("-" * 100)
+
+    std_dev = valid_input(
+        input_type=float,
+        condition=lambda x: x >= 0,
+        input_msg=(
+            "Enter the value of standard deviation"
+            "(Default value is 1.0 for all classes): "
+        ),
+        err_msg="Standard deviation should not be negative!",
+        default="1.0",
+    )
+
+    print("-" * 100)
+
+    counts = []
+    for i in range(n_classes):
+        user_count = valid_input(
+            input_type=int,
+            condition=lambda x: x > 0,
+            input_msg=(f"Enter The number of instances for class_{i+1}: "),
+            err_msg="Number of instances should be positive!",
+        )
+        counts.append(user_count)
+    print("-" * 100)
+
+    user_means = []
+    for a in range(n_classes):
+        user_mean = valid_input(
+            input_type=float,
+            input_msg=(f"Enter the value of mean for class_{a+1}: "),
+            err_msg="This is an invalid value.",
+        )
+        user_means.append(user_mean)
+    print("-" * 100)
+
+    return n_classes, std_dev, counts, user_means
 
 
 if __name__ == "__main__":
