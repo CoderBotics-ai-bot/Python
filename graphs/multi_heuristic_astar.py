@@ -10,6 +10,11 @@ from typing import Dict, Tuple
 from sys import exit as sys_exit
 from numpy import chararray as np_chararray
 
+
+from typing import Dict, List
+
+TPos = Tuple[int, int]
+
 TPos = tuple[int, int]
 
 
@@ -101,6 +106,35 @@ def valid(p: TPos) -> bool:
     return all(0 <= coordinate < n for coordinate in (x, y))
 
 
+def expand_state(
+    s: TPos,
+    j: int,
+    visited: set,
+    g_function: Dict[TPos, float],
+    close_list_anchor: set,
+    close_list_inad: set,
+    open_list: List["PriorityQueue"],
+) -> None:
+    """Expand the state."""
+    (x, y) = s
+    neighbours_list = [(x - 1, y), (x + 1, y), (x, y + 1), (x, y - 1)]
+
+    for itera in range(n_heuristic):
+        open_list[itera].remove_element(s)
+
+    for neighbour in neighbours_list:
+        evaluate_neighbour(
+            neighbour,
+            s,
+            open_list,
+            visited,
+            g_function,
+            back_pointer,
+            close_list_anchor,
+            close_list_inad,
+        )
+
+
 def do_something(back_pointer: dict[TPos, TPos], goal: TPos, start: TPos) -> None:
     grid = create_initial_grid()
     visualize_grid(grid, back_pointer, goal, start)
@@ -113,6 +147,38 @@ def do_something(back_pointer: dict[TPos, TPos], goal: TPos, start: TPos) -> Non
 
     print_path_back_trace(back_pointer, goal, start)
     sys.exit()
+
+def evaluate_neighbour(
+    neighbour: TPos,
+    current_state: TPos,
+    open_list: List["PriorityQueue"],
+    visited: set,
+    g_function: Dict[TPos, float],
+    back_pointer: Dict[TPos, TPos],
+    close_list_anchor: set,
+    close_list_inad: set,
+) -> None:
+    """Evaluate the neighbour node."""
+    if valid(neighbour) and neighbour not in blocks:
+        if neighbour not in visited:
+            visited.add(neighbour)
+            back_pointer[neighbour] = -1
+            g_function[neighbour] = float("inf")
+
+        if g_function[neighbour] > g_function[current_state] + 1:
+            g_function[neighbour] = g_function[current_state] + 1
+            back_pointer[neighbour] = current_state
+
+            if neighbour not in close_list_anchor:
+                open_list[0].put(neighbour, key(neighbour, 0, goal, g_function))
+                if neighbour not in close_list_inad:
+                    for var in range(1, n_heuristic):
+                        if key(neighbour, var, goal, g_function) <= W2 * key(
+                            neighbour, 0, goal, g_function
+                        ):
+                            open_list[var].put(
+                                neighbour, key(neighbour, var, goal, g_function)
+                            )
 
 def visualize_grid(
     grid: np.array, back_pointer: Dict[TPos, TPos], goal: TPos, start: TPos
@@ -165,49 +231,6 @@ def create_initial_grid() -> np.array:
         for j in range(n):
             grid[(n - 1) - i][j] = "#" if (j, (n - 1) - i) in blocks else "*"
     return grid
-
-
-def expand_state(
-    s,
-    j,
-    visited,
-    g_function,
-    close_list_anchor,
-    close_list_inad,
-    open_list,
-    back_pointer,
-):
-    for itera in range(n_heuristic):
-        open_list[itera].remove_element(s)
-    # print("s", s)
-    # print("j", j)
-    (x, y) = s
-    left = (x - 1, y)
-    right = (x + 1, y)
-    up = (x, y + 1)
-    down = (x, y - 1)
-
-    for neighbours in [left, right, up, down]:
-        if neighbours not in blocks:
-            if valid(neighbours) and neighbours not in visited:
-                # print("neighbour", neighbours)
-                visited.add(neighbours)
-                back_pointer[neighbours] = -1
-                g_function[neighbours] = float("inf")
-
-            if valid(neighbours) and g_function[neighbours] > g_function[s] + 1:
-                g_function[neighbours] = g_function[s] + 1
-                back_pointer[neighbours] = s
-                if neighbours not in close_list_anchor:
-                    open_list[0].put(neighbours, key(neighbours, 0, goal, g_function))
-                    if neighbours not in close_list_inad:
-                        for var in range(1, n_heuristic):
-                            if key(neighbours, var, goal, g_function) <= W2 * key(
-                                neighbours, 0, goal, g_function
-                            ):
-                                open_list[j].put(
-                                    neighbours, key(neighbours, var, goal, g_function)
-                                )
 
 
 def make_common_ground():
