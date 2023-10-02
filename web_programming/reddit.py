@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import requests
+from typing import List
+from requests import exceptions
 
 valid_terms = set(
     """approved_at_utc approved_by author_flair_background_color
@@ -14,36 +16,61 @@ subreddit subreddit_name_prefixed subreddit_type thumbnail title top_awarded_typ
 total_awards_received ups upvote_ratio url user_reports""".split()
 )
 
-
 def get_subreddit_data(
     subreddit: str, limit: int = 1, age: str = "new", wanted_data: list | None = None
 ) -> dict:
     """
-    subreddit : Subreddit to query
-    limit : Number of posts to fetch
-    age : ["new", "top", "hot"]
-    wanted_data : Get only the required data in the list
+    Fetch data from a specified subreddit.
+
+    Parameters
+    ----------
+    subreddit : str
+        Name of the subreddit to gather data from.
+    limit : int, optional (default=1)
+        The number of posts to fetch from the subreddit.
+    age : str, optional (default="new")
+       The posts to fetch based on their age. Can be either "new", "top", or "hot".
+    wanted_data : list, optional
+        List of fields of the data to fetch from each posts. If None, all fields will be fetched.
+
+    Returns
+    -------
+    data_dict : dict
+        Dictionary containing the data fetched from each posts.
+
+    Raises
+    ------
+    ValueError
+        If one or more of the fields provided in wanted_data list are not valid.
+    requests.exceptions.HTTPError
+        If the status of the response from the API is 429, meaning API rate limit has been exhausted.
     """
+    # Ensure wanted_data is a list
     wanted_data = wanted_data or []
-    if invalid_search_terms := ", ".join(sorted(set(wanted_data) - valid_terms)):
-        msg = f"Invalid search term: {invalid_search_terms}"
-        raise ValueError(msg)
+
+    # Validate search terms
+    invalid_search_terms = ", ".join(sorted(set(wanted_data) - valid_terms))
+    if invalid_search_terms:
+        raise ValueError(f"Invalid search terms: {invalid_search_terms}")
+
+    # Perform API request
     response = requests.get(
         f"https://reddit.com/r/{subreddit}/{age}.json?limit={limit}",
-        headers={"User-agent": "A random string"},
+        headers={"User-agent": "Some random string"},
     )
     if response.status_code == 429:
-        raise requests.HTTPError
+        raise requests.exceptions.HTTPError("API rate limit has been exhausted")
 
-    data = response.json()
-    if not wanted_data:
-        return {id_: data["data"]["children"][id_] for id_ in range(limit)}
+    # Parse response data
+    data = response.json()["data"]["children"]
 
+    # Extract requested data
     data_dict = {}
-    for id_ in range(limit):
-        data_dict[id_] = {
-            item: data["data"]["children"][id_]["data"][item] for item in wanted_data
-        }
+    for i, child in enumerate(data):
+        if not wanted_data:  # If no specific data requested, return full data
+            data_dict[i] = child
+        else:
+            data_dict[i] = {item: child["data"][item] for item in wanted_data}
     return data_dict
 
 
