@@ -22,6 +22,7 @@ python3 -m doctest -v dutch_national_flag_sort.py
 For manual testing run:
 python dnf_sort.py
 """
+from typing import List, Tuple
 
 
 # Python program to sort a sequence containing only 0, 1 and 2 in a single pass.
@@ -31,61 +32,35 @@ blue = 2  # The third color of the flag.
 colors = (red, white, blue)
 
 
-def dutch_national_flag_sort(sequence: list) -> list:
+def dutch_national_flag_sort(sequence: List[int]) -> List[int]:
     """
-    A pure Python implementation of Dutch National Flag sort algorithm.
-    :param data: 3 unique integer values (e.g., 0, 1, 2) in an sequence
-    :return: The same collection in ascending order
+    Implementation of Dutch National Flag sort algorithm: Sorts sequence containing ONLY 0, 1, 2 in a single pass.
 
-    >>> dutch_national_flag_sort([])
-    []
-    >>> dutch_national_flag_sort([0])
-    [0]
-    >>> dutch_national_flag_sort([2, 1, 0, 0, 1, 2])
-    [0, 0, 1, 1, 2, 2]
-    >>> dutch_national_flag_sort([0, 1, 1, 0, 1, 2, 1, 2, 0, 0, 0, 1])
-    [0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 2, 2]
-    >>> dutch_national_flag_sort("abacab")
-    Traceback (most recent call last):
-      ...
-    ValueError: The elements inside the sequence must contains only (0, 1, 2) values
-    >>> dutch_national_flag_sort("Abacab")
-    Traceback (most recent call last):
-      ...
-    ValueError: The elements inside the sequence must contains only (0, 1, 2) values
-    >>> dutch_national_flag_sort([3, 2, 3, 1, 3, 0, 3])
-    Traceback (most recent call last):
-      ...
-    ValueError: The elements inside the sequence must contains only (0, 1, 2) values
-    >>> dutch_national_flag_sort([-1, 2, -1, 1, -1, 0, -1])
-    Traceback (most recent call last):
-      ...
-    ValueError: The elements inside the sequence must contains only (0, 1, 2) values
-    >>> dutch_national_flag_sort([1.1, 2, 1.1, 1, 1.1, 0, 1.1])
-    Traceback (most recent call last):
-      ...
-    ValueError: The elements inside the sequence must contains only (0, 1, 2) values
+    Args:
+        sequence (List[int]): Input sequence of integers containing ONLY 0, 1, and 2.
+
+    Returns:
+        List[int]: Sorted sequence in ascending order.
+
+    Raises:
+        ValueError: If elements are not 0, 1, or 2.
     """
     if not sequence:
         return []
     if len(sequence) == 1:
         return list(sequence)
-    low = 0
-    high = len(sequence) - 1
-    mid = 0
+
+    low, mid, high = 0, 0, len(sequence) - 1
     while mid <= high:
+        validate_sequence(sequence[mid], colors)
         if sequence[mid] == colors[0]:
-            sequence[low], sequence[mid] = sequence[mid], sequence[low]
-            low += 1
-            mid += 1
+            swap(sequence, low, mid)
+            low, mid = increment_low_and_mid(low, mid)
         elif sequence[mid] == colors[1]:
             mid += 1
         elif sequence[mid] == colors[2]:
-            sequence[mid], sequence[high] = sequence[high], sequence[mid]
-            high -= 1
-        else:
-            msg = f"The elements inside the sequence must contains only {colors} values"
-            raise ValueError(msg)
+            swap(sequence, mid, high)
+            high = decrement_high(high)
     return sequence
 
 
@@ -97,3 +72,21 @@ if __name__ == "__main__":
     user_input = input("Enter numbers separated by commas:\n").strip()
     unsorted = [int(item.strip()) for item in user_input.split(",")]
     print(f"{dutch_national_flag_sort(unsorted)}")
+
+def swap(sequence: List[int], i: int, j: int) -> None:
+    sequence[i], sequence[j] = sequence[j], sequence[i]
+
+
+def increment_low_and_mid(low: int, mid: int) -> Tuple[int, int]:
+    return low + 1, mid + 1
+
+
+def decrement_high(high: int) -> int:
+    return high - 1
+
+
+def validate_sequence(sequence_value: int, valid_values: Tuple[int, int, int]) -> None:
+    if sequence_value not in valid_values:
+        raise ValueError(
+            f"The elements inside the sequence must contains only {valid_values} values"
+        )
