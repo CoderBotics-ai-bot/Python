@@ -13,6 +13,9 @@ from numpy import chararray as np_chararray
 
 from typing import Dict, List
 
+
+from typing import List, Tuple
+
 TPos = Tuple[int, int]
 
 TPos = tuple[int, int]
@@ -89,6 +92,26 @@ def key(start: TPos, i: int, goal: TPos, g_function: dict[TPos, float]):
     ans = g_function[start] + W1 * heuristics[i](start, goal)
     return ans
 
+
+def make_common_ground() -> List[Tuple[int, int]]:
+    """Create a common ground with obstacles.
+
+    This function defines a ground where each cell represents a possible position of an agent.
+    The board has dimensions 20x20 and obstacles are defined in specific cells.
+    The positions of the obstacles are hardcoded according to the game logic.
+
+    Returns:
+        A list of tuples where each tuple is a pair of integers representing the
+        coordinate (x, y) of a cell with an obstacle.
+    """
+    obstacle1 = make_obstacle(1, 5, 1, 6)
+    obstacle2 = make_obstacle(15, 20, 17, 18)
+    obstacle3 = make_obstacle(10, 19, 1, 15)
+    obstacle4 = make_obstacle(1, 4, 12, 19)
+    obstacle5 = make_obstacle(3, 13, 16, 19)
+
+    return obstacle1 + obstacle2 + obstacle3 + obstacle4 + obstacle5
+
 def valid(p: TPos) -> bool:
     """
     Check if the given position (p) is within the allowed limits.
@@ -104,6 +127,26 @@ def valid(p: TPos) -> bool:
     """
     x, y = p
     return all(0 <= coordinate < n for coordinate in (x, y))
+
+def make_obstacle(
+    start_x: int, end_x: int, start_y: int, end_y: int
+) -> List[Tuple[int, int]]:
+    """Create a list of coordinates of obstacles.
+
+    This function generates a list where each item represents the coordinate (x, y)
+    of an obstacle for a given range between start and end points on x and y axes.
+
+    Args:
+        start_x (int): start point on x axis
+        end_x (int): end point on x axis
+        start_y (int): start point on y axis
+        end_y (int): end point on y axis
+
+    Returns:
+        A list of tuples where each tuple is a pair of integers representing the
+        obstacle coordinate (x, y).
+    """
+    return [(x, y) for x in range(start_x, end_x) for y in range(start_y, end_y)]
 
 
 def expand_state(
@@ -231,29 +274,6 @@ def create_initial_grid() -> np.array:
         for j in range(n):
             grid[(n - 1) - i][j] = "#" if (j, (n - 1) - i) in blocks else "*"
     return grid
-
-
-def make_common_ground():
-    some_list = []
-    for x in range(1, 5):
-        for y in range(1, 6):
-            some_list.append((x, y))
-
-    for x in range(15, 20):
-        some_list.append((x, 17))
-
-    for x in range(10, 19):
-        for y in range(1, 15):
-            some_list.append((x, y))
-
-    # L block
-    for x in range(1, 4):
-        for y in range(12, 19):
-            some_list.append((x, y))
-    for x in range(3, 13):
-        for y in range(16, 19):
-            some_list.append((x, y))
-    return some_list
 
 
 heuristics = {0: consistent_heuristic, 1: heuristic_1, 2: heuristic_2}
