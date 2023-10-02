@@ -1,3 +1,16 @@
+from collections.abc import Callable
+from math import log
+from os import name, system
+from random import gauss, seed
+from typing import TypeVar
+
+
+from typing import List
+
+
+from typing import Tuple, List
+
+num = TypeVar("num", int, float)  # Usually int or float
 """
     Linear Discriminant Analysis
 
@@ -42,11 +55,6 @@
 
     Author: @EverLookNeverSee
 """
-from collections.abc import Callable
-from math import log
-from os import name, system
-from random import gauss, seed
-from typing import TypeVar
 
 
 # Make a training dataset drawn from a gaussian distribution
@@ -151,69 +159,34 @@ def calculate_variance(items: list, means: list, total_count: int) -> float:
     n_classes = len(means)  # Number of classes in dataset
     return 1 / (total_count - n_classes) * sum(squared_diff)
 
-
-# Making predictions
 def predict_y_values(
-    x_items: list, means: list, variance: float, probabilities: list
-) -> list:
-    """This function predicts new indexes(groups for our data)
-    :param x_items: a list containing all items(gaussian distribution of all classes)
+    x_items: List[List[float]],
+    means: List[float],
+    variance: float,
+    probabilities: List[float],
+) -> List[int]:
+    """Predicts new indexes(groups for our data)
+    :param x_items: a list of lists containing all items(gaussian distribution of all classes)
     :param means: a list containing real mean values of each class
     :param variance: calculated value of variance by calculate_variance function
     :param probabilities: a list containing all probabilities of classes
     :return: a list containing predicted Y values
-
-    >>> x_items = [[6.288184753155463, 6.4494456086997705, 5.066335808938262,
-    ...                4.235456349028368, 3.9078267848958586, 5.031334516831717,
-    ...                3.977896829989127, 3.56317055489747, 5.199311976483754,
-    ...                5.133374604658605, 5.546468300338232, 4.086029056264687,
-    ...                5.005005283626573, 4.935258239627312, 3.494170998739258,
-    ...                5.537997178661033, 5.320711100998849, 7.3891120432406865,
-    ...                5.202969177309964, 4.855297691835079], [11.288184753155463,
-    ...                11.44944560869977, 10.066335808938263, 9.235456349028368,
-    ...                8.907826784895859, 10.031334516831716, 8.977896829989128,
-    ...                8.56317055489747, 10.199311976483754, 10.133374604658606,
-    ...                10.546468300338232, 9.086029056264687, 10.005005283626572,
-    ...                9.935258239627313, 8.494170998739259, 10.537997178661033,
-    ...                10.320711100998848, 12.389112043240686, 10.202969177309964,
-    ...                9.85529769183508], [16.288184753155463, 16.449445608699772,
-    ...                15.066335808938263, 14.235456349028368, 13.907826784895859,
-    ...                15.031334516831716, 13.977896829989128, 13.56317055489747,
-    ...                15.199311976483754, 15.133374604658606, 15.546468300338232,
-    ...                14.086029056264687, 15.005005283626572, 14.935258239627313,
-    ...                13.494170998739259, 15.537997178661033, 15.320711100998848,
-    ...                17.389112043240686, 15.202969177309964, 14.85529769183508]]
-
-    >>> means = [5.011267842911003, 10.011267842911003, 15.011267842911002]
-    >>> variance = 0.9618530973487494
-    >>> probabilities = [0.3333333333333333, 0.3333333333333333, 0.3333333333333333]
-    >>> predict_y_values(x_items, means, variance,
-    ...                  probabilities)  # doctest: +NORMALIZE_WHITESPACE
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1,
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
-    2, 2, 2, 2, 2, 2, 2, 2, 2]
-
     """
-    # An empty list to store generated discriminant values of all items in dataset for
-    # each class
     results = []
-    # for loop iterates over number of elements in list
-    for i in range(len(x_items)):
-        # for loop iterates over number of inner items of each element
-        for j in range(len(x_items[i])):
-            temp = []  # to store all discriminant values of each item as a list
-            # for loop iterates over number of classes we have in our dataset
-            for k in range(len(x_items)):
-                # appending values of discriminants for each class to 'temp' list
-                temp.append(
-                    x_items[i][j] * (means[k] / variance)
-                    - (means[k] ** 2 / (2 * variance))
-                    + log(probabilities[k])
-                )
-            # appending discriminant values of each item to 'results' list
-            results.append(temp)
 
-    return [result.index(max(result)) for result in results]
+    # for every sub list in x_items
+    for sublist in x_items:
+        # for every value in sublist
+        for x_value in sublist:
+            # calculate discriminate and append to temp
+            temp = [
+                discriminant(x_value, mean, variance, prob)
+                for mean, prob in zip(means, probabilities)
+            ]
+            # find index of max score and append to results
+            results.append(temp.index(max(temp)))
+
+    return results
 
 
 # Calculating Accuracy
@@ -248,11 +221,15 @@ def accuracy(actual_y: list, predicted_y: list) -> float:
     return (correct / len(actual_y)) * 100
 
 
+def discriminant(x: float, mean: float, variance: float, prob: float) -> float:
+    """Calculates the gaussian discrimant"""
+    return x * (mean / variance) - (mean**2 / (2 * variance)) + log(prob)
+
+
 num = TypeVar("num")
 
-
 def valid_input(
-    input_type: Callable[[object], num],  # Usually float or int
+    input_type: Callable[..., num],
     input_msg: str,
     err_msg: str,
     condition: Callable[[num], bool] = lambda x: True,
@@ -261,25 +238,21 @@ def valid_input(
     """
     Ask for user value and validate that it fulfill a condition.
 
-    :input_type: user input expected type of value
-    :input_msg: message to show user in the screen
-    :err_msg: message to show in the screen in case of error
-    :condition: function that represents the condition that user input is valid.
-    :default: Default value in case the user does not type anything
-    :return: user's input
+    :param input_type: The expected object to be inputted by user
+    :param input_msg: The message prompting for user input
+    :param err_msg: The message to be displayed in case of error
+    :param condition: A function that determines whether user input is valid
+    :param default: A default value in case user does not provide an input
+    :return: The valid input provided by the user
     """
     while True:
         try:
             user_input = input_type(input(input_msg).strip() or default)
-            if condition(user_input):
-                return user_input
-            else:
-                print(f"{user_input}: {err_msg}")
-                continue
-        except ValueError:
-            print(
-                f"{user_input}: Incorrect input type, expected {input_type.__name__!r}"
-            )
+            if not condition(user_input):
+                raise ValueError(f"{user_input}: {err_msg}")
+            return user_input
+        except ValueError as ve:
+            print(str(ve))
 
 
 # Main Function
@@ -400,6 +373,56 @@ def main():
             print("\n" + "GoodBye!".center(100, "-") + "\n")
             break
         system("cls" if name == "nt" else "clear")  # noqa: S605
+
+def gather_inputs() -> Tuple[int, float, List[int], List[float]]:
+    """Gather user inputs from console"""
+    print("First of all we should specify the number of classes that")
+    print("we want to generate as training dataset")
+
+    n_classes = valid_input(
+        input_type=int,
+        condition=lambda x: x > 0,
+        input_msg="Enter the number of classes (Data Groupings): ",
+        err_msg="Number of classes should be positive!",
+    )
+
+    print("-" * 100)
+
+    std_dev = valid_input(
+        input_type=float,
+        condition=lambda x: x >= 0,
+        input_msg=(
+            "Enter the value of standard deviation"
+            "(Default value is 1.0 for all classes): "
+        ),
+        err_msg="Standard deviation should not be negative!",
+        default="1.0",
+    )
+
+    print("-" * 100)
+
+    counts = []
+    for i in range(n_classes):
+        user_count = valid_input(
+            input_type=int,
+            condition=lambda x: x > 0,
+            input_msg=(f"Enter The number of instances for class_{i+1}: "),
+            err_msg="Number of instances should be positive!",
+        )
+        counts.append(user_count)
+    print("-" * 100)
+
+    user_means = []
+    for a in range(n_classes):
+        user_mean = valid_input(
+            input_type=float,
+            input_msg=(f"Enter the value of mean for class_{a+1}: "),
+            err_msg="This is an invalid value.",
+        )
+        user_means.append(user_mean)
+    print("-" * 100)
+
+    return n_classes, std_dev, counts, user_means
 
 
 if __name__ == "__main__":
