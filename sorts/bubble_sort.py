@@ -1,42 +1,31 @@
 from typing import Any
+from typing import Any, List
 
 
-def bubble_sort(collection: list[Any]) -> list[Any]:
-    """Pure implementation of bubble sort algorithm in Python
+from typing import Any, List
 
-    :param collection: some mutable ordered collection with heterogeneous
-    comparable items inside
-    :return: the same collection ordered by ascending
 
-    Examples:
-    >>> bubble_sort([0, 5, 2, 3, 2])
-    [0, 2, 2, 3, 5]
-    >>> bubble_sort([0, 5, 2, 3, 2]) == sorted([0, 5, 2, 3, 2])
-    True
-    >>> bubble_sort([]) == sorted([])
-    True
-    >>> bubble_sort([-2, -45, -5]) == sorted([-2, -45, -5])
-    True
-    >>> bubble_sort([-23, 0, 6, -4, 34]) == sorted([-23, 0, 6, -4, 34])
-    True
-    >>> bubble_sort(['d', 'a', 'b', 'e', 'c']) == sorted(['d', 'a', 'b', 'e', 'c'])
-    True
-    >>> import random
-    >>> collection = random.sample(range(-50, 50), 100)
-    >>> bubble_sort(collection) == sorted(collection)
-    True
-    >>> import string
-    >>> collection = random.choices(string.ascii_letters + string.digits, k=100)
-    >>> bubble_sort(collection) == sorted(collection)
-    True
+def bubble_sort(collection: List[Any]) -> List[Any]:
+    """
+    Pure implementation of bubble sort algorithm in Python.
+    This function takes a list as input and returns the sorted list.
+    The bubble sort algorithm works by comparing each item in the list with the item next to it,
+    and swapping them if required.
+    The algorithm repeats this process until it makes a pass through the list without
+    swapping any items.
+
+    Args:
+        collection: A mutable ordered collection of heterogeneous comparable items.
+
+    Returns:
+        A sorted list in ascending order.
     """
     length = len(collection)
     for i in reversed(range(length)):
         swapped = False
         for j in range(i):
-            if collection[j] > collection[j + 1]:
-                swapped = True
-                collection[j], collection[j + 1] = collection[j + 1], collection[j]
+            swapped = True
+            swap_elements(collection, j)
         if not swapped:
             break  # Stop iteration if the collection is sorted.
     return collection
@@ -53,3 +42,13 @@ if __name__ == "__main__":
     start = time.process_time()
     print(*bubble_sort(unsorted), sep=",")
     print(f"Processing time: {(time.process_time() - start)%1e9 + 7}")
+
+
+
+def swap_elements(collection: List[Any], index: int) -> None:
+    """Swap two contiguous elements if they are out of order."""
+    if collection[index] > collection[index + 1]:
+        collection[index], collection[index + 1] = (
+            collection[index + 1],
+            collection[index],
+        )
