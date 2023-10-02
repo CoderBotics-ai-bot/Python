@@ -28,46 +28,27 @@ import argparse
 import copy
 
 
-def generate_neighbours(path):
+from typing import List
+
+def generate_neighbours(path: str) -> dict:
     """
-    Pure implementation of generating a dictionary of neighbors and the cost with each
-    neighbor, given a path file that includes a graph.
-
-    :param path: The path to the .txt file that includes the graph (e.g.tabudata2.txt)
-    :return dict_of_neighbours: Dictionary with key each node and value a list of lists
-        with the neighbors of the node and the cost (distance) for each neighbor.
-
-    Example of dict_of_neighbours:
-    >>) dict_of_neighbours[a]
-    [[b,20],[c,18],[d,22],[e,26]]
-
-    This indicates the neighbors of node (city) 'a', which has neighbor the node 'b'
-    with distance 20, the node 'c' with distance 18, the node 'd' with distance 22 and
-    the node 'e' with distance 26.
+    :param path: Path to the .txt file that includes the graph.
+    :return: A dictionary with each node as a key, and a list of [neighbor, cost] lists as values.
     """
 
-    dict_of_neighbours = {}
+    def add_neighbor(dictionary: dict, key: str, value: list):
+        """Helper function to add a neighbor to the dictionary."""
+        dictionary[key] = dictionary.get(key, []) + [value]
 
-    with open(path) as f:
-        for line in f:
-            if line.split()[0] not in dict_of_neighbours:
-                _list = []
-                _list.append([line.split()[1], line.split()[2]])
-                dict_of_neighbours[line.split()[0]] = _list
-            else:
-                dict_of_neighbours[line.split()[0]].append(
-                    [line.split()[1], line.split()[2]]
-                )
-            if line.split()[1] not in dict_of_neighbours:
-                _list = []
-                _list.append([line.split()[0], line.split()[2]])
-                dict_of_neighbours[line.split()[1]] = _list
-            else:
-                dict_of_neighbours[line.split()[1]].append(
-                    [line.split()[0], line.split()[2]]
-                )
+    neighbors_dict = {}
 
-    return dict_of_neighbours
+    with open(path) as file:
+        for line in file:
+            node, neighbor, cost = line.split()
+            add_neighbor(neighbors_dict, node, [neighbor, cost])
+            add_neighbor(neighbors_dict, neighbor, [node, cost])
+
+    return neighbors_dict
 
 
 def generate_first_solution(path, dict_of_neighbours):
