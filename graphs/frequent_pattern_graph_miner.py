@@ -19,6 +19,9 @@ from typing import Dict, List, Tuple, Union
 
 
 from typing import Dict, List
+
+
+from typing import List, Tuple
 # fmt: off
 edge_array = [
     ['ab-e1', 'ac-e3', 'ad-e5', 'bc-e4', 'bd-e2', 'be-e6', 'bh-e12', 'cd-e2', 'ce-e4',
@@ -275,10 +278,37 @@ def create_edge(
             c2 += 1
 
 
+def freq_subgraphs_edge_list(
+    paths: List[List[List[Tuple[str, str]]]]
+) -> List[List[Tuple[str, str]]]:
+    """
+    Generates an Edge list for frequent subgraphs from the supplied paths.
+
+    Args:
+        paths: A list of paths. Each path is a list of edges, and each edge is represented as a tuple of vertex.
+
+    Returns:
+        A list of sublist where each sublist contains tuple pairs representing an edge in graph.
+    """
+    return [create_edge_list(path) for path in paths]
+
+
 def _print_nodes() -> None:
     print("\nNodes\n")
     for key, value in nodes.items():
         print(key, value)
+
+def create_edge_list(edges: List[List[Tuple[str, str]]]) -> List[Tuple[str, str]]:
+    """
+    Creates an edge list from the edge strings.
+
+    Args:
+        edges: A list of lists. Each sub list contains tuple pairs representing an edge.
+
+    Returns:
+        Returns A list of Tuples wher each tuple represents an edge.
+    """
+    return [edge for sublist in edges for edge in sublist]
 
 
 def get_node_edges(
@@ -361,22 +391,6 @@ def find_freq_subgraph_given_support(s, cluster, graph):
     k = int(s / 100 * (len(cluster) - 1))
     for i in cluster[k]:
         my_dfs(graph, tuple(cluster[k][i]), (["Header"],))
-
-
-def freq_subgraphs_edge_list(paths):
-    """
-    returns Edge list for frequent subgraphs
-    """
-    freq_sub_el = []
-    for edges in paths:
-        el = []
-        for j in range(len(edges) - 1):
-            temp = list(edges[j])
-            for e in temp:
-                edge = (e[0], e[1])
-                el.append(edge)
-        freq_sub_el.append(el)
-    return freq_sub_el
 
 
 def preprocess(edge_array):
