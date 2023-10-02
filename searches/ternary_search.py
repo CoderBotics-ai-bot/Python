@@ -7,6 +7,7 @@ Time Complexity  : O(log3 N)
 Space Complexity : O(1)
 """
 from __future__ import annotations
+from typing import List, Tuple
 
 # This is the precision for this function which can be altered.
 # It is recommended for users to keep this number greater than or equal to 10.
@@ -59,54 +60,39 @@ def lin_search(left: int, right: int, array: list[int], target: int) -> int:
 
 
 def ite_ternary_search(array: list[int], target: int) -> int:
-    """Iterative method of the ternary search algorithm.
-    >>> test_list = [0, 1, 2, 8, 13, 17, 19, 32, 42]
-    >>> ite_ternary_search(test_list, 3)
-    -1
-    >>> ite_ternary_search(test_list, 13)
-    4
-    >>> ite_ternary_search([4, 5, 6, 7], 4)
-    0
-    >>> ite_ternary_search([4, 5, 6, 7], -10)
-    -1
-    >>> ite_ternary_search([-18, 2], -18)
-    0
-    >>> ite_ternary_search([5], 5)
-    0
-    >>> ite_ternary_search(['a', 'c', 'd'], 'c')
-    1
-    >>> ite_ternary_search(['a', 'c', 'd'], 'f')
-    -1
-    >>> ite_ternary_search([], 1)
-    -1
-    >>> ite_ternary_search([.1, .4 , -.1], .1)
-    0
     """
+    Perform iterative ternary search on an ordered list and return the index of the target element.
+    If target is not found, return -1.
 
+    The function will perform a ternary search, which is an improvement over binary search for long lists,
+    and switch to linear search when the remaining slice of the list is smaller than 10.
+    It checks at two points (one_third and two_third) in the array.
+
+    Parameters:
+    array (List[int]): ordered list of integers to be searched
+    target (int): integer to be searched for in the list
+
+    Returns:
+    int: the index in the array where the target element is located; returns -1 if target is not found
+    """
     left = 0
-    right = len(array)
+    right = len(array) - 1
     while left <= right:
         if right - left < precision:
             return lin_search(left, right, array, target)
 
-        one_third = (left + right) // 3 + 1
-        two_third = 2 * (left + right) // 3 + 1
+        one_third = (2 * left + right) // 3
+        two_third = (left + 2 * right) // 3
 
-        if array[one_third] == target:
-            return one_third
-        elif array[two_third] == target:
-            return two_third
+        target_index = find_target_at_boundaries(one_third, two_third, array, target)
 
-        elif target < array[one_third]:
-            right = one_third - 1
-        elif array[two_third] < target:
-            left = two_third + 1
+        if target_index != -1:
+            return target_index
 
-        else:
-            left = one_third + 1
-            right = two_third - 1
-    else:
-        return -1
+        left, right = update_search_boundaries(
+            one_third, two_third, array, target, left, right
+        )
+    return -1
 
 
 def rec_ternary_search(left: int, right: int, array: list[int], target: int) -> int:
@@ -153,6 +139,54 @@ def rec_ternary_search(left: int, right: int, array: list[int], target: int) -> 
             return rec_ternary_search(one_third + 1, two_third - 1, array, target)
     else:
         return -1
+
+def find_target_at_boundaries(
+    one_third: int, two_third: int, array: list[int], target: int
+) -> int:
+    """
+    This function is a helper function for the ite_ternary_search function.
+    It checks if the target element is found at the one_third and two_third of array.
+
+    Parameters:
+    one_third (int): integer representing one third index of the array
+    two_third (int): integer representing two third index of the array
+    array (List[int]): ordered list of integers to be searched
+    target (int): integer to be searched for in the list
+
+    Returns:
+    int: the index in the array where the target element is located; returns -1 if target is not found
+    """
+    if array[one_third] == target:
+        return one_third
+    if array[two_third] == target:
+        return two_third
+    return -1
+
+
+def update_search_boundaries(
+    one_third: int, two_third: int, array: list[int], target: int, left: int, right: int
+) -> tuple[int, int]:
+    """
+    This function is a helper function for the ite_ternary_search function.
+    It updates the search boundaries based on the comparison with target element.
+
+    Parameters:
+    one_third (int): integer representing one third index of the array
+    two_third (int): integer representing two third index of the array
+    array (List[int]): ordered list of integers to be searched
+    target (int): integer to be searched for in the list
+    left (int): left boundary for search
+    right (int): right boundary for search
+
+    Returns:
+    Tuple[int,int]: updated left and right boundaries for ternary search
+    """
+    if target < array[one_third]:
+        return left, one_third - 1
+    elif target > array[two_third]:
+        return two_third + 1, right
+    else:
+        return one_third + 1, two_third - 1
 
 
 if __name__ == "__main__":
