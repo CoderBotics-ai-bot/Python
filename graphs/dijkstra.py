@@ -31,33 +31,30 @@ distance between each vertex that makes up the path from start vertex to target
 vertex.
 """
 import heapq
+from typing import Dict
+from typing import List, Tuple, Dict
+from typing import List, Tuple, Dict
 
 
-def dijkstra(graph, start, end):
-    """Return the cost of the shortest path between vertices start and end.
 
-    >>> dijkstra(G, "E", "C")
-    6
-    >>> dijkstra(G2, "E", "F")
-    3
-    >>> dijkstra(G3, "E", "F")
-    3
+def dijkstra(graph: Dict[str, List[Tuple[str, int]]], start: str, end: str) -> int:
     """
-
-    heap = [(0, start)]  # cost from start node,end node
+    In the given graph, it finds the shortest path from start to end and returns it's cost. If the end is not reachable from start it returns -1.
+    """
+    heap = [(0, start)]  # cost from start node, end node
     visited = set()
+
     while heap:
-        (cost, u) = heapq.heappop(heap)
-        if u in visited:
+        (cost, current_node) = heapq.heappop(heap)
+        if current_node in visited:
             continue
-        visited.add(u)
-        if u == end:
+
+        visited.add(current_node)
+        if current_node == end:
             return cost
-        for v, c in graph[u]:
-            if v in visited:
-                continue
-            next_item = cost + c
-            heapq.heappush(heap, (next_item, v))
+
+        push_to_heap_unvisited_neighbors(graph, heap, visited, cost, current_node)
+
     return -1
 
 
@@ -69,6 +66,22 @@ G = {
     "E": [["B", 4], ["F", 3]],
     "F": [["C", 3], ["E", 3]],
 }
+
+
+def push_to_heap_unvisited_neighbors(
+    graph: Dict[str, List[Tuple[str, int]]],
+    heap: List[Tuple[int, str]],
+    visited: set,
+    cost: int,
+    current_node: str,
+):
+    """
+    Helper function for dijkstra(). It pushes unvisited neighbors of current_node into the heap.
+    """
+    for neighbor, cost_to_travel in graph[current_node]:
+        if neighbor not in visited:
+            total_cost = cost + cost_to_travel
+            heapq.heappush(heap, (total_cost, neighbor))
 
 r"""
 Layout of G2:
