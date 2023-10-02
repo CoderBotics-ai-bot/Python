@@ -10,6 +10,7 @@ have solved the puzzle. else, we backtrack and place another number
 in that cell and repeat this process.
 """
 from __future__ import annotations
+from typing import List
 
 Matrix = list[list[int]]
 
@@ -42,21 +43,24 @@ no_solution: Matrix = [
 
 def is_safe(grid: Matrix, row: int, column: int, n: int) -> bool:
     """
-    This function checks the grid to see if each row,
-    column, and the 3x3 subgrids contain the digit 'n'.
-    It returns False if it is not 'safe' (a duplicate digit
-    is found) else returns True if it is 'safe'
+    Check if it's safe to place a number 'n' at the given 'row' and 'column' in the Sudoku 'grid'.
+
+    Args:
+        grid (Matrix): A 9x9 2D list representing the Sudoku grid, where grid[i][j]
+                       represents the number in the ith row and jth column.
+        row (int): The row number where we want to place the number 'n'.
+        column (int): The column number where we want to place the number 'n'.
+        n (int): The number that we want to place in the grid at the given row and column.
+
+    Returns:
+        bool: Returns True if it is safe (duplicate digit is not found) to place the number 'n' at
+              the given row and column. Returns False otherwise.
     """
-    for i in range(9):
-        if grid[row][i] == n or grid[i][column] == n:
-            return False
-
-    for i in range(3):
-        for j in range(3):
-            if grid[(row - row % 3) + i][(column - column % 3) + j] == n:
-                return False
-
-    return True
+    return (
+        not is_in_row(grid, row, n)
+        and not is_in_col(grid, column, n)
+        and not is_in_box(grid, row, column, n)
+    )
 
 
 def find_empty_location(grid: Matrix) -> tuple[int, int] | None:
@@ -69,6 +73,24 @@ def find_empty_location(grid: Matrix) -> tuple[int, int] | None:
             if grid[i][j] == 0:
                 return i, j
     return None
+
+def is_in_row(grid: Matrix, row: int, n: int) -> bool:
+    """Check if the number n is already present in the given row of the Sudoku grid."""
+    return n in grid[row]
+
+
+def is_in_col(grid: Matrix, col: int, n: int) -> bool:
+    """Check if the number n is already present in the given column of the Sudoku grid."""
+    return n in [row[col] for row in grid]
+
+
+def is_in_box(grid: Matrix, row: int, col: int, num: int) -> bool:
+    """Check if the number n is already present in the 3x3 square of the Sudoku grid."""
+    for i in range(3):
+        for j in range(3):
+            if grid[i + (row - row % 3)][j + (col - col % 3)] == num:
+                return True
+    return False
 
 
 def sudoku(grid: Matrix) -> Matrix | None:
