@@ -9,51 +9,28 @@ python counting_sort.py
 """
 
 
-def counting_sort(collection):
-    """Pure implementation of counting sort algorithm in Python
-    :param collection: some mutable ordered collection with heterogeneous
-    comparable items inside
-    :return: the same collection ordered by ascending
-    Examples:
-    >>> counting_sort([0, 5, 3, 2, 2])
-    [0, 2, 2, 3, 5]
-    >>> counting_sort([])
-    []
-    >>> counting_sort([-2, -5, -45])
-    [-45, -5, -2]
+from typing import List
+
+def counting_sort(collection: List[int]) -> List[int]:
     """
-    # if the collection is empty, returns empty
-    if collection == []:
+    This function sorts a mutable collection of integers in ascending order using the counting sort algorithm.
+    """
+    if not collection:
         return []
 
-    # get some information about the collection
-    coll_len = len(collection)
-    coll_max = max(collection)
-    coll_min = min(collection)
+    # get collection stats and initialize the counting array
+    coll_min, coll_max, counting_arr = initialize(collection)
 
-    # create the counting array
-    counting_arr_length = coll_max + 1 - coll_min
-    counting_arr = [0] * counting_arr_length
+    # perform counting of elements in the collection
+    counting_arr = perform_counting(collection, counting_arr, coll_min)
 
-    # count how much a number appears in the collection
-    for number in collection:
-        counting_arr[number - coll_min] += 1
+    # perform cumulative sum in the counting array
+    counting_arr = cumulative_sum(counting_arr)
 
-    # sum each position with it's predecessors. now, counting_arr[i] tells
-    # us how many elements <= i has in the collection
-    for i in range(1, counting_arr_length):
-        counting_arr[i] = counting_arr[i] + counting_arr[i - 1]
+    # create the ordered collection
+    ordered_collection = create_ordered_collection(collection, counting_arr, coll_min)
 
-    # create the output collection
-    ordered = [0] * coll_len
-
-    # place the elements in the output, respecting the original order (stable
-    # sort) from end to begin, updating counting_arr
-    for i in reversed(range(0, coll_len)):
-        ordered[counting_arr[collection[i] - coll_min] - 1] = collection[i]
-        counting_arr[collection[i] - coll_min] -= 1
-
-    return ordered
+    return ordered_collection
 
 
 def counting_sort_string(string):
@@ -62,6 +39,55 @@ def counting_sort_string(string):
     'eghhiiinrsssttt'
     """
     return "".join([chr(i) for i in counting_sort([ord(c) for c in string])])
+
+
+def initialize(collection: List[int]) -> List[int]:
+    """
+    This function initializes and returns the collection stats and the counting array.
+    """
+    coll_min = min(collection)
+    coll_max = max(collection)
+    counting_arr = [0] * (coll_max + 1 - coll_min)
+
+    return coll_min, coll_max, counting_arr
+
+
+def perform_counting(
+    collection: List[int], counting_arr: List[int], coll_min: int
+) -> List[int]:
+    """
+    This function counts how much a number appears in the collection.
+    """
+    for number in collection:
+        counting_arr[number - coll_min] += 1
+
+    return counting_arr
+
+
+def cumulative_sum(counting_arr: List[int]) -> List[int]:
+    """
+    This function performs the cumulative sum in the counting array.
+    """
+    for i in range(1, len(counting_arr)):
+        counting_arr[i] = counting_arr[i] + counting_arr[i - 1]
+
+    return counting_arr
+
+
+def create_ordered_collection(
+    collection: List[int], counting_arr: List[int], coll_min: int
+) -> List[int]:
+    """
+    This function creates and returns the ordered collection.
+    """
+    coll_len = len(collection)
+    ordered = [0] * coll_len
+
+    for i in reversed(range(coll_len)):
+        ordered[counting_arr[collection[i] - coll_min] - 1] = collection[i]
+        counting_arr[collection[i] - coll_min] -= 1
+
+    return ordered
 
 
 if __name__ == "__main__":
