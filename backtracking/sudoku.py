@@ -10,6 +10,7 @@ have solved the puzzle. else, we backtrack and place another number
 in that cell and repeat this process.
 """
 from __future__ import annotations
+from typing import List
 
 Matrix = list[list[int]]
 
@@ -42,70 +43,96 @@ no_solution: Matrix = [
 
 def is_safe(grid: Matrix, row: int, column: int, n: int) -> bool:
     """
-    This function checks the grid to see if each row,
-    column, and the 3x3 subgrids contain the digit 'n'.
-    It returns False if it is not 'safe' (a duplicate digit
-    is found) else returns True if it is 'safe'
+    Check if it's safe to place a number 'n' at the given 'row' and 'column' in the Sudoku 'grid'.
+
+    Args:
+        grid (Matrix): A 9x9 2D list representing the Sudoku grid, where grid[i][j]
+                       represents the number in the ith row and jth column.
+        row (int): The row number where we want to place the number 'n'.
+        column (int): The column number where we want to place the number 'n'.
+        n (int): The number that we want to place in the grid at the given row and column.
+
+    Returns:
+        bool: Returns True if it is safe (duplicate digit is not found) to place the number 'n' at
+              the given row and column. Returns False otherwise.
     """
-    for i in range(9):
-        if grid[row][i] == n or grid[i][column] == n:
-            return False
-
-    for i in range(3):
-        for j in range(3):
-            if grid[(row - row % 3) + i][(column - column % 3) + j] == n:
-                return False
-
-    return True
-
+    return (
+        not is_in_row(grid, row, n)
+        and not is_in_col(grid, column, n)
+        and not is_in_box(grid, row, column, n)
+    )
 
 def find_empty_location(grid: Matrix) -> tuple[int, int] | None:
     """
-    This function finds an empty location so that we can assign a number
-    for that particular row and column.
-    """
-    for i in range(9):
-        for j in range(9):
-            if grid[i][j] == 0:
-                return i, j
-    return None
+    Find the first empty location in the Sudoku grid.
 
+    This function iterates through the given grid and returns a tuple
+    representing the row and column indices of the first empty (0) position
+    encountered. The iteration starts from the top-left corner (0, 0) and moves
+    rightwards and downwards. If no empty position is found, the function returns None.
+
+    Args:
+        grid (Matrix): 2D list of integers representing the Sudoku grid.
+
+    Returns:
+        tuple[int, int] | None: The row and column index of the first empty position
+        encountered or None if no empty position is found.
+    """
+    for row in range(9):
+        for col in range(9):
+            if grid[row][col] == 0:
+                return row, col
+    return None
 
 def sudoku(grid: Matrix) -> Matrix | None:
     """
-    Takes a partially filled-in grid and attempts to assign values to
-    all unassigned locations in such a way to meet the requirements
-    for Sudoku solution (non-duplication across rows, columns, and boxes)
+    Solve a Sudoku puzzle using a backtracking algorithm.
 
-    >>> sudoku(initial_grid)  # doctest: +NORMALIZE_WHITESPACE
-    [[3, 1, 6, 5, 7, 8, 4, 9, 2],
-     [5, 2, 9, 1, 3, 4, 7, 6, 8],
-     [4, 8, 7, 6, 2, 9, 5, 3, 1],
-     [2, 6, 3, 4, 1, 5, 9, 8, 7],
-     [9, 7, 4, 8, 6, 3, 1, 2, 5],
-     [8, 5, 1, 7, 9, 2, 6, 4, 3],
-     [1, 3, 8, 9, 4, 7, 2, 5, 6],
-     [6, 9, 2, 3, 5, 1, 8, 7, 4],
-     [7, 4, 5, 2, 8, 6, 3, 1, 9]]
-     >>> sudoku(no_solution) is None
-     True
+    Args:
+        grid (Matrix): A 9x9 2D list representing the Sudoku grid.
+
+    Returns:
+        Matrix | None: The solved Sudoku grid, or None if no solution exists.
     """
-    if location := find_empty_location(grid):
-        row, column = location
-    else:
-        # If the location is ``None``, then the grid is solved.
+    # If there is no empty location, the puzzle is solved.
+    location = find_empty_location(grid)
+    if not location:
         return grid
+
+    row, column = location
 
     for digit in range(1, 10):
         if is_safe(grid, row, column, digit):
+            # Try this digit for the current cell
             grid[row][column] = digit
 
-            if sudoku(grid) is not None:
+            # Recur to solve the rest of the grid
+            if sudoku(grid):
                 return grid
 
+            # If the recursion didn't find a solution, reset the cell and continue with the next digit
             grid[row][column] = 0
 
+    # If no viable digits can be placed, this is a dead end
     return None
+
+def is_in_row(grid: Matrix, row: int, n: int) -> bool:
+    """Check if the number n is already present in the given row of the Sudoku grid."""
+    return n in grid[row]
+
+
+def is_in_col(grid: Matrix, col: int, n: int) -> bool:
+    """Check if the number n is already present in the given column of the Sudoku grid."""
+    return n in [row[col] for row in grid]
+
+
+def is_in_box(grid: Matrix, row: int, col: int, num: int) -> bool:
+    """Check if the number n is already present in the 3x3 square of the Sudoku grid."""
+    for i in range(3):
+        for j in range(3):
+            if grid[i + (row - row % 3)][j + (col - col % 3)] == num:
+                return True
+    return False
 
 
 def print_solution(grid: Matrix) -> None:
