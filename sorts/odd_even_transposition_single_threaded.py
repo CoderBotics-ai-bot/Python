@@ -8,26 +8,39 @@ is no better than bubble sort.
 """
 
 
-def odd_even_transposition(arr: list) -> list:
+from typing import List
+
+
+def odd_even_transposition(arr: List[float]) -> List[float]:
     """
-    >>> odd_even_transposition([5, 4, 3, 2, 1])
-    [1, 2, 3, 4, 5]
+    Perform odd-even transposition sort on the given list.
 
-    >>> odd_even_transposition([13, 11, 18, 0, -1])
-    [-1, 0, 11, 13, 18]
+    Args:
+        arr (List[float]): The list to be sorted.
 
-    >>> odd_even_transposition([-.1, 1.1, .1, -2.9])
-    [-2.9, -0.1, 0.1, 1.1]
+    Returns:
+        List[float]: The sorted list.
     """
-    arr_size = len(arr)
-    for _ in range(arr_size):
-        for i in range(_ % 2, arr_size - 1, 2):
-            if arr[i + 1] < arr[i]:
-                arr[i], arr[i + 1] = arr[i + 1], arr[i]
-
+    for i in range(len(arr)):
+        swap_elements(arr, i % 2)
     return arr
 
 
 if __name__ == "__main__":
     arr = list(range(10, 0, -1))
     print(f"Original: {arr}. Sorted: {odd_even_transposition(arr)}")
+
+def swap_elements(arr: List[float], start_index: int) -> None:
+    """
+    Swap adjacent elements in the list starting from a specific index.
+
+    Args:
+        arr (List[float]): The list in which to swap elements.
+        start_index (int): The index from which to start swapping.
+
+    Returns:
+        None: The function operates on the input list and doesn't return anything.
+    """
+    for i in range(start_index, len(arr) - 1, 2):
+        if arr[i] > arr[i + 1]:
+            arr[i], arr[i + 1] = arr[i + 1], arr[i]
