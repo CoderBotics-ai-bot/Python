@@ -8,6 +8,9 @@ from __future__ import annotations
 from typing import List
 
 
+from typing import List, Tuple
+
+
 
 def msd_radix_sort(list_of_ints: List[int]) -> List[int]:
     """
@@ -53,43 +56,25 @@ def msd_radix_sort(list_of_ints: List[int]) -> List[int]:
     most_bits = 0 if not list_of_ints else max(len(bin(x)[2:]) for x in list_of_ints)
     return _msd_radix_sort(list_of_ints, most_bits)
 
+def _msd_radix_sort(list_of_ints: List[int], bit_position: int) -> List[int]:
+    """
+    Sort a list of integers using radix sort.
 
-def _msd_radix_sort(list_of_ints: list[int], bit_position: int) -> list[int]:
+    Args:
+        list_of_ints (List[int]): The original list of integers.
+        bit_position (int): The position of the bit in the binary representation of the integers.
+
+    Returns:
+        List[int]: The sorted list.
     """
-    Sort the given list based on the bit at bit_position. Numbers with a
-    0 at that position will be at the start of the list, numbers with a
-    1 at the end.
-    :param list_of_ints: A list of integers
-    :param bit_position: the position of the bit that gets compared
-    :return: Returns a partially sorted list
-    >>> _msd_radix_sort([45, 2, 32], 1)
-    [2, 32, 45]
-    >>> _msd_radix_sort([10, 4, 12], 2)
-    [4, 12, 10]
-    """
-    if bit_position == 0 or len(list_of_ints) in [0, 1]:
+    if bit_position == 0 or len(list_of_ints) <= 1:
         return list_of_ints
 
-    zeros = []
-    ones = []
-    # Split numbers based on bit at bit_position from the right
-    for number in list_of_ints:
-        if (number >> (bit_position - 1)) & 1:
-            # number has a one at bit bit_position
-            ones.append(number)
-        else:
-            # number has a zero at bit bit_position
-            zeros.append(number)
+    zeros, ones = split_bits(list_of_ints, bit_position)
 
-    # recursively split both lists further
-    zeros = _msd_radix_sort(zeros, bit_position - 1)
-    ones = _msd_radix_sort(ones, bit_position - 1)
-
-    # recombine lists
-    res = zeros
-    res.extend(ones)
-
-    return res
+    return _msd_radix_sort(zeros, bit_position - 1) + _msd_radix_sort(
+        ones, bit_position - 1
+    )
 
 
 def msd_radix_sort_inplace(list_of_ints: list[int]):
@@ -124,6 +109,27 @@ def msd_radix_sort_inplace(list_of_ints: list[int]):
 
     most_bits = max(len(bin(x)[2:]) for x in list_of_ints)
     _msd_radix_sort_inplace(list_of_ints, most_bits, 0, length)
+
+
+def split_bits(
+    list_of_ints: List[int], bit_position: int
+) -> tuple[List[int], List[int]]:
+    """
+    Split the list into two based on the bit at the given position.
+
+    Args:
+        list_of_ints (List[int]): The list to split.
+        bit_position (int): The position of the bit in the binary representation of the integers.
+
+    Returns:
+        Tuple of two lists - one with numbers having 0 at bit_position, another with 1.
+    """
+    zeros = [
+        number for number in list_of_ints if not (number >> (bit_position - 1)) & 1
+    ]
+    ones = [number for number in list_of_ints if (number >> (bit_position - 1)) & 1]
+
+    return zeros, ones
 
 
 def _msd_radix_sort_inplace(
