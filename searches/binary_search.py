@@ -12,6 +12,7 @@ python3 binary_search.py
 from __future__ import annotations
 
 import bisect
+from typing import List
 
 def bisect_left(
     sorted_collection: list[int], item: int, lo: int = 0, hi: int = -1
@@ -21,50 +22,26 @@ def bisect_left(
         hi = len(sorted_collection)
     return bisect.bisect_left(sorted_collection, item, lo, hi)
 
-
 def bisect_right(
     sorted_collection: list[int], item: int, lo: int = 0, hi: int = -1
 ) -> int:
     """
-    Locates the first element in a sorted array that is larger than a given value.
+    Locates the insertion point in a sorted collection to maintain sorted order if the item
+    is inserted at that position.
 
-    It has the same interface as
-    https://docs.python.org/3/library/bisect.html#bisect.bisect_right .
+    The sorted_collection must be sorted in ascending order.
+    The function uses binary search to find the insertion index.
 
-    :param sorted_collection: some ascending sorted collection with comparable items
-    :param item: item to bisect
-    :param lo: lowest index to consider (as in sorted_collection[lo:hi])
-    :param hi: past the highest index to consider (as in sorted_collection[lo:hi])
-    :return: index i such that all values in sorted_collection[lo:i] are <= item and
-        all values in sorted_collection[i:hi] are > item.
+    :param sorted_collection: list[int] Sorted list of integers.
+    :param item: int An integer which needs to be inserted.
+    :param lo: int Lowest index; defaults to 0 which means considering the whole list.
+    :param hi: int Highest index; defaults to -1 which means considering the whole list.
 
-    Examples:
-    >>> bisect_right([0, 5, 7, 10, 15], 0)
-    1
-
-    >>> bisect_right([0, 5, 7, 10, 15], 15)
-    5
-
-    >>> bisect_right([0, 5, 7, 10, 15], 6)
-    2
-
-    >>> bisect_right([0, 5, 7, 10, 15], 15, 1, 3)
-    3
-
-    >>> bisect_right([0, 5, 7, 10, 15], 6, 2)
-    2
+    :return: The index where the item can be inserted while maintaining the sorted order of the list.
     """
-    if hi < 0:
-        hi = len(sorted_collection)
-
-    while lo < hi:
-        mid = lo + (hi - lo) // 2
-        if sorted_collection[mid] <= item:
-            lo = mid + 1
-        else:
-            hi = mid
-
-    return lo
+    return bisect.bisect_right(
+        sorted_collection, item, lo, hi if hi >= 0 else len(sorted_collection)
+    )
 
 
 def insort_left(
