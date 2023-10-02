@@ -5,40 +5,41 @@ https://en.wikipedia.org/wiki/Odd%E2%80%93even_sort
 """
 
 
-def odd_even_sort(input_list: list) -> list:
-    """
-    Sort input with odd even sort.
+from typing import List
 
-    This algorithm uses the same idea of bubblesort,
-    but by first dividing in two phase (odd and even).
-    Originally developed for use on parallel processors
-    with local interconnections.
-    :param collection: mutable ordered sequence of elements
-    :return: same collection in ascending order
-    Examples:
-    >>> odd_even_sort([5 , 4 ,3 ,2 ,1])
-    [1, 2, 3, 4, 5]
-    >>> odd_even_sort([])
-    []
-    >>> odd_even_sort([-10 ,-1 ,10 ,2])
-    [-10, -1, 2, 10]
-    >>> odd_even_sort([1 ,2 ,3 ,4])
-    [1, 2, 3, 4]
+def odd_even_sort(input_list: List[int]) -> List[int]:
     """
-    is_sorted = False
-    while is_sorted is False:  # Until all the indices are traversed keep looping
+    Sort an input list using the odd-even sort algorithm.
+
+    Args:
+        input_list (List[int]): The list of integers that needs to be sorted.
+
+    Returns:
+        List[int]: The sorted list in ascending order.
+    """
+
+    def perform_swap(start_index: int) -> bool:
+        """
+        Perform swap operation on sequences of the input list starting from start_index
+
+        Args:
+            start_index (int): The starting index for the swap sequence.
+
+        Returns:
+            bool: Returns True if a swap operation was made, False otherwise.
+        """
         is_sorted = True
-        for i in range(0, len(input_list) - 1, 2):  # iterating over all even indices
+        for i in range(start_index, len(input_list) - 1, 2):
             if input_list[i] > input_list[i + 1]:
                 input_list[i], input_list[i + 1] = input_list[i + 1], input_list[i]
-                # swapping if elements not in order
                 is_sorted = False
+        return is_sorted
 
-        for i in range(1, len(input_list) - 1, 2):  # iterating over all odd indices
-            if input_list[i] > input_list[i + 1]:
-                input_list[i], input_list[i + 1] = input_list[i + 1], input_list[i]
-                # swapping if elements not in order
-                is_sorted = False
+    is_sorted = False
+    while not is_sorted:
+        is_sorted_even = perform_swap(0)
+        is_sorted_odd = perform_swap(1)
+        is_sorted = is_sorted_even and is_sorted_odd
     return input_list
 
 
