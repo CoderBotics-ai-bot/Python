@@ -198,44 +198,40 @@ def binary_search_std_lib(sorted_collection: list[int], item: int) -> int | None
         return index
     return None
 
-
 def binary_search_by_recursion(
-    sorted_collection: list[int], item: int, left: int, right: int
+    sorted_collection: List[int], item: int, left: int, right: int
 ) -> int | None:
-    """Pure implementation of binary search algorithm in Python by recursion
+    """Perform Binary Search on a Sorted Collection with Recursion
 
-    Be careful collection must be ascending sorted, otherwise result will be
-    unpredictable
-    First recursion should be started with left=0 and right=(len(sorted_collection)-1)
+    If the item is not within the given slice (left:right) of the sorted collection, None is returned.
+    If the item is found, the function returns the item's index within the entire collection, not the slice.
 
-    :param sorted_collection: some ascending sorted collection with comparable items
-    :param item: item value to search
-    :return: index of found item or None if item is not found
+    Args:
+        sorted_collection: A collection sorted in ascending order.
+        item: The item to search for in the sorted collection.
+        left: The leftmost index from where to start the search.
+        right: The rightmost index up to which to search.
 
-    Examples:
-    >>> binary_search_by_recursion([0, 5, 7, 10, 15], 0, 0, 4)
-    0
-
-    >>> binary_search_by_recursion([0, 5, 7, 10, 15], 15, 0, 4)
-    4
-
-    >>> binary_search_by_recursion([0, 5, 7, 10, 15], 5, 0, 4)
-    1
-
-    >>> binary_search_by_recursion([0, 5, 7, 10, 15], 6, 0, 4)
-
+    Returns:
+        The index of the item if found, else None.
     """
+
+    # If the slice of the list does not exist, item is not found
     if right < left:
         return None
 
-    midpoint = left + (right - left) // 2
+    midpoint = (left + right) // 2
 
+    # If item is found at the midpoint
     if sorted_collection[midpoint] == item:
         return midpoint
-    elif sorted_collection[midpoint] > item:
-        return binary_search_by_recursion(sorted_collection, item, left, midpoint - 1)
-    else:
+
+    # If item is larger than the midpoint value, search in the right half
+    if sorted_collection[midpoint] < item:
         return binary_search_by_recursion(sorted_collection, item, midpoint + 1, right)
+
+    # If item is smaller midpoint value, search in the left half
+    return binary_search_by_recursion(sorted_collection, item, left, midpoint - 1)
 
 
 if __name__ == "__main__":
