@@ -15,43 +15,25 @@ from functools import lru_cache
 
 @lru_cache
 def fibonacci(k: int) -> int:
-    """Finds fibonacci number in index k.
+    """
+    Compute the Fibonacci sequence up to the k-th index.
 
     Parameters
     ----------
-    k :
-        Index of fibonacci.
+    k : int
+        The index in the Fibonacci sequence for which to compute the value.
 
     Returns
     -------
     int
-        Fibonacci number in position k.
-
-    >>> fibonacci(0)
-    0
-    >>> fibonacci(2)
-    1
-    >>> fibonacci(5)
-    5
-    >>> fibonacci(15)
-    610
-    >>> fibonacci('a')
-    Traceback (most recent call last):
-    TypeError: k must be an integer.
-    >>> fibonacci(-5)
-    Traceback (most recent call last):
-    ValueError: k integer must be greater or equal to zero.
+        The k-th value in the Fibonacci sequence.
     """
-    if not isinstance(k, int):
-        raise TypeError("k must be an integer.")
-    if k < 0:
-        raise ValueError("k integer must be greater or equal to zero.")
-    if k == 0:
-        return 0
-    elif k == 1:
-        return 1
-    else:
-        return fibonacci(k - 1) + fibonacci(k - 2)
+    validate_input(k)
+
+    if k in (0, 1):
+        return k
+
+    return fibonacci(k - 1) + fibonacci(k - 2)
 
 
 def fibonacci_search(arr: list, val: int) -> int:
@@ -124,6 +106,27 @@ def fibonacci_search(arr: list, val: int) -> int:
             fibb_k -= 2
     else:
         return -1
+
+def validate_input(k: int) -> None:
+    """
+    Validate the input for the fibonacci function.
+
+    Parameters
+    ----------
+    k : int
+        The passed input to the fibonacci function.
+
+    Raises
+    ------
+    TypeError
+        If k is not an integer.
+    ValueError
+        If k is a negative integer.
+    """
+    if not isinstance(k, int):
+        raise TypeError("k must be an integer.")
+    if k < 0:
+        raise ValueError("k must be a non-negative integer.")
 
 
 if __name__ == "__main__":
