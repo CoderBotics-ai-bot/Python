@@ -1,16 +1,30 @@
-# Eulerian Path is a path in graph that visits every edge exactly once.
-# Eulerian Circuit is an Eulerian Path which starts and ends on the same
-# vertex.
-# time complexity is O(V+E)
-# space complexity is O(VE)
+from typing import List, Optional
+from typing import Dict, List, Optional
 
 
-# using dfs for finding eulerian path traversal
-def dfs(u, graph, visited_edge, path=None):
+from typing import Dict, List, Optional
+
+
+def dfs(
+    u: int, graph: Dict, visited_edge: Dict, path: Optional[List[int]] = None
+) -> List[int]:
+    """
+    Determine the Eulerian path of a graph using the depth-first search (DFS) algorithm.
+
+    Args:
+        u (int): The current vertex.
+        graph (dict): The input graph.
+        visited_edge (dict): The dictionary representing the edges of the graph and their visited status.
+        path (list, optional): The path traversed so far. If None, the path contains only the starting vertex. Defaults to None.
+
+    Returns:
+        path (list): The Eulerian path found by the DFS algorithm.
+    """
+
     path = (path or []) + [u]
     for v in graph[u]:
-        if visited_edge[u][v] is False:
-            visited_edge[u][v], visited_edge[v][u] = True, True
+        if not visited_edge[u][v]:
+            visited_edge = update_visited_edges(visited_edge, u, v)
             path = dfs(v, graph, visited_edge, path)
     return path
 
@@ -30,6 +44,24 @@ def check_circuit_or_path(graph, max_node):
     if odd_degree_nodes == 2:
         return 2, odd_node
     return 3, odd_node
+
+
+
+def update_visited_edges(visited_edge: Dict, u: int, v: int) -> Dict:
+    """
+    Update the visited_edge dictionary by marking the edge from `u` to `v` as visited.
+
+    Args:
+        visited_edge (dict): The dictionary representing the edges of the graph and their visited status.
+        u (int): The current vertex.
+        v (int): The next vertex to visit.
+
+    Returns:
+        visited_edge (dict): The updated visited_edge dictionary with the edge from `u` to `v` marked as visited.
+    """
+
+    visited_edge[u][v], visited_edge[v][u] = True, True
+    return visited_edge
 
 
 def check_euler(graph, max_node):
