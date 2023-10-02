@@ -14,24 +14,42 @@ python3 merge_insertion_sort.py
 from __future__ import annotations
 
 
-def binary_search_insertion(sorted_list, item):
+from typing import List
+
+def binary_search_insertion(sorted_list: List[int], item: int) -> List[int]:
     """
+    Performs binary search to find an insert position for an item in a sorted list, then inserts the item at that position.
+    This results in a new sorted list which includes the inserted item. The function assumes that the input list is already sorted.
+
+    Args:
+        sorted_list: List of integers, which is sorted in ascending order.
+        item: The integer item to be inserted into the sorted list.
+
+    Returns:
+        A new sorted list which includes the inserted item.
+
     >>> binary_search_insertion([1, 2, 7, 9, 10], 4)
     [1, 2, 4, 7, 9, 10]
     """
-    left = 0
-    right = len(sorted_list) - 1
-    while left <= right:
-        middle = (left + right) // 2
-        if left == right:
-            if sorted_list[middle] < item:
+
+    def find_insert_index(
+        sorted_list: List[int], item: int, left: int, right: int
+    ) -> int:
+        """Helper function to find the correct index for insertion."""
+        while left <= right:
+            middle = (left + right) // 2
+            if left == right:
+                if sorted_list[middle] < item:
+                    return middle + 1
+                break
+            elif sorted_list[middle] < item:
                 left = middle + 1
-            break
-        elif sorted_list[middle] < item:
-            left = middle + 1
-        else:
-            right = middle - 1
-    sorted_list.insert(left, item)
+            else:
+                right = middle - 1
+        return left
+
+    insert_index = find_insert_index(sorted_list, item, 0, len(sorted_list) - 1)
+    sorted_list.insert(insert_index, item)
     return sorted_list
 
 
