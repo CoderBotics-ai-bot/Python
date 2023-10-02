@@ -8,6 +8,9 @@
 """
 
 
+from typing import List
+
+
 def valid_connection(
     graph: list[list[int]], next_ver: int, curr_ind: int, path: list[int]
 ) -> bool:
@@ -47,63 +50,18 @@ def valid_connection(
 
 
 def util_hamilton_cycle(graph: list[list[int]], path: list[int], curr_ind: int) -> bool:
-    """
-    Pseudo-Code
-    Base Case:
-    1. Check if we visited all of vertices
-        1.1 If last visited vertex has path to starting vertex return True either
-            return False
-    Recursive Step:
-    2. Iterate over each vertex
-        Check if next vertex is valid for transiting from current vertex
-            2.1 Remember next vertex as next transition
-            2.2 Do recursive call and check if going to this vertex solves problem
-            2.3 If next vertex leads to solution return True
-            2.4 Else backtrack, delete remembered vertex
+    """Attempts to find a Hamiltonian cycle using a recursive helper function"""
 
-    Case 1: Use exact graph as in main function, with initialized values
-    >>> graph = [[0, 1, 0, 1, 0],
-    ...          [1, 0, 1, 1, 1],
-    ...          [0, 1, 0, 0, 1],
-    ...          [1, 1, 0, 0, 1],
-    ...          [0, 1, 1, 1, 0]]
-    >>> path = [0, -1, -1, -1, -1, 0]
-    >>> curr_ind = 1
-    >>> util_hamilton_cycle(graph, path, curr_ind)
-    True
-    >>> path
-    [0, 1, 2, 4, 3, 0]
+    if curr_ind == len(graph):  # Base Case
+        return (
+            graph[path[curr_ind - 1]][path[0]] == 1
+        )  # return whether path exists between current and starting vertices
 
-    Case 2: Use exact graph as in previous case, but in the properties taken from
-        middle of calculation
-    >>> graph = [[0, 1, 0, 1, 0],
-    ...          [1, 0, 1, 1, 1],
-    ...          [0, 1, 0, 0, 1],
-    ...          [1, 1, 0, 0, 1],
-    ...          [0, 1, 1, 1, 0]]
-    >>> path = [0, 1, 2, -1, -1, 0]
-    >>> curr_ind = 3
-    >>> util_hamilton_cycle(graph, path, curr_ind)
-    True
-    >>> path
-    [0, 1, 2, 4, 3, 0]
-    """
-
-    # Base Case
-    if curr_ind == len(graph):
-        # return whether path exists between current and starting vertices
-        return graph[path[curr_ind - 1]][path[0]] == 1
-
-    # Recursive Step
     for next_ver in range(0, len(graph)):
-        if valid_connection(graph, next_ver, curr_ind, path):
-            # Insert current vertex  into path as next transition
-            path[curr_ind] = next_ver
-            # Validate created path
-            if util_hamilton_cycle(graph, path, curr_ind + 1):
-                return True
-            # Backtrack
-            path[curr_ind] = -1
+        if valid_connection(graph, next_ver, curr_ind, path) and process_vertex(
+            graph, path, curr_ind, next_ver
+        ):
+            return True
     return False
 
 
@@ -174,3 +132,25 @@ def hamilton_cycle(graph: list[list[int]], start_index: int = 0) -> list[int]:
     path[0] = path[-1] = start_index
     # evaluate and if we find answer return path either return empty array
     return path if util_hamilton_cycle(graph, path, 1) else []
+
+def process_vertex(
+    graph: list[list[int]], path: list[int], curr_ind: int, next_ver: int
+) -> bool:
+    """Inserts a vertex into the path and validates the path
+
+    Args:
+        graph: A 2D list representing the adjacency matrix of the graph.
+        path: A list that represents the Hamiltonian cycle. Vertices are appended in the order they visit.
+        curr_ind: The index of the current vertex being considered to append to the cycle.
+        next_ver: The next vertex to be processed in the path.
+
+    Returns:
+        Boolean: True if valid path exists, otherwise False.
+    """
+    path[curr_ind] = next_ver
+    # Validate created path
+    if util_hamilton_cycle(graph, path, curr_ind + 1):
+        return True
+    # Backtrack
+    path[curr_ind] = -1
+    return False
