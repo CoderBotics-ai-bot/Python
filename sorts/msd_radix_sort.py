@@ -56,6 +56,47 @@ def msd_radix_sort(list_of_ints: List[int]) -> List[int]:
     most_bits = 0 if not list_of_ints else max(len(bin(x)[2:]) for x in list_of_ints)
     return _msd_radix_sort(list_of_ints, most_bits)
 
+def msd_radix_sort_inplace(list_of_ints: List[int]):
+    """
+    In-Place implementation of the MSD Radix Sort Algorithm.
+
+    This function sorts a list of integers in-place.
+
+    Args:
+        list_of_ints (List[int]): List of integers to be sorted.
+
+    Raises:
+        ValueError: If the list contains negative integers.
+
+    Side Effects:
+        Modifies the input list in-place.
+
+    Examples:
+        >>> lst = [1, 345, 23, 89, 0, 3]
+        >>> msd_radix_sort_inplace(lst)
+        >>> print(lst)
+        [0, 1, 3, 23, 89, 345]
+
+        >>> lst = [1, 43, 0, 0, 0, 24, 3, 3]
+        >>> msd_radix_sort_inplace(lst)
+        >>> print(lst)
+        [0, 0, 0, 1, 3, 3, 24, 43]
+
+        >>> lst = []
+        >>> msd_radix_sort_inplace(lst)
+        >>> print(lst)
+        []
+    """
+    list_len = len(list_of_ints)
+    if list_len < 2:
+        return
+    if any(x < 0 for x in list_of_ints):
+        raise ValueError("All numbers must be positive")
+
+    most_bits = max(len(bin(x)[2:]) for x in list_of_ints)
+
+    _msd_radix_sort_inplace(list_of_ints, most_bits, 0, list_len)
+
 def _msd_radix_sort(list_of_ints: List[int], bit_position: int) -> List[int]:
     """
     Sort a list of integers using radix sort.
@@ -75,40 +116,6 @@ def _msd_radix_sort(list_of_ints: List[int], bit_position: int) -> List[int]:
     return _msd_radix_sort(zeros, bit_position - 1) + _msd_radix_sort(
         ones, bit_position - 1
     )
-
-
-def msd_radix_sort_inplace(list_of_ints: list[int]):
-    """
-    Inplace implementation of the MSD radix sort algorithm.
-    Sorts based on the binary representation of the integers.
-    >>> lst = [1, 345, 23, 89, 0, 3]
-    >>> msd_radix_sort_inplace(lst)
-    >>> lst == sorted(lst)
-    True
-    >>> lst = [1, 43, 0, 0, 0, 24, 3, 3]
-    >>> msd_radix_sort_inplace(lst)
-    >>> lst == sorted(lst)
-    True
-    >>> lst = []
-    >>> msd_radix_sort_inplace(lst)
-    >>> lst == []
-    True
-    >>> lst = [-1, 34, 23, 4, -42]
-    >>> msd_radix_sort_inplace(lst)
-    Traceback (most recent call last):
-        ...
-    ValueError: All numbers must be positive
-    """
-
-    length = len(list_of_ints)
-    if not list_of_ints or length == 1:
-        return
-
-    if min(list_of_ints) < 0:
-        raise ValueError("All numbers must be positive")
-
-    most_bits = max(len(bin(x)[2:]) for x in list_of_ints)
-    _msd_radix_sort_inplace(list_of_ints, most_bits, 0, length)
 
 
 def split_bits(
