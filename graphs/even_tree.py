@@ -15,17 +15,38 @@ components containing an even number of nodes.
 # pylint: disable=invalid-name
 from collections import defaultdict
 
-
 def dfs(start: int) -> int:
-    """DFS traversal"""
+    """
+    Performs a depth-first search (DFS) on a tree.
+
+    This function is a recursive method that starts at a specified node,
+    then explores as far as possible along each branch before backtracking.
+    It marks nodes as visited to avoid revisiting the same node.
+    It also keeps track of all nodes whose subtree contains an even number of nodes.
+
+    Args:
+        start (int): The starting node of the DFS.
+
+    Returns:
+        int: The total number of nodes in the subtree rooted at 'start'.
+
+    Side Effects:
+        Modifies the 'visited' and 'cuts' global lists. 'visited' is used to
+        keep track of visited nodes. 'cuts' collects all nodes whose subtree contains
+        an even number of nodes.
+
+    Raises:
+        Does not raise any errors or exceptions.
+    """
     # pylint: disable=redefined-outer-name
     ret = 1
     visited[start] = True
-    for v in tree[start]:
-        if v not in visited:
-            ret += dfs(v)
+
+    ret += handle_child_nodes(start)
+
     if ret % 2 == 0:
         cuts.append(start)
+
     return ret
 
 
@@ -43,6 +64,24 @@ def even_tree():
     On removing edges (1,3) and (1,6), we can get the desired result 2.
     """
     dfs(1)
+
+
+def handle_child_nodes(node: int) -> int:
+    """
+    Handle child nodes for a given node in the DFS function.
+
+    Args:
+        node (int): Node whose children are to be handled.
+
+    Returns:
+        int: The count of total number of nodes in subtree rooted at each child of 'node'.
+
+    """
+    ret = 0
+    for v in tree[node]:
+        if v not in visited:
+            ret += dfs(v)
+    return ret
 
 
 if __name__ == "__main__":
