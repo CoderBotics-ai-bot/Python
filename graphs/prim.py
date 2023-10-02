@@ -10,6 +10,9 @@ import math
 from collections.abc import Iterator
 
 
+from typing import List, Tuple
+
+
 class Vertex:
     """Class Vertex."""
 
@@ -53,33 +56,18 @@ def connect(graph, a, b, edge):
     graph[b - 1].add_edge(graph[a - 1], edge)
 
 
-def prim(graph: list, root: Vertex) -> list:
-    """Prim's Algorithm.
-
-    Runtime:
-        O(mn) with `m` edges and `n` vertices
-
-    Return:
-        List with the edges of a Minimum Spanning Tree
-
-    Usage:
-        prim(graph, graph[0])
-    """
+def prim(graph: List[Vertex], root: Vertex) -> List[Tuple[int, int]]:
+    """Compute the Minimum Spanning Tree of a graph using Prim's Algorithm."""
     a = []
-    for u in graph:
-        u.key = math.inf
-        u.pi = None
-    root.key = 0
-    q = graph[:]
-    while q:
-        u = min(q)
-        q.remove(u)
-        for v in u.neighbors:
-            if (v in q) and (u.edges[v.id] < v.key):
-                v.pi = u
-                v.key = u.edges[v.id]
-    for i in range(1, len(graph)):
-        a.append((int(graph[i].id) + 1, int(graph[i].pi.id) + 1))
+    queue = _initialize_graph(graph, root)
+
+    while queue:
+        u = _extract_min_vertex(queue)
+        _update_vertex_neighbours(u, queue)
+
+    for vertex in graph[1:]:
+        a.append((int(vertex.id) + 1, int(vertex.pi.id) + 1))
+
     return a
 
 
@@ -113,6 +101,29 @@ def prim_heap(graph: list, root: Vertex) -> Iterator[tuple]:
 
     for i in range(1, len(graph)):
         yield (int(graph[i].id) + 1, int(graph[i].pi.id) + 1)
+
+def _initialize_graph(graph: List[Vertex], root: Vertex) -> List[Vertex]:
+    """Setup initial values for each vertex."""
+    for u in graph:
+        u.key = math.inf
+        u.pi = None
+    root.key = 0
+    return graph[:]
+
+
+def _extract_min_vertex(queue: List[Vertex]) -> Vertex:
+    """Extract vertex from queue with minimum cost."""
+    u = min(queue)
+    queue.remove(u)
+    return u
+
+
+def _update_vertex_neighbours(u: Vertex, queue: List[Vertex]):
+    """Update the keys of neighbours of a vertex if current weight is less than previous weight."""
+    for v in u.neighbors:
+        if (v in queue) and (u.edges[v.id] < v.key):
+            v.pi = u
+            v.key = u.edges[v.id]
 
 
 def test_vector() -> None:
