@@ -35,27 +35,38 @@ def linear_search(sequence: list, target: int) -> int:
 
 def rec_linear_search(sequence: list, low: int, high: int, target: int) -> int:
     """
-    A pure Python implementation of a recursive linear search algorithm
+    A pure Python implementation of a recursive linear search algorithm.
 
-    :param sequence: a collection with comparable items (as sorted items not required
-        in Linear Search)
-    :param low: Lower bound of the array
-    :param high: Higher bound of the array
-    :param target: The element to be found
-    :return: Index of the key or -1 if key not found
+    The function applies two base cases:
+    - When the target is at the boundary of the sequence, it returns the boundary index.
+    - When the element isn't found, the function returns -1.
+
+    The function uses an exception to handle invalid bounds.
+
+    Parameters:
+        sequence (list): A sequence of comparable items. Sorted items are not required for Linear Search.
+        low (int): The lower bound of the sequence.
+        high (int): The higher bound of the sequence.
+        target (int): The item to be found in the sequence.
+
+    Returns:
+        int: The index of target if it is found in the sequence, otherwise -1.
+
+    Raises:
+        Exception: If either the upper or lower bound is invalid.
 
     Examples:
-    >>> rec_linear_search([0, 30, 500, 100, 700], 0, 4, 0)
-    0
-    >>> rec_linear_search([0, 30, 500, 100, 700], 0, 4, 700)
-    4
-    >>> rec_linear_search([0, 30, 500, 100, 700], 0, 4, 30)
-    1
-    >>> rec_linear_search([0, 30, 500, 100, 700], 0, 4, -6)
-    -1
+        >>> rec_linear_search([0, 30, 500, 100, 700], 0, 4, 0)
+        0
+        >>> rec_linear_search([0, 30, 500, 100, 700], 0, 4, 700)
+        4
+        >>> rec_linear_search([0, 30, 500, 100, 700], 0, 4, 30)
+        1
+        >>> rec_linear_search([0, 30, 500, 100, 700], 0, 4, -6)
+        -1
     """
-    if not (0 <= high < len(sequence) and 0 <= low < len(sequence)):
-        raise Exception("Invalid upper or lower bound!")
+    validate_bounds(sequence, low, high)
+
     if high < low:
         return -1
     if sequence[low] == target:
@@ -75,3 +86,7 @@ if __name__ == "__main__":
         print(f"linear_search({sequence}, {target}) = {result}")
     else:
         print(f"{target} was not found in {sequence}")
+
+def validate_bounds(sequence: list, low: int, high: int) -> None:
+    if not (0 <= high < len(sequence) and 0 <= low < len(sequence)):
+        raise Exception("Invalid upper or lower bound!")
