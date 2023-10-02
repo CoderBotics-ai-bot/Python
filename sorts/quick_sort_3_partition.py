@@ -1,21 +1,14 @@
+
 def quick_sort_3partition(sorting: list, left: int, right: int) -> None:
+    """Sorts 'sorting' list using a three-way (Dutch National Flag) QuickSort method."""
+
     if right <= left:
         return
-    a = i = left
-    b = right
-    pivot = sorting[left]
-    while i <= b:
-        if sorting[i] < pivot:
-            sorting[a], sorting[i] = sorting[i], sorting[a]
-            a += 1
-            i += 1
-        elif sorting[i] > pivot:
-            sorting[b], sorting[i] = sorting[i], sorting[b]
-            b -= 1
-        else:
-            i += 1
+
+    a, z = rearrange_elements(sorting, left, right)
+
     quick_sort_3partition(sorting, left, a - 1)
-    quick_sort_3partition(sorting, b + 1, right)
+    quick_sort_3partition(sorting, z + 1, right)
 
 
 def quick_sort_lomuto_partition(sorting: list, left: int, right: int) -> None:
@@ -47,6 +40,34 @@ def quick_sort_lomuto_partition(sorting: list, left: int, right: int) -> None:
         pivot_index = lomuto_partition(sorting, left, right)
         quick_sort_lomuto_partition(sorting, left, pivot_index - 1)
         quick_sort_lomuto_partition(sorting, pivot_index + 1, right)
+
+
+def rearrange_elements(sorting: list, left: int, right: int) -> tuple:
+    """
+    Rearrange elements in 'sorting' list with standart QuickSort
+    method using pivot.
+    """
+
+    a = i = left
+    b = right
+    pivot = sorting[left]
+
+    while i <= b:
+        if sorting[i] < pivot:
+            sorting[a], sorting[i] = sorting[i], sorting[a]
+            a, i = increment_indices(a, i)
+        elif sorting[i] > pivot:
+            sorting[b], sorting[i] = sorting[i], sorting[b]
+            b -= 1
+        else:
+            i += 1
+
+    return a, b
+
+
+def increment_indices(a: int, i: int) -> tuple:
+    """Increment 'a' and 'i' indices by one."""
+    return a + 1, i + 1
 
 
 def lomuto_partition(sorting: list, left: int, right: int) -> int:
