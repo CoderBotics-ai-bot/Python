@@ -40,6 +40,40 @@ def get_mid_point(start: int, end: int) -> int:
     """Calculate mid point"""
     return (start + end) // 2
 
+def merge(left: List[int], right: List[int]) -> List[int]:
+    """
+    This function takes two sorted lists and merges them into a single sorted list.
+
+    Parameters
+    ----------
+    left : List[int]
+        A sorted list of integers.
+    right : List[int]
+        An another sorted list of integers.
+
+    Returns
+    -------
+    List[int]
+        A single sorted list which is a combination of left and right lists.
+
+    The function uses Python inbuilt list methods to sort and merge the lists.
+    """
+    # Initialize an empty result list
+    result: List[int] = []
+
+    # Loop through both lists until one is empty
+    while left and right:
+        # Compare the first element of both lists and append the smallest one to the result
+        if left[0] <= right[0]:
+            result.append(left.pop(0))
+        else:
+            result.append(right.pop(0))
+
+    # Append any remaining elements (if any) to the result
+    result.extend(left if left else right)
+
+    return result
+
 
 def is_item_found(lst: List[int], mid: int, item: int) -> bool:
     """Check if item is equal to Mid point"""
@@ -49,19 +83,6 @@ def is_item_found(lst: List[int], mid: int, item: int) -> bool:
 def is_item_less_than_mid(lst: List[int], mid: int, item: int) -> bool:
     """Check if item is less than Mid point"""
     return lst[mid] > item
-
-
-def merge(left, right):
-    if not left:
-        return right
-
-    if not right:
-        return left
-
-    if left[0] < right[0]:
-        return [left[0], *merge(left[1:], right)]
-
-    return [right[0], *merge(left, right[1:])]
 
 
 def tim_sort(lst):
