@@ -5,15 +5,28 @@ Note that this program works only when size of input is a power of 2.
 """
 from __future__ import annotations
 
-
 def comp_and_swap(array: list[int], index1: int, index2: int, direction: int) -> None:
-    """Compare the value at given index1 and index2 of the array and swap them as per
-    the given direction.
+    """
+    Compare and swap elements at `index1` and `index2` in the `array` depending on the `direction`.
 
-    The parameter direction indicates the sorting direction, ASCENDING(1) or
-    DESCENDING(0); if (a[i] > a[j]) agrees with the direction, then a[i] and a[j] are
-    interchanged.
+    Parameters
+    ----------
+    array : list[int]
+        The list of integers to be sorted.
+    index1 : int
+        The index of the first element to be compared.
+    index2 : int
+        The index of the second element to be compared.
+    direction : int
+        The direction of the sorting. 1 for ascending and 0 for descending.
 
+    Returns
+    -------
+    None :
+        The function modifies the input list in-place and does not return anything.
+
+    Examples
+    --------
     >>> arr = [12, 42, -21, 1]
     >>> comp_and_swap(arr, 1, 2, 1)
     >>> arr
@@ -31,9 +44,7 @@ def comp_and_swap(array: list[int], index1: int, index2: int, direction: int) ->
     >>> arr
     [12, 42, -21, 1]
     """
-    if (direction == 1 and array[index1] > array[index2]) or (
-        direction == 0 and array[index1] < array[index2]
-    ):
+    if should_swap(array[index1], array[index2], direction):
         array[index1], array[index2] = array[index2], array[index1]
 
 
@@ -59,6 +70,27 @@ def bitonic_merge(array: list[int], low: int, length: int, direction: int) -> No
             comp_and_swap(array, i, i + middle, direction)
         bitonic_merge(array, low, middle, direction)
         bitonic_merge(array, low + middle, middle, direction)
+
+
+def should_swap(item1: int, item2: int, direction: int) -> bool:
+    """
+    Determine if two items should be swapped depending on the direction
+
+    Parameters
+    ----------
+    item1 : int
+        The first item to be compared.
+    item2 : int
+        The second item to be compared.
+    direction : int
+        The direction of the sorting. 1 for ascending and 0 for descending.
+
+    Returns
+    -------
+    bool:
+        Returns True if the items need to be swapped, False otherwise.
+    """
+    return item1 > item2 if direction == 1 else item1 < item2
 
 
 def bitonic_sort(array: list[int], low: int, length: int, direction: int) -> None:
