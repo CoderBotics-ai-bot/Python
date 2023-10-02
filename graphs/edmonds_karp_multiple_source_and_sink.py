@@ -1,9 +1,7 @@
 
 
-from typing import Any
-
-
-from other_module import MaximumFlowAlgorithmExecutor  # use actual import path
+from typing import List, Dict, Optional
+from classes import MaximumFlowAlgorithmExecutor, Vertex, Edge
 class FlowNetwork:
     def __init__(self, graph, sources, sinks):
         self.source_index = None
@@ -50,23 +48,17 @@ class FlowNetwork:
                 self.graph[i + 1][size - 1] = max_input_flow
             self.sink_index = size - 1
 
-    def find_maximum_flow(self, source: Any, sink: Any) -> None:
-        """Sets maximum flow algorithm and executes it."""
-        algorithm = self._set_maximum_flow_algorithm(source, sink)
-        self._execute_algorithm(algorithm)
+    def find_maximum_flow(self):
+        if self.maximum_flow_algorithm is None:
+            raise Exception("You need to set maximum flow algorithm before.")
+        if self.source_index is None or self.sink_index is None:
+            return 0
+
+        self.maximum_flow_algorithm.execute()
+        return self.maximum_flow_algorithm.getMaximumFlow()
 
     def set_maximum_flow_algorithm(self, algorithm):
         self.maximum_flow_algorithm = algorithm(self)
-
-    def _execute_algorithm(self, executor: MaximumFlowAlgorithmExecutor) -> None:
-        """Executes given algorithm."""
-        executor.execute()
-
-    def _set_maximum_flow_algorithm(
-        self, source: Any, sink: Any
-    ) -> MaximumFlowAlgorithmExecutor:
-        """Sets maximum flow algorithm and returns it."""
-        ...
 
 
 class FlowNetworkAlgorithmExecutor:
@@ -103,6 +95,12 @@ class MaximumFlowAlgorithmExecutor(FlowNetworkAlgorithmExecutor):
         return self.maximum_flow
 
 
+
+
+
+
+
+
 class PushRelabelExecutor(MaximumFlowAlgorithmExecutor):
     def __init__(self, flow_network):
         super().__init__(flow_network)
@@ -112,37 +110,20 @@ class PushRelabelExecutor(MaximumFlowAlgorithmExecutor):
         self.heights = [0] * self.verticies_count
         self.excesses = [0] * self.verticies_count
 
-    def _algorithm(self):
-        self.heights[self.source_index] = self.verticies_count
+    def _algorithm(self) -> None:
+        source_vertex = next(
+            filter(lambda vertex: vertex[1].is_source, self._network.vertices().items())
+        )[1]
+        self.update_excess_map(source_vertex.in_edges)
+        active_vertices = self.get_active_vertices(exclude=[source_vertex])
 
-        # push some substance to graph
-        for nextvertex_index, bandwidth in enumerate(self.graph[self.source_index]):
-            self.preflow[self.source_index][nextvertex_index] += bandwidth
-            self.preflow[nextvertex_index][self.source_index] -= bandwidth
-            self.excesses[nextvertex_index] += bandwidth
+        while active_vertices:
+            current_vertex = active_vertices.pop()
+            self.execute_vertex_operations(current_vertex, active_vertices)
 
-        # Relabel-to-front selection rule
-        vertices_list = [
-            i
-            for i in range(self.verticies_count)
-            if i not in {self.source_index, self.sink_index}
-        ]
+            active_vertices = self.get_active_vertices(exclude=[source_vertex])
 
-        # move through list
-        i = 0
-        while i < len(vertices_list):
-            vertex_index = vertices_list[i]
-            previous_height = self.heights[vertex_index]
-            self.process_vertex(vertex_index)
-            if self.heights[vertex_index] > previous_height:
-                # if it was relabeled, swap elements
-                # and start from 0 index
-                vertices_list.insert(0, vertices_list.pop(i))
-                i = 0
-            else:
-                i += 1
-
-        self.maximum_flow = sum(self.preflow[self.source_index])
+        self.finalize_computation()
 
     def process_vertex(self, vertex_index):
         while self.excesses[vertex_index] > 0:
@@ -157,6 +138,52 @@ class PushRelabelExecutor(MaximumFlowAlgorithmExecutor):
                     self.push(vertex_index, neighbour_index)
 
             self.relabel(vertex_index)
+
+    def update_excess_map(self, in_edges: Dict[Edge, int]) -> None:
+        """
+        Method to update the excess map for vertices that have edges from the source vertex.
+        """
+        for edge, capacity in in_edges.items():
+            self._excess_map[edge.end_vertex] = capacity
+
+    def get_active_vertices(
+        self, exclude: Optional[List[Vertex]] = None
+    ) -> List[Vertex]:
+        """
+        Method to get all active vertices. Active vertices are those vertices whose excess_flow is greater than 0
+        and are not part of the exclude list.
+        """
+        return [
+            v
+            for v, excess_flow in self._excess_map.items()
+            if excess_flow > 0 and v not in (exclude or [])
+        ]
+
+    def execute_vertex_operations(
+        self, current_vertex: Vertex, active_vertices: List[Vertex]
+    ) -> None:
+        """
+        Method to execute necessary vertex operations, including pushing and relabeling.
+        This method also ensures that the active vertices list is updated accordingly.
+        """
+        while self._excess_map[current_vertex] > 0 and not self.process_vertex(
+            current_vertex
+        ):
+            if self.push(current_vertex):
+                active_vertices.append(current_vertex)
+            else:
+                self.relabel(current_vertex)
+
+    def finalize_computation(self) -> None:
+        """
+        Method to finalize computation after the main algorithm loop.
+        This method ensures that the flow_through map for each vertex is
+        updated with the sum of the capacities of all in-edges of that vertex.
+        """
+        for vertex in self._network.vertices():
+            self._flow_through[vertex] = sum(
+                in_edge.capacity for in_edge in vertex.in_edges.values()
+            )
 
     def push(self, from_index, to_index):
         preflow_delta = min(
