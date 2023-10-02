@@ -20,6 +20,9 @@ from sklearn.svm import SVR
 from statsmodels.tsa.statespace.sarimax import SARIMAX
 
 
+from typing import List
+
+
 def linear_regression_prediction(
     train_dt: list, train_usr: list, train_mtch: list, test_dt: list, test_mtch: list
 ) -> float:
@@ -94,31 +97,39 @@ def interquartile_range_checker(train_user: list) -> float:
     low_lim = q1 - (iqr * 0.1)
     return low_lim
 
-
-def data_safety_checker(list_vote: list, actual_result: float) -> bool:
+def data_safety_checker(list_vote: List[float], actual_result: float) -> bool:
     """
-    Used to review all the votes (list result prediction)
-    and compare it to the actual result.
-    input : list of predictions
-    output : print whether it's safe or not
-    >>> data_safety_checker([2, 3, 4], 5.0)
-    False
-    """
-    safe = 0
-    not_safe = 0
+    Check the safety of predictions by comparing with the actual result.
 
+    This function takes a list of predictions as 'list_vote' and the actual result as 'actual_result'.
+    It counts the number of 'safe' votes. A vote is considered 'safe' if it's larger
+    than the actual result or if the absolute difference is less or equal to 0.1.
+    If the 'actual_result' is not a float, a TypeError is raised. The function returns True if the number of 'safe'
+    votes is greater than or equal to half of the total votes, otherwise, it returns False.
+
+    Args:
+        list_vote (List[float]): List of prediction votes.
+        actual_result (float): The actual outcome to compare the predictions against.
+
+    Returns:
+        (bool): True if the number of 'safe' votes is greater than or equal to half of the total votes,
+        False otherwise.
+
+    Raises:
+        TypeError: If 'actual_result' is not a float.
+
+    Example:
+        >>> data_safety_checker([2.0, 3.0, 4.0], 5.0)
+        True
+    """
     if not isinstance(actual_result, float):
-        raise TypeError("Actual result should be float. Value passed is a list")
+        raise TypeError("Actual result should be a float.")
 
-    for i in list_vote:
-        if i > actual_result:
-            safe = not_safe + 1
-        else:
-            if abs(abs(i) - abs(actual_result)) <= 0.1:
-                safe += 1
-            else:
-                not_safe += 1
-    return safe > not_safe
+    safe_votes = sum(
+        vote > actual_result or abs(vote - actual_result) <= 0.1 for vote in list_vote
+    )
+
+    return safe_votes >= len(list_vote) / 2
 
 
 if __name__ == "__main__":
