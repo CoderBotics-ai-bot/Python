@@ -7,6 +7,8 @@ from __future__ import annotations
 import math
 
 
+from typing import List
+
 def minimax(
     depth: int, node_index: int, is_max: bool, scores: list[int], height: float
 ) -> int:
@@ -43,16 +45,15 @@ def minimax(
     if depth == height:
         return scores[node_index]
 
-    return (
-        max(
+    if is_max:
+        return max(
             minimax(depth + 1, node_index * 2, False, scores, height),
             minimax(depth + 1, node_index * 2 + 1, False, scores, height),
         )
-        if is_max
-        else min(
-            minimax(depth + 1, node_index * 2, True, scores, height),
-            minimax(depth + 1, node_index * 2 + 1, True, scores, height),
-        )
+
+    return min(
+        minimax(depth + 1, node_index * 2, True, scores, height),
+        minimax(depth + 1, node_index * 2 + 1, True, scores, height),
     )
 
 
