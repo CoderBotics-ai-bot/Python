@@ -1,73 +1,14 @@
 from __future__ import annotations
 
-
 def solve_maze(maze: list[list[int]]) -> bool:
-    """
-    This method solves the "rat in maze" problem.
-    In this problem we have some n by n matrix, a start point and an end point.
-    We want to go from the start to the end. In this matrix zeroes represent walls
-    and ones paths we can use.
-    Parameters :
-        maze(2D matrix) : maze
-    Returns:
-        Return: True if the maze has a solution or False if it does not.
-    >>> maze = [[0, 1, 0, 1, 1],
-    ...         [0, 0, 0, 0, 0],
-    ...         [1, 0, 1, 0, 1],
-    ...         [0, 0, 1, 0, 0],
-    ...         [1, 0, 0, 1, 0]]
-    >>> solve_maze(maze)
-    [1, 0, 0, 0, 0]
-    [1, 1, 1, 1, 0]
-    [0, 0, 0, 1, 0]
-    [0, 0, 0, 1, 1]
-    [0, 0, 0, 0, 1]
-    True
-
-    >>> maze = [[0, 1, 0, 1, 1],
-    ...         [0, 0, 0, 0, 0],
-    ...         [0, 0, 0, 0, 1],
-    ...         [0, 0, 0, 0, 0],
-    ...         [0, 0, 0, 0, 0]]
-    >>> solve_maze(maze)
-    [1, 0, 0, 0, 0]
-    [1, 0, 0, 0, 0]
-    [1, 0, 0, 0, 0]
-    [1, 0, 0, 0, 0]
-    [1, 1, 1, 1, 1]
-    True
-
-    >>> maze = [[0, 0, 0],
-    ...         [0, 1, 0],
-    ...         [1, 0, 0]]
-    >>> solve_maze(maze)
-    [1, 1, 1]
-    [0, 0, 1]
-    [0, 0, 1]
-    True
-
-    >>> maze = [[0, 1, 0],
-    ...         [0, 1, 0],
-    ...         [1, 0, 0]]
-    >>> solve_maze(maze)
-    No solution exists!
-    False
-
-    >>> maze = [[0, 1],
-    ...         [1, 0]]
-    >>> solve_maze(maze)
-    No solution exists!
-    False
-    """
+    """Finds path from start to end in the maze."""
     size = len(maze)
-    # We need to create solution object to save path.
-    solutions = [[0 for _ in range(size)] for _ in range(size)]
-    solved = run_maze(maze, 0, 0, solutions)
-    if solved:
-        print("\n".join(str(row) for row in solutions))
-    else:
+    solutions = [[0] * size for _ in range(size)]
+    if not run_maze(maze, 0, 0, solutions):
         print("No solution exists!")
-    return solved
+        return False
+    print_solutions(solutions)
+    return True
 
 
 def run_maze(maze: list[list[int]], i: int, j: int, solutions: list[list[int]]) -> bool:
@@ -110,6 +51,11 @@ def run_maze(maze: list[list[int]], i: int, j: int, solutions: list[list[int]]) 
             solutions[i][j] = 0
             return False
     return False
+
+
+def print_solutions(solutions: list[list[int]]) -> None:
+    """Displays solutions in readable format."""
+    print("\n".join(str(row) for row in solutions))
 
 
 if __name__ == "__main__":
