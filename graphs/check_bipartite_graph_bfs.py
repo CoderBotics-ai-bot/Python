@@ -9,34 +9,20 @@
 from queue import Queue
 
 
-def check_bipartite(graph):
+from typing import List
+from queue import Queue
+
+
+def check_bipartite(graph: List[List[int]]) -> bool:
     queue = Queue()
     visited = [False] * len(graph)
     color = [-1] * len(graph)
-
-    def bfs():
-        while not queue.empty():
-            u = queue.get()
-            visited[u] = True
-
-            for neighbour in graph[u]:
-                if neighbour == u:
-                    return False
-
-                if color[neighbour] == -1:
-                    color[neighbour] = 1 - color[u]
-                    queue.put(neighbour)
-
-                elif color[neighbour] == color[u]:
-                    return False
-
-        return True
 
     for i in range(len(graph)):
         if not visited[i]:
             queue.put(i)
             color[i] = 0
-            if bfs() is False:
+            if bfs(graph, queue, visited, color) is False:
                 return False
 
     return True
@@ -45,3 +31,32 @@ def check_bipartite(graph):
 if __name__ == "__main__":
     # Adjacency List of graph
     print(check_bipartite({0: [1, 3], 1: [0, 2], 2: [1, 3], 3: [0, 2]}))
+
+def bfs(
+    graph: List[List[int]], queue: Queue, visited: List[bool], color: List[int]
+) -> bool:
+    while not queue.empty():
+        u = queue.get()
+        visited[u] = True
+
+        for neighbour in graph[u]:
+            if is_self_loop(u, neighbour) or is_same_color(u, neighbour, color):
+                return False
+
+            if not visited[neighbour]:
+                set_color_for_neighbour(u, neighbour, color)
+                queue.put(neighbour)
+
+    return True
+
+
+def is_self_loop(u: int, neighbour: int) -> bool:
+    return neighbour == u
+
+
+def is_same_color(u: int, neighbour: int, color: List[int]) -> bool:
+    return color[neighbour] == color[u]
+
+
+def set_color_for_neighbour(u: int, neighbour: int, color: List[int]):
+    color[neighbour] = 1 - color[u]
