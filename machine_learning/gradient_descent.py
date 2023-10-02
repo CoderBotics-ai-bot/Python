@@ -4,6 +4,9 @@ function.
 """
 import numpy
 
+
+from typing import List, Tuple
+
 # List of input, output pairs
 train_data = (
     ((5, 2, 3), 15),
@@ -101,35 +104,57 @@ def get_cost_derivative(index):
     return cost_derivative_value
 
 
-def run_gradient_descent():
+def run_gradient_descent() -> None:
+    """
+    Runs the gradient descent algorithm for optimizing the cost function of a machine learning model.
+    This function iteratively adjusts the parameters of the model, using the gradient of the cost function.
+    """
     global parameter_vector
-    # Tune these values to set a tolerance value for predicted output
-    absolute_error_limit = 0.000002
-    relative_error_limit = 0
-    j = 0
+    absolute_error_limit, relative_error_limit, iterations = 0.000002, 0, 0
     while True:
-        j += 1
-        temp_parameter_vector = [0, 0, 0, 0]
-        for i in range(0, len(parameter_vector)):
-            cost_derivative = get_cost_derivative(i - 1)
-            temp_parameter_vector[i] = (
-                parameter_vector[i] - LEARNING_RATE * cost_derivative
-            )
-        if numpy.allclose(
-            parameter_vector,
-            temp_parameter_vector,
-            atol=absolute_error_limit,
-            rtol=relative_error_limit,
+        iterations += 1
+        temp_parameter_vector = [
+            parameter_vector[i] - LEARNING_RATE * get_cost_derivative(i - 1)
+            for i in range(len(parameter_vector))
+        ]
+        if update_parameter_vector(
+            temp_parameter_vector, absolute_error_limit, relative_error_limit
         ):
             break
-        parameter_vector = temp_parameter_vector
-    print(("Number of iterations:", j))
+    print(("Number of iterations:", iterations))
 
 
 def test_gradient_descent():
     for i in range(len(test_data)):
         print(("Actual output value:", output(i, "test")))
         print(("Hypothesis output:", calculate_hypothesis_value(i, "test")))
+
+def update_parameter_vector(
+    temp_parameter_vector: List[float],
+    absolute_error_limit: float,
+    relative_error_limit: float,
+) -> Tuple[int, bool]:
+    """
+    Iteratively adjust the parameters of the model.
+
+    Args:
+        temp_parameter_vector (List[float]): Temporary parameter vector.
+        absolute_error_limit (float): The limit for the absolute error.
+        relative_error_limit (float): The limit for the relative error.
+
+    Returns:
+        Updated Parameter vector (List[float]) along with a boolean flag indicating convergence status.
+    """
+    global parameter_vector
+    if numpy.allclose(
+        parameter_vector,
+        temp_parameter_vector,
+        atol=absolute_error_limit,
+        rtol=relative_error_limit,
+    ):
+        return True
+    parameter_vector = temp_parameter_vector
+    return False
 
 
 if __name__ == "__main__":
