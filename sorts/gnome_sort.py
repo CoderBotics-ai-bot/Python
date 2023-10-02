@@ -13,39 +13,48 @@ python3 gnome_sort.py
 """
 
 
-def gnome_sort(lst: list) -> list:
-    """
-    Pure implementation of the gnome sort algorithm in Python
+from typing import List, Any
 
-    Take some mutable ordered collection with heterogeneous comparable items inside as
-    arguments, return the same collection ordered by ascending.
+def gnome_sort(lst: List[Any]) -> List[Any]:
+    """
+    Pure implementation of the gnome sort algorithm in Python.
+
+    Argument:
+        lst: some mutable ordered collection with heterogeneous comparable items.
+
+    Returns:
+         same collection ordered by ascending.
 
     Examples:
-    >>> gnome_sort([0, 5, 3, 2, 2])
-    [0, 2, 2, 3, 5]
+        >>> gnome_sort([0, 5, 3, 2, 2])
+        [0, 2, 2, 3, 5]
 
-    >>> gnome_sort([])
-    []
+        >>> gnome_sort([])
+        []
 
-    >>> gnome_sort([-2, -5, -45])
-    [-45, -5, -2]
+        >>> gnome_sort([-2, -5, -45])
+        [-45, -5, -2]
 
-    >>> "".join(gnome_sort(list(set("Gnomes are stupid!"))))
-    ' !Gadeimnoprstu'
+        >>> "".join(gnome_sort(list(set("Gnomes are stupid!"))))
+        ' !Gadeimnoprstu'
     """
-    if len(lst) <= 1:
+
+    def swap(items: List[Any], index: int) -> None:
+        items[index - 1], items[index] = items[index], items[index - 1]
+
+    len_lst = len(lst)
+    if len_lst <= 1:
         return lst
 
     i = 1
 
-    while i < len(lst):
-        if lst[i - 1] <= lst[i]:
-            i += 1
+    while i < len_lst:
+        if lst[i - 1] > lst[i]:
+            swap(lst, i)
+            if i > 1:
+                i -= 1
         else:
-            lst[i - 1], lst[i] = lst[i], lst[i - 1]
-            i -= 1
-            if i == 0:
-                i = 1
+            i += 1
 
     return lst
 
