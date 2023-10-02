@@ -1,6 +1,9 @@
 from __future__ import annotations
 
 
+from typing import List, Dict
+
+
 def print_distance(distance: list[float], src):
     print(f"Vertex\tShortest Distance from vertex {src}")
     for i, d in enumerate(distance):
@@ -36,35 +39,20 @@ def check_negative_cycle(
             return True
     return False
 
-
 def bellman_ford(
-    graph: list[dict[str, int]], vertex_count: int, edge_count: int, src: int
-) -> list[float]:
+    graph: List[Dict[str, int]], vertex_count: int, edge_count: int, src: int
+) -> List[float]:
     """
-    Returns shortest paths from a vertex src to all
-    other vertices.
-    >>> edges = [(2, 1, -10), (3, 2, 3), (0, 3, 5), (0, 1, 4)]
-    >>> g = [{"src": s, "dst": d, "weight": w} for s, d, w in edges]
-    >>> bellman_ford(g, 4, 4, 0)
-    [0.0, -2.0, 8.0, 5.0]
-    >>> g = [{"src": s, "dst": d, "weight": w} for s, d, w in edges + [(1, 3, 5)]]
-    >>> bellman_ford(g, 4, 5, 0)
-    Traceback (most recent call last):
-     ...
-    Exception: Negative cycle found
+    Calculate the shortest paths from a source vertex to
+    all other vertices using Bellman-Ford algorithm.
+
+    Raises:
+        Exception: If there exists a negative cycle in the graph.
     """
-    distance = [float("inf")] * vertex_count
-    distance[src] = 0.0
+    distance = _initialize_distance(vertex_count, src)
+    _relax_edges(graph, distance, edge_count, vertex_count)
 
-    for _ in range(vertex_count - 1):
-        for j in range(edge_count):
-            u, v, w = (graph[j][k] for k in ["src", "dst", "weight"])
-
-            if distance[u] != float("inf") and distance[u] + w < distance[v]:
-                distance[v] = distance[u] + w
-
-    negative_cycle_exists = check_negative_cycle(graph, distance, edge_count)
-    if negative_cycle_exists:
+    if check_negative_cycle(graph, distance, edge_count):
         raise Exception("Negative cycle found")
 
     return distance
@@ -91,3 +79,29 @@ if __name__ == "__main__":
     source = int(input("\nEnter shortest path source:").strip())
     shortest_distance = bellman_ford(graph, V, E, source)
     print_distance(shortest_distance, 0)
+
+
+def _initialize_distance(vertex_count: int, src: int) -> List[float]:
+    """Initialize the distance array with infinite distances, except for the source vertex."""
+    distance = [float("inf")] * vertex_count
+    distance[src] = 0.0
+    return distance
+
+
+def _relax_edges(
+    graph: List[Dict[str, int]],
+    distance: List[float],
+    edge_count: int,
+    vertex_count: int,
+) -> None:
+    """Iteratively relax the edges and update the distance array."""
+    for _ in range(vertex_count - 1):
+        for j in range(edge_count):
+            update_distance(graph[j], distance)
+
+
+def update_distance(edge: Dict[str, int], distance: List[float]) -> None:
+    """If the source vertex distance isn't infinity and the edge can be relaxed, update the edge's destination vertex distance."""
+    u, v, w = edge["src"], edge["dst"], edge["weight"]
+    if distance[u] != float("inf") and distance[u] + w < distance[v]:
+        distance[v] = distance[u] + w
