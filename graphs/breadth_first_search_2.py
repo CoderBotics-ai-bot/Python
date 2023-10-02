@@ -17,6 +17,8 @@ from __future__ import annotations
 from collections import deque
 from queue import Queue
 from timeit import timeit
+from typing import List
+from typing import Dict, List
 
 G = {
     "A": ["B", "C"],
@@ -27,45 +29,59 @@ G = {
     "F": ["C", "E"],
 }
 
-
-def breadth_first_search(graph: dict, start: str) -> list[str]:
+def breadth_first_search(graph: dict, start: str) -> List[str]:
     """
-    Implementation of breadth first search using queue.Queue.
+    Performs a breadth first search on a graph starting from a given node.
 
-    >>> ''.join(breadth_first_search(G, 'A'))
-    'ABCDEF'
+    The breadth first search algorithm starts at the root node and explores all the neighboring nodes.
+    Then, all the unexplored neighbor nodes are explored, and so on, until all the nodes in the graph have been reached.
+
+    Args:
+        graph (dict): The graph to be searched in a dictionary format.
+                      The dictionary contains each node as a key and a list of neighboring nodes as its value.
+        start (str): The starting node for the search.
+
+    Returns:
+        List[str]: A list of nodes traversed during the search. The order of the nodes in the list represents the order of their traversal.
     """
-    explored = {start}
-    result = [start]
-    queue: Queue = Queue()
-    queue.put(start)
-    while not queue.empty():
-        v = queue.get()
-        for w in graph[v]:
-            if w not in explored:
-                explored.add(w)
-                result.append(w)
-                queue.put(w)
+    explored, queue = set([start]), deque([start])
+    result = []
+
+    while queue:
+        v = queue.popleft()
+        result.append(v)
+
+        # We add nodes connected to the current node to the queue if not explored.
+        queue.extend(w for w in graph[v] if w not in explored and not explored.add(w))
+
     return result
-
 
 def breadth_first_search_with_deque(graph: dict, start: str) -> list[str]:
     """
-    Implementation of breadth first search using collection.queue.
+    Implementation of breadth first search using collections.deque.
 
-    >>> ''.join(breadth_first_search_with_deque(G, 'A'))
-    'ABCDEF'
+    Args:
+        graph (dict): A representation of the graph as an adjacency list.
+        start (str): The starting node for the search.
+
+    Returns:
+        list[str]: A list of the nodes in the order they were visited.
     """
     visited = {start}
-    result = [start]
     queue = deque([start])
+    result = []
+
+    def _visit_node() -> None:
+        node = queue.popleft()
+        result.append(node)
+        unvisited_children = (child for child in graph[node] if child not in visited)
+        for child in unvisited_children:
+            visited.add(child)
+            queue.append(child)
+
     while queue:
-        v = queue.popleft()
-        for child in graph[v]:
-            if child not in visited:
-                visited.add(child)
-                result.append(child)
-                queue.append(child)
+        _visit_node()
+
     return result
 
 
