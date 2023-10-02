@@ -1,6 +1,15 @@
 from __future__ import annotations
 
 
+from typing import List
+
+
+
+
+
+
+
+
 class Graph:
     def __init__(self, vertices: int) -> None:
         """
@@ -24,26 +33,20 @@ class Graph:
         for vertex in range(self.vertices):
             print(vertex, "\t\t", distances_from_source[vertex])
 
-    def minimum_distance(
-        self, distances_from_source: list[int], visited: list[bool]
-    ) -> int:
+    @staticmethod
+    def minimum_distance(distances: List[int], shortest_path_set: List[bool]) -> int:
         """
-        A utility function to find the vertex with minimum distance value, from the set
-        of vertices not yet included in shortest path tree.
-
-        >>> Graph(3).minimum_distance([1, 2, 3], [False, False, True])
-        0
+        A utility function to find the vertex with minimum distance value, from
+        the set of vertices not yet included in shortest path tree
         """
+        min_value = float("Inf")
+        min_index = -1
 
-        # Initialize minimum distance for next node
-        minimum = 1e7
-        min_index = 0
+        for v in range(len(distances)):
+            if distances[v] < min_value and not shortest_path_set[v]:
+                min_value = distances[v]
+                min_index = v
 
-        # Search not nearest vertex not in the shortest path tree
-        for vertex in range(self.vertices):
-            if distances_from_source[vertex] < minimum and visited[vertex] is False:
-                minimum = distances_from_source[vertex]
-                min_index = vertex
         return min_index
 
     def dijkstra(self, source: int) -> None:
