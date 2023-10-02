@@ -129,42 +129,44 @@ def insort_right(
     """
     sorted_collection.insert(bisect_right(sorted_collection, item, lo, hi), item)
 
+def binary_search(sorted_collection: List[int], item: int) -> int | None:
+    """
+    Execute binary search algorithm on a sorted collection.
 
-def binary_search(sorted_collection: list[int], item: int) -> int | None:
-    """Pure implementation of binary search algorithm in Python
+    This is a pure Python implementation of the binary search algorithm. The function
+    makes use of the Python built-in function bisect_left from the standard library's
+    bisect module. It takes an ascending sorted collection and an item to search for.
+    It returns the index of the item if found, or None if the item is not in the collection.
+    Please note that if the collection is not sorted in ascending order,
+    the result will be unpredictable.
 
-    Be careful collection must be ascending sorted, otherwise result will be
-    unpredictable
+    Args:
+        sorted_collection (List[int]): A list of integers, sorted in ascending order.
+        item (int): The integer item to search for in the collection.
 
-    :param sorted_collection: some ascending sorted collection with comparable items
-    :param item: item value to search
-    :return: index of found item or None if item is not found
+    Returns:
+        int | None: The index of the item if found, or None if the item is not found.
 
     Examples:
-    >>> binary_search([0, 5, 7, 10, 15], 0)
-    0
+        >>> binary_search([0, 5, 7, 10, 15], 0)
+        0
 
-    >>> binary_search([0, 5, 7, 10, 15], 15)
-    4
+        >>> binary_search([0, 5, 7, 10, 15], 15)
+        4
 
-    >>> binary_search([0, 5, 7, 10, 15], 5)
-    1
+        >>> binary_search([0, 5, 7, 10, 15], 5)
+        1
 
-    >>> binary_search([0, 5, 7, 10, 15], 6)
+        >>> binary_search([0, 5, 7, 10, 15], 6)
 
     """
-    left = 0
-    right = len(sorted_collection) - 1
+    position = bisect.bisect_left(sorted_collection, item)
 
-    while left <= right:
-        midpoint = left + (right - left) // 2
-        current_item = sorted_collection[midpoint]
-        if current_item == item:
-            return midpoint
-        elif item < current_item:
-            right = midpoint - 1
-        else:
-            left = midpoint + 1
+    # return position if item is present in collection
+    if position != len(sorted_collection) and sorted_collection[position] == item:
+        return position
+
+    # item not present in sorted_collection
     return None
 
 
