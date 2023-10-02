@@ -7,6 +7,53 @@ from typing import Dict, List, Optional
 
 from typing import Dict, List, Tuple
 
+
+from typing import List, Dict
+
+def check_euler(graph: Dict[int, List[int]], max_node: int) -> None:
+    """
+    Check if a given graph is Eulerian or semi-Eulerian. Eulerian means all nodes have even degrees while
+    Semi-Eulerian means only 2 nodes have odd degrees with others having even degrees.
+    If neither the graph has neither a Euler path nor a Euler circuit.
+
+    Args:
+        Graph (Dict[int, List[int]]) : The graph represented by adjacency list.
+        max_node (int) : maximum node identifier in the graph.
+
+    The function does not return a value, Instead, it either prints "graph is not Eulerian no path"
+    if the graph is not Eulerian, "graph has a Euler path" if the graph has a Euler path or
+    "graph has a Euler cycle, if the graph has a Euler circuit.
+    It also prints the Euler path or circuit if it exists.
+
+    Side effects: Modifies the graph by marking nodes as visited and also prints to the standard output.
+
+    Exceptions raised: This function does not raise any exceptions.
+
+    """
+
+    # Create a list to mark visited edges
+    visited_edge = [[False for _ in range(max_node + 1)] for _ in range(max_node + 1)]
+
+    check, odd_node = check_circuit_or_path(graph, max_node)
+
+    # Handle case when graph is not Eulerian
+    if check == 3:
+        print("graph is not Eulerian")
+        print("no path")
+        return
+
+    start_node = find_start_node(
+        check, odd_node
+    )  # Extracted functionality to find start node to its own function
+
+    euler_type_print(
+        check
+    )  # Extracted functionality to print Euler type to its own function
+
+    path = dfs(start_node, graph, visited_edge)
+
+    print(path)
+
 def check_circuit_or_path(
     graph: Dict[int, List[int]], max_node: int
 ) -> Tuple[int, int]:
@@ -23,6 +70,40 @@ def check_circuit_or_path(
         return 2, odd_node
     else:
         return 3, odd_node
+
+
+def find_start_node(check: int, odd_node: int) -> int:
+    """
+    Determine the starting node for depth first search. This depends on whether graph is
+    Eulerian (start from any node) or semi-Eulerian (start from one of the odd degree nodes)
+
+    Args:
+        check (int) : check value from check_circuit_or_path which indicates if graph is
+                      Eulerian, semi-Eulerian or not Eulerian at all.
+        odd_node (int) : The node with odd degree in case of semi-Eulerian graph.
+
+    Returns:
+        start_node (int) : node to start depth first search from.
+    """
+    return odd_node if check == 2 else 1
+
+
+def euler_type_print(check: int) -> None:
+    """
+    Print type of Euler graph (Eulerian, semi-Eulerian or not Eulerian at all) based on check value.
+
+    Args:
+        check (int) : check value from check_circuit_or_path which indicates if graph is
+                      Eulerian, semi-Eulerian or not Eulerian at all.
+
+    Side Effects:
+        Prints to the standard output.
+    """
+
+    if check == 2:
+        print("graph has a Euler path")
+    elif check == 1:
+        print("graph has a Euler cycle")
 
 
 def dfs(
@@ -91,23 +172,6 @@ def update_visited_edges(visited_edge: Dict, u: int, v: int) -> Dict:
 
     visited_edge[u][v], visited_edge[v][u] = True, True
     return visited_edge
-
-
-def check_euler(graph, max_node):
-    visited_edge = [[False for _ in range(max_node + 1)] for _ in range(max_node + 1)]
-    check, odd_node = check_circuit_or_path(graph, max_node)
-    if check == 3:
-        print("graph is not Eulerian")
-        print("no path")
-        return
-    start_node = 1
-    if check == 2:
-        start_node = odd_node
-        print("graph has a Euler path")
-    if check == 1:
-        print("graph has a Euler cycle")
-    path = dfs(start_node, graph, visited_edge)
-    print(path)
 
 
 def main():
