@@ -1,40 +1,23 @@
 import operator
+from typing import List, Optional
 
 
-def strand_sort(arr: list, reverse: bool = False, solution: list | None = None) -> list:
-    """
-    Strand sort implementation
-    source: https://en.wikipedia.org/wiki/Strand_sort
+from typing import List, Optional
 
-    :param arr: Unordered input list
-    :param reverse: Descent ordering flag
-    :param solution: Ordered items container
+def strand_sort(
+    arr: List[int], reverse: bool = False, solution: Optional[List[int]] = None
+) -> List[int]:
+    def extract_sublist(arr: List[int], _operator):
+        sublist = [arr.pop(0)]
+        arr_copy = arr.copy()
+        for item in arr_copy:
+            if _operator(item, sublist[-1]):
+                sublist.append(item)
+                arr.remove(item)
+        return sublist
 
-    Examples:
-    >>> strand_sort([4, 2, 5, 3, 0, 1])
-    [0, 1, 2, 3, 4, 5]
-
-    >>> strand_sort([4, 2, 5, 3, 0, 1], reverse=True)
-    [5, 4, 3, 2, 1, 0]
-    """
-    _operator = operator.lt if reverse else operator.gt
-    solution = solution or []
-
-    if not arr:
-        return solution
-
-    sublist = [arr.pop(0)]
-    for i, item in enumerate(arr):
-        if _operator(item, sublist[-1]):
-            sublist.append(item)
-            arr.pop(i)
-
-    #  merging sublist into solution list
-    if not solution:
-        solution.extend(sublist)
-    else:
-        while sublist:
-            item = sublist.pop(0)
+    def merge_sublist(sublist: List[int], solution: List[int], _operator):
+        for item in sublist:
             for i, xx in enumerate(solution):
                 if not _operator(item, xx):
                     solution.insert(i, item)
@@ -42,8 +25,15 @@ def strand_sort(arr: list, reverse: bool = False, solution: list | None = None) 
             else:
                 solution.append(item)
 
-    strand_sort(arr, reverse, solution)
-    return solution
+    _operator = operator.lt if reverse else operator.gt
+    solution = solution or []
+    if not arr:
+        return solution
+
+    sublist = extract_sublist(arr, _operator)
+    merge_sublist(sublist, solution, _operator)
+
+    return strand_sort(arr, reverse, solution)
 
 
 if __name__ == "__main__":
