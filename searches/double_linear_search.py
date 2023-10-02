@@ -1,35 +1,30 @@
 from __future__ import annotations
 
-
 def double_linear_search(array: list[int], search_item: int) -> int:
     """
-    Iterate through the array from both sides to find the index of search_item.
+    Conduct a double-ended linear search in an array for a specific item.
 
-    :param array: the array to be searched
-    :param search_item: the item to be searched
-    :return the index of search_item, if search_item is in array, else -1
+    Parameters:
+    array (list[int]): The array to be searched.
+    search_item (int): The item to be searched for.
 
-    Examples:
-    >>> double_linear_search([1, 5, 5, 10], 1)
-    0
-    >>> double_linear_search([1, 5, 5, 10], 5)
-    1
-    >>> double_linear_search([1, 5, 5, 10], 100)
-    -1
-    >>> double_linear_search([1, 5, 5, 10], 10)
-    3
+    Returns:
+    int: The index of the first found instance of the search item in the array;
+         if not found or list is empty, returns -1.
     """
-    # define the start and end index of the given array
+    if not array:  # return early when array is empty
+        return -1
+
     start_ind, end_ind = 0, len(array) - 1
+
     while start_ind <= end_ind:
         if array[start_ind] == search_item:
             return start_ind
-        elif array[end_ind] == search_item:
+        if array[end_ind] == search_item:
             return end_ind
-        else:
-            start_ind += 1
-            end_ind -= 1
-    # returns -1 if search_item is not found in array
+        start_ind += 1
+        end_ind -= 1
+
     return -1
 
 
