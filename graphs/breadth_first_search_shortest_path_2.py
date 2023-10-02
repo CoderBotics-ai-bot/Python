@@ -14,97 +14,107 @@ demo_graph = {
     "G": ["C"],
 }
 
+def bfs_shortest_path(graph: dict, start: str, goal: str) -> list[str]:
+    """
+    Find the shortest path between given start and goal nodes in the graph using Breadth-First Search (BFS).
 
-def bfs_shortest_path(graph: dict, start, goal) -> list[str]:
-    """Find shortest path between `start` and `goal` nodes.
+    Function accepts a dictionary, where each key/value pair represents a node and a list of its neighbouring
+    nodes. Returns the shortest path as a list of node strings if there exists a path between start and goal.
+    If no path is found, it returns an empty list.
+
     Args:
-        graph (dict): node/list of neighboring nodes key/value pairs.
-        start: start node.
-        goal: target node.
+        graph (dict): Representation of graph where each key is a node and each value is a list of neighbouring nodes
+        start (str): The starting node in the graph
+        goal (str): The target node in the graph
+
     Returns:
-        Shortest path between `start` and `goal` nodes as a string of nodes.
-        'Not found' string if no path found.
-    Example:
+        list[str]: The shortest path from start to goal as a list of node strings.
+                   If no path exists, an empty list is returned.
+
+    Raises:
+        KeyError: If graph is an empty dictionary.
+
+    Examples:
         >>> bfs_shortest_path(demo_graph, "G", "D")
         ['G', 'C', 'A', 'B', 'D']
+
         >>> bfs_shortest_path(demo_graph, "G", "G")
         ['G']
+
         >>> bfs_shortest_path(demo_graph, "G", "Unknown")
         []
-    """
-    # keep track of explored nodes
-    explored = set()
-    # keep track of all the paths to be checked
-    queue = [[start]]
 
-    # return path if start is goal
+    """
     if start == goal:
         return [start]
 
-    # keeps looping until all possible paths have been checked
-    while queue:
-        # pop the first path from the queue
-        path = queue.pop(0)
-        # get the last node from the path
+    explored = set()
+    queue = [[start]]
+
+    for path in queue:
         node = path[-1]
         if node not in explored:
-            neighbours = graph[node]
-            # go through all neighbour nodes, construct a new path and
-            # push it into the queue
-            for neighbour in neighbours:
-                new_path = list(path)
-                new_path.append(neighbour)
-                queue.append(new_path)
-                # return path if neighbour is goal
+            explored.add(node)
+            for neighbour in graph[node]:
+                new_path = path + [neighbour]
                 if neighbour == goal:
                     return new_path
+                queue.append(new_path)
 
-            # mark node as explored
-            explored.add(node)
-
-    # in case there's no path between the 2 nodes
     return []
 
+def bfs_shortest_path_distance(graph: dict, start: str, target: str) -> int:
+    """
+    Find and return the shortest path distance between the `start` and `target` nodes using
+    Breadth-First Search algorithm.
 
-def bfs_shortest_path_distance(graph: dict, start, target) -> int:
-    """Find shortest path distance between `start` and `target` nodes.
+    The function works by checking if the `start` and `target` nodes exist in the `graph`,
+    and if they are the same. If so, it returns prepared values. Else,
+    it returns the shortest path distance or -1, if there is no path between nodes.
+
     Args:
-        graph: node/list of neighboring nodes key/value pairs.
-        start: node to start search from.
-        target: node to search for.
+        graph (dict): A dictionary representing the graph where keys are nodes and values
+                      are lists of neighbors.
+        start (str): The beginning node.
+        target (str): The node we are looking for.
+
     Returns:
-        Number of edges in shortest path between `start` and `target` nodes.
-        -1 if no path exists.
-    Example:
+        int: An integer representing the shortest distance (the lowest number of edges) or -1,
+             if there is no path between nodes.
+
+    Examples:
         >>> bfs_shortest_path_distance(demo_graph, "G", "D")
         4
         >>> bfs_shortest_path_distance(demo_graph, "A", "A")
         0
-        >>> bfs_shortest_path_distance(demo_graph, "A", "Unknown")
+        >>> bfs_shortest_path_distance(demo_graph, "A", "H")
         -1
     """
-    if not graph or start not in graph or target not in graph:
-        return -1
     if start == target:
         return 0
-    queue = [start]
-    visited = set(start)
-    # Keep tab on distances from `start` node.
-    dist = {start: 0, target: -1}
+    if not graph or start not in graph or target not in graph:
+        return -1
+
+    visited, dist, queue = {start}, {start: 0, target: -1}, [start]
+
     while queue:
         node = queue.pop(0)
         if node == target:
-            dist[target] = (
-                dist[node] if dist[target] == -1 else min(dist[target], dist[node])
-            )
-        for adjacent in graph[node]:
-            if adjacent not in visited:
-                visited.add(adjacent)
-                queue.append(adjacent)
-                dist[adjacent] = dist[node] + 1
-    return dist[target]
+            return dist[node]
+        update_queue_and_dist(graph, visited, dist, queue, node)
+
+    return -1
 
 
 if __name__ == "__main__":
     print(bfs_shortest_path(demo_graph, "G", "D"))  # returns ['G', 'C', 'A', 'B', 'D']
     print(bfs_shortest_path_distance(demo_graph, "G", "D"))  # returns 4
+
+
+def update_queue_and_dist(graph, visited, dist, queue, node):
+    """Update visited nodes, distances and add non-visited nodes into queue."""
+    for adjacent in graph[node]:
+        if adjacent not in visited:
+            visited.add(adjacent)
+            queue.append(adjacent)
+            dist[adjacent] = dist[node] + 1
