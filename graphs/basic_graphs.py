@@ -1,21 +1,11 @@
 from collections import deque
 
 
+from typing import List, Dict
+
+
 def _input(message):
     return input(message).strip().split(" ")
-
-
-def initialize_unweighted_directed_graph(
-    node_count: int, edge_count: int
-) -> dict[int, list[int]]:
-    graph: dict[int, list[int]] = {}
-    for i in range(node_count):
-        graph[i + 1] = []
-
-    for e in range(edge_count):
-        x, y = (int(i) for i in _input(f"Edge {e + 1}: <node1> <node2> "))
-        graph[x].append(y)
-    return graph
 
 
 def initialize_unweighted_undirected_graph(
@@ -102,6 +92,26 @@ def dfs(g, s):
 --------------------------------------------------------------------------------
 """
 
+def initialize_unweighted_directed_graph(
+    node_count: int, edge_count: int
+) -> dict[int, list[int]]:
+    """
+    Initialize an unweighted directed graph using user inputs.
+
+    Arguments:
+    node_count -- The total number of nodes in the graph.
+    edge_count -- The total number of edges in the graph.
+
+    The function will prompt the user to enter each edge.
+
+    Returns:
+    A dictionary representing the graph. The keys of the dictionary are the nodes,
+    and the values are lists of nodes that have an edge going from the key.
+    """
+    graph = create_graph_nodes(node_count)
+    add_graph_edges(graph, edge_count)
+    return graph
+
 
 def bfs(g, s):
     vis, q = {s}, deque([s])
@@ -113,6 +123,32 @@ def bfs(g, s):
                 vis.add(v)
                 q.append(v)
                 print(v)
+
+
+def create_graph_nodes(node_count: int) -> dict[int, list[int]]:
+    """
+    Create a dictionary representing the nodes of a graph.
+
+    Arguments:
+    node_count -- The total number of nodes in the graph.
+
+    Returns:
+    A dictionary where the keys are the nodes and the values are empty lists.
+    """
+    return {i: [] for i in range(1, node_count + 1)}
+
+
+def add_graph_edges(graph: dict[int, list[int]], edge_count: int) -> None:
+    """
+    Prompt the user to enter the edges of the graph and add them to the graph.
+
+    Arguments:
+    graph -- The graph to add edges to.
+    edge_count -- The total number of edges in the graph.
+    """
+    for e in range(edge_count):
+        x, y = map(int, input(f"Edge {e + 1}: <node1> <node2> ").split())
+        graph[x].append(y)
 
 
 """
