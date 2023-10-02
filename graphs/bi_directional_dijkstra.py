@@ -7,15 +7,14 @@ searching algorithm
 
 Reference: shorturl.at/exHM7
 """
+from typing import Any
+
+import numpy as np
 
 # Author: Swayam Singh (https://github.com/practice404)
 
 
 from queue import PriorityQueue
-from typing import Any
-
-import numpy as np
-
 
 def pass_and_relaxation(
     graph: dict,
@@ -24,22 +23,27 @@ def pass_and_relaxation(
     visited_backward: set,
     cst_fwd: dict,
     cst_bwd: dict,
-    queue: PriorityQueue,
+    queue: Any,
     parent: dict,
     shortest_distance: float,
 ) -> float:
+    """
+    Perform one iteration of pass and relaxation for Bidirectional Dijkstra's algorithm.
+    """
     for nxt, d in graph[v]:
         if nxt in visited_forward:
             continue
-        old_cost_f = cst_fwd.get(nxt, np.inf)
+
         new_cost_f = cst_fwd[v] + d
+        shortest_distance = update_shortest_distance(
+            nxt, visited_backward, cst_fwd, cst_bwd, new_cost_f, shortest_distance
+        )
+
+        old_cost_f = cst_fwd.get(nxt, np.inf)
         if new_cost_f < old_cost_f:
             queue.put((new_cost_f, nxt))
             cst_fwd[nxt] = new_cost_f
             parent[nxt] = v
-        if nxt in visited_backward:
-            if cst_fwd[v] + d + cst_bwd[nxt] < shortest_distance:
-                shortest_distance = cst_fwd[v] + d + cst_bwd[nxt]
     return shortest_distance
 
 
@@ -114,6 +118,20 @@ def bidirectional_dij(
     if shortest_distance != np.inf:
         shortest_path_distance = shortest_distance
     return shortest_path_distance
+
+
+def update_shortest_distance(
+    nxt: str,
+    visited_backward: set,
+    cst_fwd: dict,
+    cst_bwd: dict,
+    new_cost_f: float,
+    shortest_distance: float,
+) -> float:
+    """Update shortest distance."""
+    if nxt in visited_backward:
+        shortest_distance = min(shortest_distance, new_cost_f + cst_bwd[nxt])
+    return shortest_distance
 
 
 graph_fwd = {
