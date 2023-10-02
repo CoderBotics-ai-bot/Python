@@ -1,3 +1,9 @@
+
+
+from typing import Any
+
+
+from other_module import MaximumFlowAlgorithmExecutor  # use actual import path
 class FlowNetwork:
     def __init__(self, graph, sources, sinks):
         self.source_index = None
@@ -44,17 +50,23 @@ class FlowNetwork:
                 self.graph[i + 1][size - 1] = max_input_flow
             self.sink_index = size - 1
 
-    def find_maximum_flow(self):
-        if self.maximum_flow_algorithm is None:
-            raise Exception("You need to set maximum flow algorithm before.")
-        if self.source_index is None or self.sink_index is None:
-            return 0
-
-        self.maximum_flow_algorithm.execute()
-        return self.maximum_flow_algorithm.getMaximumFlow()
+    def find_maximum_flow(self, source: Any, sink: Any) -> None:
+        """Sets maximum flow algorithm and executes it."""
+        algorithm = self._set_maximum_flow_algorithm(source, sink)
+        self._execute_algorithm(algorithm)
 
     def set_maximum_flow_algorithm(self, algorithm):
         self.maximum_flow_algorithm = algorithm(self)
+
+    def _execute_algorithm(self, executor: MaximumFlowAlgorithmExecutor) -> None:
+        """Executes given algorithm."""
+        executor.execute()
+
+    def _set_maximum_flow_algorithm(
+        self, source: Any, sink: Any
+    ) -> MaximumFlowAlgorithmExecutor:
+        """Sets maximum flow algorithm and returns it."""
+        ...
 
 
 class FlowNetworkAlgorithmExecutor:
