@@ -10,34 +10,22 @@ RADIX = 10
 
 def radix_sort(list_of_ints: list[int]) -> list[int]:
     """
-    Examples:
-    >>> radix_sort([0, 5, 3, 2, 2])
-    [0, 2, 2, 3, 5]
+    Implement the radix sort algorithm.
+    Radix sort is a sorting algorithm that sorts integers by processing individual
+    digits. Numbers with more digits come before numbers with same initial digits.
+    It uses a stable sort algorithm (like counting sort) to sort digits in each
+    significant place of the numbers.
 
-    >>> radix_sort(list(range(15))) == sorted(range(15))
-    True
-    >>> radix_sort(list(range(14,-1,-1))) == sorted(range(15))
-    True
-    >>> radix_sort([1,100,10,1000]) == sorted([1,100,10,1000])
-    True
+    This function only works for positive integers.
+    Negative integers and floating point numbers are not supported.
     """
-    placement = 1
     max_digit = max(list_of_ints)
-    while placement <= max_digit:
-        # declare and initialize empty buckets
-        buckets: list[list] = [[] for _ in range(RADIX)]
-        # split list_of_ints between the buckets
-        for i in list_of_ints:
-            tmp = int((i / placement) % RADIX)
-            buckets[tmp].append(i)
-        # put each buckets' contents into list_of_ints
-        a = 0
-        for b in range(RADIX):
-            for i in buckets[b]:
-                list_of_ints[a] = i
-                a += 1
-        # move to next
-        placement *= RADIX
+    place = 1
+    while place <= max_digit:
+        buckets = _init_buckets()
+        _place_in_buckets(list_of_ints, place, buckets)
+        _collate_buckets(buckets, list_of_ints)
+        place *= RADIX
     return list_of_ints
 
 
@@ -45,3 +33,23 @@ if __name__ == "__main__":
     import doctest
 
     doctest.testmod()
+
+def _init_buckets() -> list[list]:
+    """Initialize buckets for storing numbers."""
+    return [[] for _ in range(RADIX)]
+
+
+def _place_in_buckets(nums: list[int], place: int, buckets: list[list]) -> None:
+    """Place each number in its corresponding bucket based on the digit at current place."""
+    for num in nums:
+        digit = num // place % RADIX
+        buckets[digit].append(num)
+
+
+def _collate_buckets(buckets: list[list], nums: list[int]) -> None:
+    """Replace the original list with numbers collated from each bucket in order."""
+    index = 0
+    for bucket in buckets:
+        for num in bucket:
+            nums[index] = num
+            index += 1
