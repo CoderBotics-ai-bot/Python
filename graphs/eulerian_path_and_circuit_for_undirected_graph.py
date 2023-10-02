@@ -5,6 +5,26 @@ from typing import Dict, List, Optional
 from typing import Dict, List, Optional
 
 
+from typing import Dict, List, Tuple
+
+def check_circuit_or_path(
+    graph: Dict[int, List[int]], max_node: int
+) -> Tuple[int, int]:
+    """
+    Check if a given graph has an Euler path or circuit...
+
+    .. detailed docstring truncated for brevity
+    """
+    odd_degree_nodes, odd_node = count_odd_degree_nodes(graph, max_node)
+
+    if odd_degree_nodes == 0:
+        return 1, odd_node
+    elif odd_degree_nodes == 2:
+        return 2, odd_node
+    else:
+        return 3, odd_node
+
+
 def dfs(
     u: int, graph: Dict, visited_edge: Dict, path: Optional[List[int]] = None
 ) -> List[int]:
@@ -29,8 +49,20 @@ def dfs(
     return path
 
 
-# for checking in graph has euler path or circuit
-def check_circuit_or_path(graph, max_node):
+def count_odd_degree_nodes(
+    graph: Dict[int, List[int]], max_node: int
+) -> Tuple[int, int]:
+    """
+    Count the number of nodes with odd degree in a graph.
+
+    Args:
+        graph: A dictionary representing the graph.
+        max_node: An integer representing the maximum node number in the graph.
+
+    Returns:
+        A tuple where the first element is the count of nodes with odd degree and
+        the second element is the node with odd degree (-1 if no such node exists).
+    """
     odd_degree_nodes = 0
     odd_node = -1
     for i in range(max_node):
@@ -39,11 +71,8 @@ def check_circuit_or_path(graph, max_node):
         if len(graph[i]) % 2 == 1:
             odd_degree_nodes += 1
             odd_node = i
-    if odd_degree_nodes == 0:
-        return 1, odd_node
-    if odd_degree_nodes == 2:
-        return 2, odd_node
-    return 3, odd_node
+
+    return odd_degree_nodes, odd_node
 
 
 
