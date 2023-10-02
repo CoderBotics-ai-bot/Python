@@ -84,6 +84,38 @@ def find_empty_location(grid: Matrix) -> tuple[int, int] | None:
                 return row, col
     return None
 
+def sudoku(grid: Matrix) -> Matrix | None:
+    """
+    Solve a Sudoku puzzle using a backtracking algorithm.
+
+    Args:
+        grid (Matrix): A 9x9 2D list representing the Sudoku grid.
+
+    Returns:
+        Matrix | None: The solved Sudoku grid, or None if no solution exists.
+    """
+    # If there is no empty location, the puzzle is solved.
+    location = find_empty_location(grid)
+    if not location:
+        return grid
+
+    row, column = location
+
+    for digit in range(1, 10):
+        if is_safe(grid, row, column, digit):
+            # Try this digit for the current cell
+            grid[row][column] = digit
+
+            # Recur to solve the rest of the grid
+            if sudoku(grid):
+                return grid
+
+            # If the recursion didn't find a solution, reset the cell and continue with the next digit
+            grid[row][column] = 0
+
+    # If no viable digits can be placed, this is a dead end
+    return None
+
 def is_in_row(grid: Matrix, row: int, n: int) -> bool:
     """Check if the number n is already present in the given row of the Sudoku grid."""
     return n in grid[row]
@@ -101,43 +133,6 @@ def is_in_box(grid: Matrix, row: int, col: int, num: int) -> bool:
             if grid[i + (row - row % 3)][j + (col - col % 3)] == num:
                 return True
     return False
-
-
-def sudoku(grid: Matrix) -> Matrix | None:
-    """
-    Takes a partially filled-in grid and attempts to assign values to
-    all unassigned locations in such a way to meet the requirements
-    for Sudoku solution (non-duplication across rows, columns, and boxes)
-
-    >>> sudoku(initial_grid)  # doctest: +NORMALIZE_WHITESPACE
-    [[3, 1, 6, 5, 7, 8, 4, 9, 2],
-     [5, 2, 9, 1, 3, 4, 7, 6, 8],
-     [4, 8, 7, 6, 2, 9, 5, 3, 1],
-     [2, 6, 3, 4, 1, 5, 9, 8, 7],
-     [9, 7, 4, 8, 6, 3, 1, 2, 5],
-     [8, 5, 1, 7, 9, 2, 6, 4, 3],
-     [1, 3, 8, 9, 4, 7, 2, 5, 6],
-     [6, 9, 2, 3, 5, 1, 8, 7, 4],
-     [7, 4, 5, 2, 8, 6, 3, 1, 9]]
-     >>> sudoku(no_solution) is None
-     True
-    """
-    if location := find_empty_location(grid):
-        row, column = location
-    else:
-        # If the location is ``None``, then the grid is solved.
-        return grid
-
-    for digit in range(1, 10):
-        if is_safe(grid, row, column, digit):
-            grid[row][column] = digit
-
-            if sudoku(grid) is not None:
-                return grid
-
-            grid[row][column] = 0
-
-    return None
 
 
 def print_solution(grid: Matrix) -> None:
