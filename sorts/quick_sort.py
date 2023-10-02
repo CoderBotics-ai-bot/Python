@@ -12,32 +12,17 @@ from __future__ import annotations
 from random import randrange
 
 
-def quick_sort(collection: list) -> list:
-    """A pure Python implementation of quick sort algorithm
+from typing import List, Tuple
 
-    :param collection: a mutable collection of comparable items
-    :return: the same collection ordered by ascending
 
-    Examples:
-    >>> quick_sort([0, 5, 3, 2, 2])
-    [0, 2, 2, 3, 5]
-    >>> quick_sort([])
-    []
-    >>> quick_sort([-2, 5, 0, -45])
-    [-45, -2, 0, 5]
-    """
+def quick_sort(collection: List[int]) -> List[int]:
+    """Sort the input collection in ascending order using quicksort algorithm."""
+
     if len(collection) < 2:
         return collection
-    pivot_index = randrange(len(collection))  # Use random element as pivot
-    pivot = collection[pivot_index]
-    greater: list[int] = []  # All elements greater than pivot
-    lesser: list[int] = []  # All elements less than or equal to pivot
 
-    for element in collection[:pivot_index]:
-        (greater if element > pivot else lesser).append(element)
-
-    for element in collection[pivot_index + 1 :]:
-        (greater if element > pivot else lesser).append(element)
+    pivot, pivot_index = select_pivot(collection)
+    lesser, greater = divide_elements(collection, pivot, pivot_index)
 
     return [*quick_sort(lesser), pivot, *quick_sort(greater)]
 
@@ -46,3 +31,29 @@ if __name__ == "__main__":
     user_input = input("Enter numbers separated by a comma:\n").strip()
     unsorted = [int(item) for item in user_input.split(",")]
     print(quick_sort(unsorted))
+
+def select_pivot(collection: List[int]) -> Tuple[int, int]:
+    """Randomly select a pivot and its index."""
+
+    pivot_index = randrange(len(collection))
+    pivot = collection[pivot_index]
+
+    return pivot, pivot_index
+
+
+def divide_elements(
+    collection: List[int], pivot: int, pivot_index: int
+) -> Tuple[List[int], List[int]]:
+    """Divide collection into lists of elements lesser and greater than the pivot."""
+
+    lesser, greater = [], []
+
+    for i, element in enumerate(collection):
+        if i == pivot_index:
+            continue
+        if element > pivot:
+            greater.append(element)
+        else:
+            lesser.append(element)
+
+    return lesser, greater
