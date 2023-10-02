@@ -55,36 +55,49 @@ def find_components(
 
     return component
 
-
 def strongly_connected_components(graph: dict[int, list[int]]) -> list[list[int]]:
     """
-    This function takes graph as a parameter
-    and then returns the list of strongly connected components
-    >>> strongly_connected_components(test_graph_1)
-    [[0, 1, 2], [3], [4]]
-    >>> strongly_connected_components(test_graph_2)
-    [[0, 2, 1], [3, 5, 4]]
+    Identifies and returns the strongly connected components of a given graph.
+
+    Args:
+        graph (dict[int, list[int]]): The input graph as a dictionary where
+            each key represents a vertex and the corresponding value is a list
+            of all adjacent vertices.
+
+    Returns:
+        list[list[int]]: A list of strongly connected components where each
+            component is represented as a list of vertices.
     """
+    order = get_topological_sort(graph)
+    reversed_graph = build_reversed_graph(graph)
+    return find_components_in_order(order, reversed_graph)
 
-    visited = len(graph) * [False]
-    reversed_graph: dict[int, list[int]] = {vert: [] for vert in range(len(graph))}
 
+def get_topological_sort(graph: dict[int, list[int]]) -> list[int]:
+    visited = [False] * len(graph)
+    order = []
+    for i in range(len(graph)):
+        if not visited[i]:
+            order += topology_sort(graph, i, visited)
+    return order
+
+
+def build_reversed_graph(graph: dict[int, list[int]]) -> dict[int, list[int]]:
+    reversed_graph = {vert: [] for vert in range(len(graph))}
     for vert, neighbours in graph.items():
         for neighbour in neighbours:
             reversed_graph[neighbour].append(vert)
+    return reversed_graph
 
-    order = []
-    for i, was_visited in enumerate(visited):
-        if not was_visited:
-            order += topology_sort(graph, i, visited)
 
+def find_components_in_order(
+    order: list[int], reversed_graph: dict[int, list[int]]
+) -> list[list[int]]:
     components_list = []
-    visited = len(graph) * [False]
-
-    for i in range(len(graph)):
-        vert = order[len(graph) - i - 1]
+    visited = [False] * len(reversed_graph)
+    for i in range(len(reversed_graph)):
+        vert = order[len(reversed_graph) - i - 1]
         if not visited[vert]:
             component = find_components(reversed_graph, vert, visited)
             components_list.append(component)
-
     return components_list
