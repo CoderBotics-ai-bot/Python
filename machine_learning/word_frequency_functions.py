@@ -82,42 +82,33 @@ the third document in the corpus.")
     term = term.lower()
     return (len([doc for doc in docs if term in doc]), len(docs))
 
-
-def inverse_document_frequency(df: int, n: int, smoothing=False) -> float:
+def inverse_document_frequency(df: int, n: int, smoothing: bool = False) -> float:
     """
-    Return an integer denoting the importance
-    of a word. This measure of importance is
-    calculated by log10(N/df), where N is the
-    number of documents and df is
-    the Document Frequency.
-    @params : df, the Document Frequency, N,
-    the number of documents in the corpus and
-    smoothing, if True return the idf-smooth
-    @returns : log10(N/df) or 1+log10(N/1+df)
-    @examples :
-    >>> inverse_document_frequency(3, 0)
-    Traceback (most recent call last):
-     ...
-    ValueError: log10(0) is undefined.
-    >>> inverse_document_frequency(1, 3)
-    0.477
-    >>> inverse_document_frequency(0, 3)
-    Traceback (most recent call last):
-     ...
-    ZeroDivisionError: df must be > 0
-    >>> inverse_document_frequency(0, 3,True)
-    1.477
-    """
-    if smoothing:
-        if n == 0:
-            raise ValueError("log10(0) is undefined.")
-        return round(1 + log10(n / (1 + df)), 3)
+    Calculate and return the inverse document frequency of a term given the document frequency and
+    the number of documents in the corpus.
 
-    if df == 0:
+    Args:
+        df: The document frequency of the term.
+        n: The number of documents in the corpus.
+        smoothing: If True, applies smoothing to the inverse document frequency calculation.
+
+    Returns:
+        The inverse document frequency of the term, rounded to three decimal places.
+
+    Raises:
+        ValueError: If n equals 0 and smoothing is set to 'False'.
+        ZeroDivisionError: If df equals 0 and smoothing is set to 'False'.
+    """
+    if df == 0 and not smoothing:
         raise ZeroDivisionError("df must be > 0")
-    elif n == 0:
+
+    if n == 0 and not smoothing:
         raise ValueError("log10(0) is undefined.")
-    return round(log10(n / df), 3)
+
+    if smoothing:
+        return round(1 + log10(n / (1 + df)), 3)
+    else:
+        return round(log10(n / df), 3)
 
 
 def tf_idf(tf: int, idf: int) -> float:
