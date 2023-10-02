@@ -13,29 +13,36 @@ All elements of candidates are distinct.
 """
 
 
+from typing import List
+
+
 def backtrack(
-    candidates: list, path: list, answer: list, target: int, previous_index: int
+    candidates: List[int],
+    path: List[int],
+    answer: List[List[int]],
+    target: int,
+    previous_index: int,
 ) -> None:
     """
-    A recursive function that searches for possible combinations. Backtracks in case
-    of a bigger current combination value than the target value.
+    A recursive function that is responsible for searching for possible combinations.
+    As a backtracking algorithm, if the current combination sum goes past the target value, the function will backtrack.
 
-    Parameters
-    ----------
-    previous_index: Last index from the previous search
-    target: The value we need to obtain by summing our integers in the path list.
-    answer: A list of possible combinations
-    path: Current combination
-    candidates: A list of integers we can use.
+    Args:
+    candidates (List[int]): A list of integers from which we can use to form different combinations.
+    path (List[int]): The current combination's path being tracked.
+    answer (List[List[int]]): A list where all possible combinations will be stored.
+    target (int): The target integer value that we need to obtain by summing the integers in the `path` list.
+    previous_index (int): The index of the previous integer that was used in forming the current combination.
+
+    Returns:
+    None. Note that the function returns None since the result is updated in the `answer` list which is a mutable type in Python.
     """
     if target == 0:
         answer.append(path.copy())
-    else:
-        for index in range(previous_index, len(candidates)):
-            if target >= candidates[index]:
-                path.append(candidates[index])
-                backtrack(candidates, path, answer, target - candidates[index], index)
-                path.pop(len(path) - 1)
+        return
+
+    for index in range(previous_index, len(candidates)):
+        check_candidate(candidates, path, answer, target, index)
 
 
 def combination_sum(candidates: list, target: int) -> list:
@@ -53,6 +60,33 @@ def combination_sum(candidates: list, target: int) -> list:
     answer = []  # type: list[int]
     backtrack(candidates, path, answer, target, 0)
     return answer
+
+def check_candidate(
+    candidates: List[int],
+    path: List[int],
+    answer: List[List[int]],
+    target: int,
+    index: int,
+) -> None:
+    """
+    Check if a candidate from candidates list can be used to form a combination that sums to target.
+    If so, continue the path with this candidate and backtrack for following candidates.
+
+    Args:
+    candidates (List[int]): A list of integers from which we can use to form different combinations.
+    path (List[int]): The current combination's path being tracked.
+    answer (List[List[int]]): A list where all possible combinations will be stored.
+    target (int): The target integer value that we need to obtain by summing the integers in the `path` list.
+    index (int): The index of the current integer that is being checked.
+
+    Returns:
+    None. Note that the function returns None as the result is updated in the `answer` list which is a mutable type in Python.
+    """
+    if target < candidates[index]:
+        return
+    path.append(candidates[index])
+    backtrack(candidates, path, answer, target - candidates[index], index)
+    path.pop()
 
 
 def main() -> None:
