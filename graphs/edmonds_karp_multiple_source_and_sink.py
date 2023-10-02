@@ -1,5 +1,3 @@
-
-
 from typing import List, Dict, Optional
 from classes import MaximumFlowAlgorithmExecutor, Vertex, Edge
 class FlowNetwork:
@@ -101,6 +99,62 @@ class MaximumFlowAlgorithmExecutor(FlowNetworkAlgorithmExecutor):
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 class PushRelabelExecutor(MaximumFlowAlgorithmExecutor):
     def __init__(self, flow_network):
         super().__init__(flow_network)
@@ -125,7 +179,23 @@ class PushRelabelExecutor(MaximumFlowAlgorithmExecutor):
 
         self.finalize_computation()
 
-    def process_vertex(self, vertex_index):
+    def process_vertex(self, vertex_index: int) -> None:
+        """
+        Process the given vertex by pushing flow to its neighbours and relabelling it.
+
+        This method implements the push-relabel operation of the push-relabel maximum flow algorithm.
+        For each of its neighbours, it pushes flow if the current vertex's height is greater than the neighbour's.
+        Then, it relabels the vertex to increase its height in preparation for the next push.
+
+        Args:
+            vertex_index (int): The index of the vertex to be processed in the graph.
+
+        Raises:
+            Nothing.
+
+        Returns:
+            Nothing.
+        """
         while self.excesses[vertex_index] > 0:
             for neighbour_index in range(self.verticies_count):
                 # if it's neighbour and current vertex is higher
@@ -158,6 +228,21 @@ class PushRelabelExecutor(MaximumFlowAlgorithmExecutor):
             for v, excess_flow in self._excess_map.items()
             if excess_flow > 0 and v not in (exclude or [])
         ]
+
+
+    def relabel(self, v: Vertex) -> None:
+        """
+        Relabels the provided vertex by incrementing its height.
+
+        :param v: Vertex to be relabelled
+        """
+        min_height = float("Inf")
+        for edge in self._edges:
+            if edge.start == v:
+                min_height = min(min_height, edge.end.height)
+
+        if min_height != float("Inf"):
+            v.height = min_height + 1
 
     def execute_vertex_operations(
         self, current_vertex: Vertex, active_vertices: List[Vertex]
@@ -194,19 +279,6 @@ class PushRelabelExecutor(MaximumFlowAlgorithmExecutor):
         self.preflow[to_index][from_index] -= preflow_delta
         self.excesses[from_index] -= preflow_delta
         self.excesses[to_index] += preflow_delta
-
-    def relabel(self, vertex_index):
-        min_height = None
-        for to_index in range(self.verticies_count):
-            if (
-                self.graph[vertex_index][to_index]
-                - self.preflow[vertex_index][to_index]
-                > 0
-            ) and (min_height is None or self.heights[to_index] < min_height):
-                min_height = self.heights[to_index]
-
-        if min_height is not None:
-            self.heights[vertex_index] = min_height + 1
 
 
 if __name__ == "__main__":
