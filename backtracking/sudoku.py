@@ -62,16 +62,26 @@ def is_safe(grid: Matrix, row: int, column: int, n: int) -> bool:
         and not is_in_box(grid, row, column, n)
     )
 
-
 def find_empty_location(grid: Matrix) -> tuple[int, int] | None:
     """
-    This function finds an empty location so that we can assign a number
-    for that particular row and column.
+    Find the first empty location in the Sudoku grid.
+
+    This function iterates through the given grid and returns a tuple
+    representing the row and column indices of the first empty (0) position
+    encountered. The iteration starts from the top-left corner (0, 0) and moves
+    rightwards and downwards. If no empty position is found, the function returns None.
+
+    Args:
+        grid (Matrix): 2D list of integers representing the Sudoku grid.
+
+    Returns:
+        tuple[int, int] | None: The row and column index of the first empty position
+        encountered or None if no empty position is found.
     """
-    for i in range(9):
-        for j in range(9):
-            if grid[i][j] == 0:
-                return i, j
+    for row in range(9):
+        for col in range(9):
+            if grid[row][col] == 0:
+                return row, col
     return None
 
 def is_in_row(grid: Matrix, row: int, n: int) -> bool:
