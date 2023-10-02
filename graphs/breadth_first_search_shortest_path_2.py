@@ -14,55 +14,53 @@ demo_graph = {
     "G": ["C"],
 }
 
+def bfs_shortest_path(graph: dict, start: str, goal: str) -> list[str]:
+    """
+    Find the shortest path between given start and goal nodes in the graph using Breadth-First Search (BFS).
 
-def bfs_shortest_path(graph: dict, start, goal) -> list[str]:
-    """Find shortest path between `start` and `goal` nodes.
+    Function accepts a dictionary, where each key/value pair represents a node and a list of its neighbouring
+    nodes. Returns the shortest path as a list of node strings if there exists a path between start and goal.
+    If no path is found, it returns an empty list.
+
     Args:
-        graph (dict): node/list of neighboring nodes key/value pairs.
-        start: start node.
-        goal: target node.
+        graph (dict): Representation of graph where each key is a node and each value is a list of neighbouring nodes
+        start (str): The starting node in the graph
+        goal (str): The target node in the graph
+
     Returns:
-        Shortest path between `start` and `goal` nodes as a string of nodes.
-        'Not found' string if no path found.
-    Example:
+        list[str]: The shortest path from start to goal as a list of node strings.
+                   If no path exists, an empty list is returned.
+
+    Raises:
+        KeyError: If graph is an empty dictionary.
+
+    Examples:
         >>> bfs_shortest_path(demo_graph, "G", "D")
         ['G', 'C', 'A', 'B', 'D']
+
         >>> bfs_shortest_path(demo_graph, "G", "G")
         ['G']
+
         >>> bfs_shortest_path(demo_graph, "G", "Unknown")
         []
-    """
-    # keep track of explored nodes
-    explored = set()
-    # keep track of all the paths to be checked
-    queue = [[start]]
 
-    # return path if start is goal
+    """
     if start == goal:
         return [start]
 
-    # keeps looping until all possible paths have been checked
-    while queue:
-        # pop the first path from the queue
-        path = queue.pop(0)
-        # get the last node from the path
+    explored = set()
+    queue = [[start]]
+
+    for path in queue:
         node = path[-1]
         if node not in explored:
-            neighbours = graph[node]
-            # go through all neighbour nodes, construct a new path and
-            # push it into the queue
-            for neighbour in neighbours:
-                new_path = list(path)
-                new_path.append(neighbour)
-                queue.append(new_path)
-                # return path if neighbour is goal
+            explored.add(node)
+            for neighbour in graph[node]:
+                new_path = path + [neighbour]
                 if neighbour == goal:
                     return new_path
+                queue.append(new_path)
 
-            # mark node as explored
-            explored.add(node)
-
-    # in case there's no path between the 2 nodes
     return []
 
 
