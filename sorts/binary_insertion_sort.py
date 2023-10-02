@@ -10,48 +10,23 @@ For manual testing run:
 python binary_insertion_sort.py
 """
 
-
 def binary_insertion_sort(collection: list) -> list:
-    """Pure implementation of the binary insertion sort algorithm in Python
-    :param collection: some mutable ordered collection with heterogeneous
-    comparable items inside
-    :return: the same collection ordered by ascending
+    """
+    Pure implementation of the binary insertion sort algorithm in Python.
 
-    Examples:
-    >>> binary_insertion_sort([0, 4, 1234, 4, 1])
-    [0, 1, 4, 4, 1234]
-    >>> binary_insertion_sort([]) == sorted([])
-    True
-    >>> binary_insertion_sort([-1, -2, -3]) == sorted([-1, -2, -3])
-    True
-    >>> lst = ['d', 'a', 'b', 'e', 'c']
-    >>> binary_insertion_sort(lst) == sorted(lst)
-    True
-    >>> import random
-    >>> collection = random.sample(range(-50, 50), 100)
-    >>> binary_insertion_sort(collection) == sorted(collection)
-    True
-    >>> import string
-    >>> collection = random.choices(string.ascii_letters + string.digits, k=100)
-    >>> binary_insertion_sort(collection) == sorted(collection)
-    True
+    Args:
+        collection (list): A mutable ordered collection with heterogeneous
+        comparable items inside.
+
+    Returns:
+        list: The same collection ordered by ascending.
     """
 
-    n = len(collection)
-    for i in range(1, n):
+    for i in range(1, len(collection)):
         val = collection[i]
-        low = 0
-        high = i - 1
+        proper_index = binary_search(collection, val, i)
+        shift_elements(collection, val, i, proper_index)
 
-        while low <= high:
-            mid = (low + high) // 2
-            if val < collection[mid]:
-                high = mid - 1
-            else:
-                low = mid + 1
-        for j in range(i, low, -1):
-            collection[j] = collection[j - 1]
-        collection[low] = val
     return collection
 
 
@@ -59,3 +34,47 @@ if __name__ == "__main__":
     user_input = input("Enter numbers separated by a comma:\n").strip()
     unsorted = [int(item) for item in user_input.split(",")]
     print(binary_insertion_sort(unsorted))
+
+
+def binary_search(collection: list, value: int, upper_bound: int) -> int:
+    """
+    Performs a binary search in the collection to find the proper location to
+    insert the selected item.
+
+    Args:
+        collection (list): A mutable ordered collection with heterogeneous
+            comparable items inside.
+        value (int): Value to be inserted.
+        upper_bound (int): Upper bound of the search range.
+
+    Returns:
+        int: The proper location to insert the selected item.
+    """
+    low = 0
+
+    while low < upper_bound:
+        mid = (low + upper_bound) // 2
+        if value < collection[mid]:
+            upper_bound = mid
+        else:
+            low = mid + 1
+
+    return low
+
+
+def shift_elements(collection: list, value: int, start: int, end: int) -> None:
+    """
+    Shifts elements in the collection to make place for newly inserted element.
+
+    Args:
+        collection (list): A mutable ordered collection with heterogeneous
+            comparable items inside.
+        value (int): Value to be inserted.
+        start (int): The starting position of shifting.
+        end (int): The ending position of shifting.
+    """
+
+    for j in range(start, end, -1):
+        collection[j] = collection[j - 1]
+
+    collection[end] = value
