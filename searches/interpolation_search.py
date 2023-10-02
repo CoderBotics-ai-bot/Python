@@ -3,48 +3,36 @@ This is pure Python implementation of interpolation search algorithm
 """
 
 
-def interpolation_search(sorted_collection, item):
-    """Pure implementation of interpolation search algorithm in Python
-    Be careful collection must be ascending sorted, otherwise result will be
-    unpredictable
-    :param sorted_collection: some ascending sorted collection with comparable items
-    :param item: item value to search
-    :return: index of found item or None if item is not found
+from typing import List, Union
+
+
+from typing import List, Union, Tuple
+
+
+def interpolation_search(sorted_collection: List[int], item: int) -> Union[int, None]:
+    """
+    Implementation of the interpolation search algorithm in Python.
     """
     left = 0
     right = len(sorted_collection) - 1
 
     while left <= right:
-        # avoid divided by 0 during interpolation
         if sorted_collection[left] == sorted_collection[right]:
             if sorted_collection[left] == item:
                 return left
             else:
                 return None
 
-        point = left + ((item - sorted_collection[left]) * (right - left)) // (
-            sorted_collection[right] - sorted_collection[left]
-        )
+        point = calculate_midpoint(sorted_collection, item, left, right)
 
-        # out of range check
         if point < 0 or point >= len(sorted_collection):
             return None
 
-        current_item = sorted_collection[point]
-        if current_item == item:
+        if is_item_found(sorted_collection, point, item):
             return point
-        else:
-            if point < left:
-                right = left
-                left = point
-            elif point > right:
-                left = right
-                right = point
-            else:
-                if item < current_item:
-                    right = point - 1
-                else:
-                    left = point + 1
+
+        left, right = update_boundaries(sorted_collection, item, left, right, point)
+
     return None
 
 
@@ -88,6 +76,36 @@ def interpolation_search_by_recursion(sorted_collection, item, left, right):
             return interpolation_search_by_recursion(
                 sorted_collection, item, point + 1, right
             )
+
+def calculate_midpoint(
+    sorted_collection: List[int], item: int, left: int, right: int
+) -> int:
+    """
+    Calculate the median of the list.
+    """
+    return left + ((item - sorted_collection[left]) * (right - left)) // (
+        sorted_collection[right] - sorted_collection[left]
+    )
+
+
+def is_item_found(sorted_collection: List[int], point: int, item: int) -> bool:
+    """
+    Check the item found at the midpoint.
+    """
+    return sorted_collection[point] == item
+
+
+def update_boundaries(
+    sorted_collection: List[int], item: int, left: int, right: int, point: int
+) -> Tuple[int, int]:
+    """
+    Update the boundaries of the list based on midpoint.
+    """
+    if item < sorted_collection[point]:
+        right = point - 1
+    else:
+        left = point + 1
+    return left, right
 
 
 def __assert_sorted(collection):
