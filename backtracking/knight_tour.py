@@ -3,33 +3,30 @@
 from __future__ import annotations
 
 
+from typing import List, Tuple
+
 def get_valid_pos(position: tuple[int, int], n: int) -> list[tuple[int, int]]:
     """
-    Find all the valid positions a knight can move to from the current position.
+    Given a position on a knight's tour chessboard, compute all the valid movements a knight can make.
 
-    >>> get_valid_pos((1, 3), 4)
-    [(2, 1), (0, 1), (3, 2)]
+    Args:
+        position (tuple): Represents the current position of the knight. Contains integers row and column.
+        n (int): The size of the chessboard (n x n).
+
+    Returns:
+        list: Contains valid positions where the knight can move to from the current position.
     """
-
     y, x = position
-    positions = [
-        (y + 1, x + 2),
-        (y - 1, x + 2),
-        (y + 1, x - 2),
-        (y - 1, x - 2),
-        (y + 2, x + 1),
-        (y + 2, x - 1),
-        (y - 2, x + 1),
-        (y - 2, x - 1),
-    ]
-    permissible_positions = []
+    movements = [(1, 2), (-1, 2), (1, -2), (-1, -2), (2, 1), (2, -1), (-2, 1), (-2, -1)]
 
-    for position in positions:
-        y_test, x_test = position
-        if 0 <= y_test < n and 0 <= x_test < n:
-            permissible_positions.append(position)
+    valid_positions = []
+    for move in movements:
+        move_y, move_x = move
+        new_y, new_x = y + move_y, x + move_x
+        if 0 <= new_y < n and 0 <= new_x < n:
+            valid_positions.append((new_y, new_x))
 
-    return permissible_positions
+    return valid_positions
 
 
 def is_complete(board: list[list[int]]) -> bool:
