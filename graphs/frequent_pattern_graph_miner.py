@@ -16,6 +16,9 @@ from typing import Dict, List, Union
 
 
 from typing import Dict, List, Tuple, Union
+
+
+from typing import Dict, List
 # fmt: off
 edge_array = [
     ['ab-e1', 'ac-e3', 'ad-e5', 'bc-e4', 'bd-e2', 'be-e6', 'bh-e12', 'cd-e2', 'ce-e4',
@@ -128,6 +131,56 @@ def get_support(cluster):
     """
     return [i * 100 / len(cluster) for i in cluster]
 
+def construct_graph(
+    cluster: Dict[int, Union[str, List[str]]], nodes: Dict[str, List[str]]
+) -> Dict[Union[str, Tuple[str, List[str]]], List[List[str]]]:
+    """
+    Constructs the graph representing the relationships between the nodes.
+
+    Given a dictionary of clusters and nodes, the function constructs a
+    graph dictionary where each key represents a node and its corresponding
+    value is a list of nodes which it is connected to.
+
+    Additionally, the function initially creates edges between a 'Header' node
+    and all nodes in the maximum cluster, reflecting the end of one cluster and
+    the start of another. Then, using the create_edge function, it adds more
+    edges to the graph for all nodes within same cluster.
+
+    The header node and the connections from the header node to the nodes in the clusters
+    are also implemented as part of this function.
+
+    Args:
+    cluster (dict): Dictionary with keys as cluster numbers and values as identifiers of nodes.
+    nodes (dict): Dictionary with key as a binary string and value as a list of strings.
+
+    Returns:
+    graph (dict): Dictionary representing the graph. The keys are tuple of node identifier(s),
+                  and the values are list of lists of node identifier(s).
+
+    Raises:
+    KeyError: If the cluster dictionary does not have a maximum key or if the node identifiers
+              are not found in the cluster dictionary.
+
+    Notes:
+    The function modifies both the 'cluster' and 'graph' dictionaries in-place by adding
+    new entries ('Header' node and new edges respectively).
+    """
+    x = cluster[max(cluster.keys())]
+    cluster[max(cluster.keys()) + 1] = "Header"
+    graph = {}
+    for i in x:
+        if (["Header"],) in graph:
+            graph[(["Header"],)].append(x[i])
+        else:
+            graph[(["Header"],)] = [x[i]]
+    for i in x:
+        graph[(x[i],)] = [["Header"]]
+    i = 1
+    while i < max(cluster) - 1:
+        create_edge(nodes, graph, cluster, i)
+        i = i + 1
+    return graph
+
 def print_all() -> None:
     """
     Prints the content of all global structures: nodes, support, cluster, graph, and frequent subgraph edge list.
@@ -147,6 +200,36 @@ def print_all() -> None:
     _print_cluster()
     _print_graph()
     _print_freq_subgraph_edge_list()
+
+def my_dfs(
+    graph: Dict[str, List[str]],
+    start: str,
+    end: str,
+    path: List[str] = None,
+) -> None:
+    """
+    Perform a Depth First Search (DFS) from the start node to the end node in the graph.
+
+    Args:
+        graph: The graph to perform DFS on.
+        start: The start node of the DFS.
+        end: The end node of the DFS.
+        path: The current path from start to current node, initialized as None.
+
+    Returns:
+        None
+    """
+    if path is None:
+        path = []
+    path.append(start)
+
+    if start == end:
+        paths.append(path)
+        return
+
+    for node in graph[start]:
+        if node not in path:
+            my_dfs(graph, node, end, path.copy())
 
 
 
@@ -269,36 +352,6 @@ def _print_freq_subgraph_edge_list() -> None:
     print("\n Edge List of Frequent subgraphs \n")
     for edge_list in freq_subgraph_edge_list:
         print(edge_list)
-
-
-def construct_graph(cluster, nodes):
-    x = cluster[max(cluster.keys())]
-    cluster[max(cluster.keys()) + 1] = "Header"
-    graph = {}
-    for i in x:
-        if (["Header"],) in graph:
-            graph[(["Header"],)].append(x[i])
-        else:
-            graph[(["Header"],)] = [x[i]]
-    for i in x:
-        graph[(x[i],)] = [["Header"]]
-    i = 1
-    while i < max(cluster) - 1:
-        create_edge(nodes, graph, cluster, i)
-        i = i + 1
-    return graph
-
-
-def my_dfs(graph, start, end, path=None):
-    """
-    find different DFS walk from given node to Header node
-    """
-    path = (path or []) + [start]
-    if start == end:
-        paths.append(path)
-    for node in graph[start]:
-        if tuple(node) not in path:
-            my_dfs(graph, tuple(node), end, path)
 
 
 def find_freq_subgraph_given_support(s, cluster, graph):
