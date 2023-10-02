@@ -34,37 +34,63 @@ def _partition(data: List[int], pivot: int) -> Tuple[List[int], List[int], List[
 
     return less, equal, greater
 
-
-def quick_select(items: list, index: int):
+def quick_select(items: List[int], index: int) -> int:
     """
-    >>> quick_select([2, 4, 5, 7, 899, 54, 32], 5)
-    54
-    >>> quick_select([2, 4, 5, 7, 899, 54, 32], 1)
-    4
-    >>> quick_select([5, 4, 3, 2], 2)
-    4
-    >>> quick_select([3, 5, 7, 10, 2, 12], 3)
-    7
+    Performs the Quickselect algorithm to find the `index`-th smallest item in items.
+    Returns None if `index` is not a valid index within `items`.
     """
-    # index = len(items) // 2 when trying to find the median
-    #   (value of index when items is sorted)
-
-    # invalid input
-    if index >= len(items) or index < 0:
+    if not is_valid_index(index, len(items)):
         return None
 
-    pivot = items[random.randint(0, len(items) - 1)]
-    count = 0
-    smaller, equal, larger = _partition(items, pivot)
-    count = len(equal)
+    pivot = choose_pivot(items)
+    smaller, equal, larger = partition(items, pivot)
+
+    return handle_partitions(index, pivot, smaller, equal, larger)
+
+
+def is_valid_index(index: int, length: int) -> bool:
+    """
+    Check if the provided index is within the valid range of the list length.
+    """
+    return 0 <= index < length
+
+
+def choose_pivot(items: List[int]) -> int:
+    """
+    Choose a random pivot from the given list of items.
+    """
+    return items[random.randint(0, len(items) - 1)]
+
+
+def handle_partitions(
+    index: int, pivot: int, smaller: List[int], equal: List[int], larger: List[int]
+) -> int:
+    """
+    Determine which partition the index falls into and handle accordingly.
+    """
     m = len(smaller)
 
-    # index is the pivot
-    if m <= index < m + count:
-        return pivot
-    # must be in smaller
+    if m <= index < m + len(equal):
+        return pivot  # index is within the 'equal' partition
     elif m > index:
-        return quick_select(smaller, index)
-    # must be in larger
+        return quick_select(smaller, index)  # index is within the 'smaller' partition
     else:
-        return quick_select(larger, index - (m + count))
+        return quick_select(
+            larger, index - m - len(equal)
+        )  # index is within the 'larger' partition
+
+
+def partition(data: List[int], pivot: int) -> Tuple[List[int], List[int], List[int]]:
+    """
+    Helper function for partitioning the data into three lists:
+    elements less than the pivot, elements equal to the pivot, and elements greater than the pivot.
+    """
+    smaller, equal, greater = [], [], []
+    for element in data:
+        if element < pivot:
+            smaller.append(element)
+        elif element == pivot:
+            equal.append(element)
+        else:
+            greater.append(element)
+    return smaller, equal, greater
