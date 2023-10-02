@@ -8,6 +8,20 @@ frequent subgraphs and maximum common subgraphs.
 
 URL: https://www.researchgate.net/publication/235255851
 """
+from typing import List
+
+
+from typing import List
+from typing import Dict, List, Union
+
+
+from typing import Dict, List, Tuple, Union
+
+
+from typing import Dict, List
+
+
+from typing import List, Tuple
 # fmt: off
 edge_array = [
     ['ab-e1', 'ac-e3', 'ad-e5', 'bc-e4', 'bd-e2', 'be-e6', 'bh-e12', 'cd-e2', 'ce-e4',
@@ -36,19 +50,6 @@ def get_distinct_edge(edge_array):
     return list(distinct_edge)
 
 
-def get_bitcode(edge_array, distinct_edge):
-    """
-    Return bitcode of distinct_edge
-    """
-    bitcode = ["0"] * len(edge_array)
-    for i, row in enumerate(edge_array):
-        for item in row:
-            if distinct_edge in item[0]:
-                bitcode[i] = "1"
-                break
-    return "".join(bitcode)
-
-
 def get_frequency_table(edge_array):
     """
     Returns Frequency Table
@@ -68,6 +69,31 @@ def get_frequency_table(edge_array):
         for k, v in sorted(frequency_table.items(), key=lambda v: v[1][0], reverse=True)
     ]
     return sorted_frequency_table
+
+
+
+def get_bitcode(edge_array: List[List[str]], distinct_edge: str) -> str:
+    """
+    Returns the bitcode of the distinct_edge in the edge array.
+
+    The bitcode represents the presence of an edge in each row of the edge array.
+    It is a string of 1's and 0's, where '1' represents the presence of distinct_edge
+    in the row and '0' represents the absence.
+
+    Args:
+        edge_array (List[List[str]]): The array of edge lists.
+        distinct_edge (str): The distinct edge for which to compute the bitcode.
+
+    Returns:
+        str: The bitcode represented as a string.
+    """
+    bitcode = ["0"] * len(edge_array)  # Initialize bitcode with '0's
+    for i, row in enumerate(edge_array):
+        for item in row:
+            if distinct_edge in item:
+                bitcode[i] = "1"
+                break
+    return "".join(bitcode)
 
 
 def get_nodes(frequency_table):
@@ -108,49 +134,40 @@ def get_support(cluster):
     """
     return [i * 100 / len(cluster) for i in cluster]
 
-
-def print_all() -> None:
-    print("\nNodes\n")
-    for key, value in nodes.items():
-        print(key, value)
-    print("\nSupport\n")
-    print(support)
-    print("\n Cluster \n")
-    for key, value in sorted(cluster.items(), reverse=True):
-        print(key, value)
-    print("\n Graph\n")
-    for key, value in graph.items():
-        print(key, value)
-    print("\n Edge List of Frequent subgraphs \n")
-    for edge_list in freq_subgraph_edge_list:
-        print(edge_list)
-
-
-def create_edge(nodes, graph, cluster, c1):
+def construct_graph(
+    cluster: Dict[int, Union[str, List[str]]], nodes: Dict[str, List[str]]
+) -> Dict[Union[str, Tuple[str, List[str]]], List[List[str]]]:
     """
-    create edge between the nodes
+    Constructs the graph representing the relationships between the nodes.
+
+    Given a dictionary of clusters and nodes, the function constructs a
+    graph dictionary where each key represents a node and its corresponding
+    value is a list of nodes which it is connected to.
+
+    Additionally, the function initially creates edges between a 'Header' node
+    and all nodes in the maximum cluster, reflecting the end of one cluster and
+    the start of another. Then, using the create_edge function, it adds more
+    edges to the graph for all nodes within same cluster.
+
+    The header node and the connections from the header node to the nodes in the clusters
+    are also implemented as part of this function.
+
+    Args:
+    cluster (dict): Dictionary with keys as cluster numbers and values as identifiers of nodes.
+    nodes (dict): Dictionary with key as a binary string and value as a list of strings.
+
+    Returns:
+    graph (dict): Dictionary representing the graph. The keys are tuple of node identifier(s),
+                  and the values are list of lists of node identifier(s).
+
+    Raises:
+    KeyError: If the cluster dictionary does not have a maximum key or if the node identifiers
+              are not found in the cluster dictionary.
+
+    Notes:
+    The function modifies both the 'cluster' and 'graph' dictionaries in-place by adding
+    new entries ('Header' node and new edges respectively).
     """
-    for i in cluster[c1]:
-        count = 0
-        c2 = c1 + 1
-        while c2 < max(cluster.keys()):
-            for j in cluster[c2]:
-                """
-                creates edge only if the condition satisfies
-                """
-                if int(i, 2) & int(j, 2) == int(i, 2):
-                    if tuple(nodes[i]) in graph:
-                        graph[tuple(nodes[i])].append(nodes[j])
-                    else:
-                        graph[tuple(nodes[i])] = [nodes[j]]
-                    count += 1
-            if count == 0:
-                c2 = c2 + 1
-            else:
-                break
-
-
-def construct_graph(cluster, nodes):
     x = cluster[max(cluster.keys())]
     cluster[max(cluster.keys()) + 1] = "Header"
     graph = {}
@@ -167,17 +184,204 @@ def construct_graph(cluster, nodes):
         i = i + 1
     return graph
 
+def print_all() -> None:
+    """
+    Prints the content of all global structures: nodes, support, cluster, graph, and frequent subgraph edge list.
 
-def my_dfs(graph, start, end, path=None):
+    This is a utility function intended for debugging or monitoring the progress of the algorithm. It does not
+    return any value. The function fetches and prints the state of global variables directly. It should be noted
+    that this function relies on the following global variables:
+
+    - nodes: a dictionary containing all graph nodes.
+    - support: a dictionary containing supporting information for the graph.
+    - cluster: a dictionary containing information about the clusters in the graph.
+    - graph: a dictionary representing the graph itself.
+    - freq_subgraph_edge_list: a list containing frequent subgraph edges.
     """
-    find different DFS walk from given node to Header node
+    _print_nodes()
+    _print_support()
+    _print_cluster()
+    _print_graph()
+    _print_freq_subgraph_edge_list()
+
+def my_dfs(
+    graph: Dict[str, List[str]],
+    start: str,
+    end: str,
+    path: List[str] = None,
+) -> None:
     """
-    path = (path or []) + [start]
+    Perform a Depth First Search (DFS) from the start node to the end node in the graph.
+
+    Args:
+        graph: The graph to perform DFS on.
+        start: The start node of the DFS.
+        end: The end node of the DFS.
+        path: The current path from start to current node, initialized as None.
+
+    Returns:
+        None
+    """
+    if path is None:
+        path = []
+    path.append(start)
+
     if start == end:
         paths.append(path)
+        return
+
     for node in graph[start]:
-        if tuple(node) not in path:
-            my_dfs(graph, tuple(node), end, path)
+        if node not in path:
+            my_dfs(graph, node, end, path.copy())
+
+
+
+def create_edge(
+    nodes: Dict[str, List[str]],
+    graph: Dict[Union[str, Tuple[str]], List[List[str]]],
+    cluster: Dict[int, List[str]],
+    c1: int,
+) -> None:
+    """
+    Create edges between the nodes if certain conditions are met.
+
+    Given a dictionary of nodes, an initially empty graph, a dictionary of clusters,
+    and a cluster number, this function creates edges between nodes in the graph if
+    there is a bitwise similarity between them. The condition for similarity is when
+    bitwise 'And' operation between any two nodes in different clusters results in a
+    value equal to the value of the first node.
+
+    Args:
+    nodes (dict): Dictionary with key as a binary string and value as a list of strings.
+    graph (dict): Empty dictionary construct edges from nodes.
+    cluster (dict): Dictionary with keys as cluster numbers and values as identifiers of nodes.
+    c1 (int): Current cluster number.
+
+    Side Effect:
+    This function does not return anything but it modifies the graph dictionary in-place
+    by adding new edges to it.
+
+    Note:
+    'c1 + 1' and 'max(cluster.keys())' ensure that edges are only created between nodes
+    in subsequent clusters and not within the same cluster.
+    """
+
+    for i in cluster[c1]:
+        count = 0
+        c2 = c1 + 1
+        max_cluster_key = max(cluster.keys())
+        while c2 < max_cluster_key:
+            node_edges = get_node_edges(nodes, cluster, i, c2, count)
+            graph.update(node_edges)
+            if node_edges:
+                break
+            c2 += 1
+
+
+def freq_subgraphs_edge_list(
+    paths: List[List[List[Tuple[str, str]]]]
+) -> List[List[Tuple[str, str]]]:
+    """
+    Generates an Edge list for frequent subgraphs from the supplied paths.
+
+    Args:
+        paths: A list of paths. Each path is a list of edges, and each edge is represented as a tuple of vertex.
+
+    Returns:
+        A list of sublist where each sublist contains tuple pairs representing an edge in graph.
+    """
+    return [create_edge_list(path) for path in paths]
+
+
+def _print_nodes() -> None:
+    print("\nNodes\n")
+    for key, value in nodes.items():
+        print(key, value)
+
+def create_edge_list(edges: List[List[Tuple[str, str]]]) -> List[Tuple[str, str]]:
+    """
+    Creates an edge list from the edge strings.
+
+    Args:
+        edges: A list of lists. Each sub list contains tuple pairs representing an edge.
+
+    Returns:
+        Returns A list of Tuples wher each tuple represents an edge.
+    """
+    return [edge for sublist in edges for edge in sublist]
+
+
+def get_node_edges(
+    nodes: Dict[str, List[str]],
+    cluster: Dict[int, List[str]],
+    current_node: str,
+    c2: int,
+    edge_count: int,
+) -> Dict[Union[str, Tuple[str]], List[List[str]]]:
+    """
+    Get edges of the current node with nodes of the next cluster based on bitwise similarity.
+
+    Args:
+    nodes (dict): Dictionary with key as binary string and value as list of strings.
+    cluster (dict): Dictionary with keys as cluster numbers and values as lists of binary string identifiers.
+    current_node (str): Identifier of current node as a binary string.
+    c2 (int): Identifier of the next cluster.
+    edge_count: Number of edges created so far.
+
+    Returns:
+    (dict): New edges of the current node with nodes of the next cluster.
+    """
+
+    node_edges = {}
+    for next_node in cluster[c2]:
+        if is_bitwise_similar(current_node, next_node):
+            if tuple(nodes[current_node]) in node_edges:
+                node_edges[tuple(nodes[current_node])].append(nodes[next_node])
+            else:
+                node_edges[tuple(nodes[current_node])] = [nodes[next_node]]
+            edge_count += 1
+    return node_edges if edge_count else {}
+
+
+def is_bitwise_similar(node1: str, node2: str) -> bool:
+    """
+    Check if two nodes are bitwise similar.
+
+    Two nodes are bitwise similar if the result of bitwise 'And' operation between
+    their binary string identifiers is equal to the identifier of the first node.
+
+    Args:
+    node1 (str): Identifier of the first node as binary string.
+    node2 (str): Identifier of the second node as binary string.
+
+    Returns:
+    (bool): Bitwise similarity between the nodes.
+    """
+
+    return int(node1, 2) & int(node2, 2) == int(node1, 2)
+
+
+def _print_support() -> None:
+    print("\nSupport\n")
+    print(support)
+
+
+def _print_cluster() -> None:
+    print("\n Cluster \n")
+    for key, value in sorted(cluster.items(), reverse=True):
+        print(key, value)
+
+
+def _print_graph() -> None:
+    print("\n Graph\n")
+    for key, value in graph.items():
+        print(key, value)
+
+
+def _print_freq_subgraph_edge_list() -> None:
+    print("\n Edge List of Frequent subgraphs \n")
+    for edge_list in freq_subgraph_edge_list:
+        print(edge_list)
 
 
 def find_freq_subgraph_given_support(s, cluster, graph):
@@ -187,22 +391,6 @@ def find_freq_subgraph_given_support(s, cluster, graph):
     k = int(s / 100 * (len(cluster) - 1))
     for i in cluster[k]:
         my_dfs(graph, tuple(cluster[k][i]), (["Header"],))
-
-
-def freq_subgraphs_edge_list(paths):
-    """
-    returns Edge list for frequent subgraphs
-    """
-    freq_sub_el = []
-    for edges in paths:
-        el = []
-        for j in range(len(edges) - 1):
-            temp = list(edges[j])
-            for e in temp:
-                edge = (e[0], e[1])
-                el.append(edge)
-        freq_sub_el.append(el)
-    return freq_sub_el
 
 
 def preprocess(edge_array):
