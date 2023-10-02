@@ -13,6 +13,12 @@ class DisjointSetTreeNode(Generic[T]):
         self.rank = 0
 
 
+
+
+
+
+
+
 class DisjointSetTree(Generic[T]):
     # Disjoint Set DataStructure
     def __init__(self) -> None:
@@ -30,16 +36,14 @@ class DisjointSetTree(Generic[T]):
             elem_ref.parent = self.find_set(elem_ref.parent.data)
         return elem_ref.parent
 
-    def link(
-        self, node1: DisjointSetTreeNode[T], node2: DisjointSetTreeNode[T]
-    ) -> None:
-        # helper function for union operation
-        if node1.rank > node2.rank:
-            node2.parent = node1
+    def link(self, x: DisjointSetTreeNode[T], y: DisjointSetTreeNode[T]) -> None:
+        """Link operation for disjoint set tree."""
+        if x.rank > y.rank:
+            y.parent = x
         else:
-            node1.parent = node2
-            if node1.rank == node2.rank:
-                node2.rank += 1
+            x.parent = y
+            if x.rank == y.rank:
+                y.rank += 1
 
     def union(self, data1: T, data2: T) -> None:
         # merge 2 disjoint sets
