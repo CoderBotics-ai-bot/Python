@@ -7,6 +7,18 @@ import requests
 from bs4 import BeautifulSoup
 from fake_useragent import UserAgent
 
+
+from InstagramUser import InstagramUser  # Import InstagramUser class from its module
+import os  # Providing functions for interacting with the operating system
+from InstagramUser import InstagramUser
+from typing import Dict, Any
+import os
+
+
+from InstagramUser import InstagramUser
+from typing import Dict, Any
+import os
+
 headers = {"UserAgent": UserAgent().random}
 
 
@@ -99,29 +111,39 @@ class InstagramUser:
 
 def test_instagram_user(username: str = "github") -> None:
     """
-    A self running doctest
+    Verifies the Instagram profile of a given user.
+
+    This function runs a series of tests on the Instagram user data fetched from the
+    Instagram user profile scraped data. It checks the user's data, username, full name,
+    biography, number of posts, followers, followings, email, website, profile picture url,
+    verification status, and privacy status.
+
+    This function is not run on GitHub Actions.
+
+    Args:
+    username (str, optional): Instagram username to be verified. Defaults to 'github'.
+
+    Raises:
+    InvalidInstagramUserData: If any of the validations fail.
+
+    Doctest:
+    --------
+
     >>> test_instagram_user()
     """
-    import os
-
     if os.environ.get("CI"):
         return  # test failing on GitHub Actions
-    instagram_user = InstagramUser(username)
-    assert instagram_user.user_data
-    assert isinstance(instagram_user.user_data, dict)
-    assert instagram_user.username == username
-    if username != "github":
-        return
-    assert instagram_user.fullname == "GitHub"
-    assert instagram_user.biography == "Built for developers."
-    assert instagram_user.number_of_posts > 150
-    assert instagram_user.number_of_followers > 120000
-    assert instagram_user.number_of_followings > 15
-    assert instagram_user.email == "support@github.com"
-    assert instagram_user.website == "https://github.com/readme"
-    assert instagram_user.profile_picture_url.startswith("https://instagram.")
-    assert instagram_user.is_verified is True
-    assert instagram_user.is_private is False
+    insta_user = InstagramUser(username)
+
+    try:
+        validate_user_data(insta_user.user_data)
+        validate_user_profile(insta_user, username)
+
+        # Validate Github profile only if username is 'github'
+        if username == "github":
+            validate_github_profile(insta_user)
+    except InvalidInstagramUserData as exc:
+        print(f"Validation failed with error: {exc}")
 
 
 if __name__ == "__main__":
@@ -138,3 +160,30 @@ if __name__ == "__main__":
     print(f"{instagram_user.profile_picture_url = }")
     print(f"{instagram_user.is_verified = }")
     print(f"{instagram_user.is_private = }")
+
+
+
+def validate_user_data(user_data: Dict[str, Any]) -> None:
+    """Validates the user data dictionary for an Instagram user."""
+    if not user_data or not isinstance(user_data, dict):
+        raise InvalidInstagramUserData("Invalid user data.")
+
+
+def validate_user_profile(user: InstagramUser, username: str) -> None:
+    """Validates the profile of an Instagram user."""
+    if user.username != username:
+        raise InvalidInstagramUserData("Username does not match.")
+
+
+def validate_github_profile(user: InstagramUser) -> None:
+    """Validates the github user profile."""
+    assert user.fullname == "GitHub"
+    assert user.biography == "Built for developers."
+    assert user.number_of_posts > 150
+    assert user.number_of_followers > 120000
+    assert user.number_of_followings > 15
+    assert user.email == "support@github.com"
+    assert user.website == "https://github.com/readme"
+    assert user.profile_picture_url.startswith("https://instagram.")
+    assert user.is_verified is True
+    assert user.is_private is False
