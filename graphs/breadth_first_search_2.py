@@ -18,6 +18,7 @@ from collections import deque
 from queue import Queue
 from timeit import timeit
 from typing import List
+from typing import Dict, List
 
 G = {
     "A": ["B", "C"],
@@ -55,24 +56,32 @@ def breadth_first_search(graph: dict, start: str) -> List[str]:
 
     return result
 
-
 def breadth_first_search_with_deque(graph: dict, start: str) -> list[str]:
     """
-    Implementation of breadth first search using collection.queue.
+    Implementation of breadth first search using collections.deque.
 
-    >>> ''.join(breadth_first_search_with_deque(G, 'A'))
-    'ABCDEF'
+    Args:
+        graph (dict): A representation of the graph as an adjacency list.
+        start (str): The starting node for the search.
+
+    Returns:
+        list[str]: A list of the nodes in the order they were visited.
     """
     visited = {start}
-    result = [start]
     queue = deque([start])
+    result = []
+
+    def _visit_node() -> None:
+        node = queue.popleft()
+        result.append(node)
+        unvisited_children = (child for child in graph[node] if child not in visited)
+        for child in unvisited_children:
+            visited.add(child)
+            queue.append(child)
+
     while queue:
-        v = queue.popleft()
-        for child in graph[v]:
-            if child not in visited:
-                visited.add(child)
-                result.append(child)
-                queue.append(child)
+        _visit_node()
+
     return result
 
 
