@@ -21,12 +21,23 @@ using a smaller gap, the list is sorted more quickly.
 """
 
 
-def shell_sort(collection: list) -> list:
-    """Implementation of shell sort algorithm in Python
-    :param collection:  Some mutable ordered collection with heterogeneous
-    comparable items inside
-    :return:  the same collection ordered by ascending
+from typing import List
 
+def shell_sort(collection: List[int]) -> List[int]:
+    """
+    Implement the shell sort algorithm in Python and sort a given list in ascending order.
+
+    Shell sort is a generalized version of insertion sort. In shell sort, elements at a specific interval are sorted.
+    The interval between the elements is gradually decreased based on the sequence used.
+    The performance of the shell sort depends on the type of sequence used for a given input array.
+
+    Parameters:
+    collection (List[int]): A mutable ordered collection with heterogeneous comparable items inside
+
+    Returns:
+    List[int]: The original collection ordered in ascending order
+
+    Doctests:
     >>> shell_sort([3, 2, 1])
     [1, 2, 3]
     >>> shell_sort([])
@@ -34,27 +45,12 @@ def shell_sort(collection: list) -> list:
     >>> shell_sort([1])
     [1]
     """
+    shrink = 1.3  # Set the gap value to be decreased by a factor of 1.3 after each iteration.
+    gap = len(collection)  # Choose an initial gap value.
 
-    # Choose an initial gap value
-    gap = len(collection)
-
-    # Set the gap value to be decreased by a factor of 1.3
-    # after each iteration
-    shrink = 1.3
-
-    # Continue sorting until the gap is 1
-    while gap > 1:
-        # Decrease the gap value
-        gap = int(gap / shrink)
-
-        # Sort the elements using insertion sort
-        for i in range(gap, len(collection)):
-            temp = collection[i]
-            j = i
-            while j >= gap and collection[j - gap] > temp:
-                collection[j] = collection[j - gap]
-                j -= gap
-            collection[j] = temp
+    while gap > 1:  # Continue sorting until the gap is 1.
+        gap = int(gap / shrink)  # Decrease the gap value.
+        _insertion_sort_at_gap(collection, gap)
 
     return collection
 
@@ -63,3 +59,22 @@ if __name__ == "__main__":
     import doctest
 
     doctest.testmod()
+
+
+def _insertion_sort_at_gap(collection: List[int], gap: int) -> None:
+    """
+    Helper function to perform insertion sort at a given gap.
+
+    The function modifies the input collection in-place.
+
+    Parameters:
+    collection (List[int]): The collection to sort.
+    gap (int): The gap to use when sorting.
+    """
+    for i in range(gap, len(collection)):
+        temp = collection[i]
+        j = i
+        while j >= gap and collection[j - gap] > temp:
+            collection[j] = collection[j - gap]
+            j -= gap
+        collection[j] = temp
