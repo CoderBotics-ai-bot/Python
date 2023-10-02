@@ -84,6 +84,22 @@ def key(start: TPos, i: int, goal: TPos, g_function: dict[TPos, float]):
     ans = g_function[start] + W1 * heuristics[i](start, goal)
     return ans
 
+def valid(p: TPos) -> bool:
+    """
+    Check if the given position (p) is within the allowed limits.
+
+    The allowed limits for the position's x and y coordinates are [0, n-1],
+    where 'n' is a hyper-parameter defined in the outer scope.
+
+    Args:
+        p (TPos): The position to be checked, represented by a tuple of two integers (x, y).
+
+    Returns:
+        bool: Returns True if the position is valid, otherwise returns False.
+    """
+    x, y = p
+    return all(0 <= coordinate < n for coordinate in (x, y))
+
 
 def do_something(back_pointer: dict[TPos, TPos], goal: TPos, start: TPos) -> None:
     grid = create_initial_grid()
@@ -97,14 +113,6 @@ def do_something(back_pointer: dict[TPos, TPos], goal: TPos, start: TPos) -> Non
 
     print_path_back_trace(back_pointer, goal, start)
     sys.exit()
-
-
-def valid(p: TPos):
-    if p[0] < 0 or p[0] > n - 1:
-        return False
-    if p[1] < 0 or p[1] > n - 1:
-        return False
-    return True
 
 def visualize_grid(
     grid: np.array, back_pointer: Dict[TPos, TPos], goal: TPos, start: TPos
