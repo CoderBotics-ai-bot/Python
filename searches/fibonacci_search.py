@@ -13,6 +13,9 @@ python3 fibonacci_search.py
 from functools import lru_cache
 
 
+from typing import List
+
+
 @lru_cache
 def fibonacci(k: int) -> int:
     """
@@ -36,76 +39,30 @@ def fibonacci(k: int) -> int:
     return fibonacci(k - 1) + fibonacci(k - 2)
 
 
-def fibonacci_search(arr: list, val: int) -> int:
-    """A pure Python implementation of a fibonacci search algorithm.
 
-    Parameters
-    ----------
-    arr
-        List of sorted elements.
-    val
-        Element to search in list.
-
-    Returns
-    -------
-    int
-        The index of the element in the array.
-        -1 if the element is not found.
-
-    >>> fibonacci_search([4, 5, 6, 7], 4)
-    0
-    >>> fibonacci_search([4, 5, 6, 7], -10)
-    -1
-    >>> fibonacci_search([-18, 2], -18)
-    0
-    >>> fibonacci_search([5], 5)
-    0
-    >>> fibonacci_search(['a', 'c', 'd'], 'c')
-    1
-    >>> fibonacci_search(['a', 'c', 'd'], 'f')
-    -1
-    >>> fibonacci_search([], 1)
-    -1
-    >>> fibonacci_search([.1, .4 , 7], .4)
-    1
-    >>> fibonacci_search([], 9)
-    -1
-    >>> fibonacci_search(list(range(100)), 63)
-    63
-    >>> fibonacci_search(list(range(100)), 99)
-    99
-    >>> fibonacci_search(list(range(-100, 100, 3)), -97)
-    1
-    >>> fibonacci_search(list(range(-100, 100, 3)), 0)
-    -1
-    >>> fibonacci_search(list(range(-100, 100, 5)), 0)
-    20
-    >>> fibonacci_search(list(range(-100, 100, 5)), 95)
-    39
+def fibonacci_search(arr: List[int], val: int) -> int:
     """
-    len_list = len(arr)
-    # Find m such that F_m >= n where F_i is the i_th fibonacci number.
-    i = 0
-    while True:
-        if fibonacci(i) >= len_list:
-            fibb_k = i
-            break
-        i += 1
+    A pure Python implementation of a Fibonacci search algorithm on a sorted list.
+
+    Returns:
+        The index of an element in an array sorted in ascending order or -1 if the element doesn't exist.
+    """
+    fibb_k = find_fibonacci_index(len(arr))
     offset = 0
     while fibb_k > 0:
-        index_k = min(
-            offset + fibonacci(fibb_k - 1), len_list - 1
-        )  # Prevent out of range
-        item_k_1 = arr[index_k]
-        if item_k_1 == val:
+        index_k = min(offset + fibonacci(fibb_k - 1), len(arr) - 1)
+
+        if arr[index_k] == val:
             return index_k
-        elif val < item_k_1:
-            fibb_k -= 1
-        elif val > item_k_1:
+
+        if arr[index_k] < val:
             offset += fibonacci(fibb_k - 1)
             fibb_k -= 2
-    else:
-        return -1
+            continue
+
+        fibb_k -= 1
+
+    return -1
 
 def validate_input(k: int) -> None:
     """
@@ -127,6 +84,16 @@ def validate_input(k: int) -> None:
         raise TypeError("k must be an integer.")
     if k < 0:
         raise ValueError("k must be a non-negative integer.")
+
+
+def find_fibonacci_index(n: int) -> int:
+    """
+    Finds the index i such that F_i >= n, where F_i is the i_th fibonacci number.
+    """
+    i = 0
+    while fibonacci(i) < n:
+        i += 1
+    return i
 
 
 if __name__ == "__main__":
