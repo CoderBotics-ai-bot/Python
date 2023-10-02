@@ -3,33 +3,30 @@
 from __future__ import annotations
 
 
+from typing import List, Tuple
+
 def get_valid_pos(position: tuple[int, int], n: int) -> list[tuple[int, int]]:
     """
-    Find all the valid positions a knight can move to from the current position.
+    Given a position on a knight's tour chessboard, compute all the valid movements a knight can make.
 
-    >>> get_valid_pos((1, 3), 4)
-    [(2, 1), (0, 1), (3, 2)]
+    Args:
+        position (tuple): Represents the current position of the knight. Contains integers row and column.
+        n (int): The size of the chessboard (n x n).
+
+    Returns:
+        list: Contains valid positions where the knight can move to from the current position.
     """
-
     y, x = position
-    positions = [
-        (y + 1, x + 2),
-        (y - 1, x + 2),
-        (y + 1, x - 2),
-        (y - 1, x - 2),
-        (y + 2, x + 1),
-        (y + 2, x - 1),
-        (y - 2, x + 1),
-        (y - 2, x - 1),
-    ]
-    permissible_positions = []
+    movements = [(1, 2), (-1, 2), (1, -2), (-1, -2), (2, 1), (2, -1), (-2, 1), (-2, -1)]
 
-    for position in positions:
-        y_test, x_test = position
-        if 0 <= y_test < n and 0 <= x_test < n:
-            permissible_positions.append(position)
+    valid_positions = []
+    for move in movements:
+        move_y, move_x = move
+        new_y, new_x = y + move_y, x + move_x
+        if 0 <= new_y < n and 0 <= new_x < n:
+            valid_positions.append((new_y, new_x))
 
-    return permissible_positions
+    return valid_positions
 
 
 def is_complete(board: list[list[int]]) -> bool:
@@ -45,27 +42,27 @@ def is_complete(board: list[list[int]]) -> bool:
 
     return not any(elem == 0 for row in board for elem in row)
 
-
 def open_knight_tour_helper(
-    board: list[list[int]], pos: tuple[int, int], curr: int
+    board: List[List[int]], pos: Tuple[int, int], curr: int
 ) -> bool:
     """
-    Helper function to solve knight tour problem.
-    """
+    Recursive helper function to solve the open knight's tour problem. This function works by checking
+    if the board traversal is complete, if it's complete it returns True immediately. If not, it continues
+    to check and mark each valid move from the current position to find a solution path. If none found, it
+    backtracks by resetting the current position to zero.
 
+    Args:
+        board (List[List[int]]): A 2D list representing the chessboard, containing numbers indicating the visit order
+        pos (Tuple[int, int]): Current position of the knight
+        curr (int): The current step number of the knight.
+
+    Returns:
+        bool: Returns True if a solution is found, otherwise False.
+    """
     if is_complete(board):
         return True
 
-    for position in get_valid_pos(pos, len(board)):
-        y, x = position
-
-        if board[y][x] == 0:
-            board[y][x] = curr + 1
-            if open_knight_tour_helper(board, position, curr + 1):
-                return True
-            board[y][x] = 0
-
-    return False
+    return try_next_positions(board, pos, curr)
 
 
 def open_knight_tour(n: int) -> list[list[int]]:
@@ -93,6 +90,32 @@ def open_knight_tour(n: int) -> list[list[int]]:
 
     msg = f"Open Kight Tour cannot be performed on a board of size {n}"
     raise ValueError(msg)
+
+
+def try_next_positions(board: List[List[int]], pos: Tuple[int, int], curr: int) -> bool:
+    """
+    Helper function to try and mark all valid positions from the current position. If a solution path
+    is found, returns True, else it backtracks by unmarking the current position and returning False
+
+    Args:
+        board (List[List[int]]): A 2D list representing the chessboard, containing numbers indicating the visit order
+        pos (Tuple[int, int]): Current position of the knight
+        curr (int): The current step number of the knight.
+
+    Returns:
+        bool: Returns True if a solution is found, otherwise False.
+    """
+
+    for position in get_valid_pos(pos, len(board)):
+        y, x = position
+
+        if board[y][x] == 0:
+            board[y][x] = curr + 1
+            if open_knight_tour_helper(board, position, curr + 1):
+                return True
+            board[y][x] = 0
+
+    return False
 
 
 if __name__ == "__main__":
