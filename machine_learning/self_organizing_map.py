@@ -4,21 +4,18 @@ https://en.wikipedia.org/wiki/Self-organizing_map
 import math
 
 
-class SelfOrganizingMap:
-    def get_winner(self, weights: list[list[float]], sample: list[int]) -> int:
-        """
-        Compute the winning vector by Euclidean distance
 
-        >>> SelfOrganizingMap().get_winner([[1, 2, 3], [4, 5, 6]], [1, 2, 3])
-        1
-        """
-        d0 = 0.0
-        d1 = 0.0
-        for i in range(len(sample)):
-            d0 += math.pow((sample[i] - weights[0][i]), 2)
-            d1 += math.pow((sample[i] - weights[1][i]), 2)
-            return 0 if d0 > d1 else 1
-        return 0
+
+
+
+
+
+class SelfOrganizingMap:
+
+    def get_winner(self, vector) -> int:
+        return min(
+            range(len(self.grid)), key=lambda x: self.distance(vector, self.grid[x])
+        )
 
     def update(
         self, weights: list[list[int | float]], sample: list[int], j: int, alpha: float
@@ -32,6 +29,9 @@ class SelfOrganizingMap:
         for i in range(len(weights)):
             weights[j][i] += alpha * (sample[i] - weights[j][i])
         return weights
+
+    def distance(self, vector1, vector2) -> float:
+        return math.sqrt(sum(pow(v1 - v2, 2) for v1, v2 in zip(vector1, vector2)))
 
 
 # Driver code
