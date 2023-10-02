@@ -25,18 +25,29 @@ def random_graph(
     adjacency_list = generate_edges(vertices_number, probability, directed)
     return adjacency_list
 
-
 def complete_graph(vertices_number: int) -> dict:
     """
-    Generate a complete graph with vertices_number vertices.
-    @input: vertices_number (number of vertices),
-            directed (False if the graph is undirected, True otherwise)
-    @example:
-    >>> complete_graph(3)
-    {0: [1, 2], 1: [0, 2], 2: [0, 1]}
+    Function to generate a complete graph with a specified number of vertices.
+
+    A complete graph is a simple undirected graph in which every pair of distinct vertices is connected by a unique edge.
+
+    Args:
+        vertices_number (int): The number of vertices to be included in the graph.
+
+    Returns:
+        dict: A dictionary representing the vertices and edges of the complete graph.
+              Each key in the dictionary represents a vertex.
+              The corresponding value is a list of all other vertices (i.e., the ones with which the key vertex is connected).
+              For example, for a graph with 3 vertices, the output will be {0: [1, 2], 1: [0, 2], 2: [0, 1]}.
+
+    Example:
+        >>> complete_graph(3)
+        {0: [1, 2], 1: [0, 2], 2: [0, 1]}
     """
+    vertices = list(range(vertices_number))
     return {
-        i: [j for j in range(vertices_number) if i != j] for i in range(vertices_number)
+        vertex: [other_vertex for other_vertex in vertices if other_vertex != vertex]
+        for vertex in vertices
     }
 
 
