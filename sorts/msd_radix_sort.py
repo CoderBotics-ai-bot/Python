@@ -5,22 +5,42 @@ them.
 https://en.wikipedia.org/wiki/Radix_sort
 """
 from __future__ import annotations
+from typing import List
 
 
-def msd_radix_sort(list_of_ints: list[int]) -> list[int]:
+
+def msd_radix_sort(list_of_ints: List[int]) -> List[int]:
     """
-    Implementation of the MSD radix sort algorithm. Only works
-    with positive integers
-    :param list_of_ints: A list of integers
-    :return: Returns the sorted list
+    Implements the Most Significant Digit (MSD) radix sort algorithm and sorts a list of positive integers.
+
+    The MSD radix sort algorithm works by sorting the numbers according to the leading digits
+    (most significant digits) first, then proceeding towards the least significant digit.
+
+    This function only works with positive integers and if there exist any negative integers in
+    the list, a ValueError Exception is raised.
+
+    Args:
+    list_of_ints (List[int]): A list of positive integers that will be sorted.
+
+    Returns:
+    List[int]: A sorted list of integers.
+
+    Raises:
+    ValueError: If any number in the input list is negative.
+
+    Examples:
     >>> msd_radix_sort([40, 12, 1, 100, 4])
     [1, 4, 12, 40, 100]
+
     >>> msd_radix_sort([])
     []
+
     >>> msd_radix_sort([123, 345, 123, 80])
     [80, 123, 123, 345]
+
     >>> msd_radix_sort([1209, 834598, 1, 540402, 45])
     [1, 45, 1209, 540402, 834598]
+
     >>> msd_radix_sort([-1, 34, 45])
     Traceback (most recent call last):
         ...
@@ -28,11 +48,9 @@ def msd_radix_sort(list_of_ints: list[int]) -> list[int]:
     """
     if not list_of_ints:
         return []
-
     if min(list_of_ints) < 0:
         raise ValueError("All numbers must be positive")
-
-    most_bits = max(len(bin(x)[2:]) for x in list_of_ints)
+    most_bits = 0 if not list_of_ints else max(len(bin(x)[2:]) for x in list_of_ints)
     return _msd_radix_sort(list_of_ints, most_bits)
 
 
