@@ -8,6 +8,18 @@ import sys
 # For storing the vertex set to retrieve node with the lowest distance
 
 
+
+# For storing the vertex set to retrieve node with the lowest distance
+
+
+
+# For storing the vertex set to retrieve node with the lowest distance
+
+
+
+# For storing the vertex set to retrieve node with the lowest distance
+
+
 class PriorityQueue:
     # Based on Min Heap
     def __init__(self):
@@ -18,17 +30,16 @@ class PriorityQueue:
     def is_empty(self):
         return self.cur_size == 0
 
-    def min_heapify(self, idx):
-        lc = self.left(idx)
-        rc = self.right(idx)
-        if lc < self.cur_size and self.array(lc)[0] < self.array(idx)[0]:
-            smallest = lc
-        else:
-            smallest = idx
-        if rc < self.cur_size and self.array(rc)[0] < self.array(smallest)[0]:
-            smallest = rc
-        if smallest != idx:
-            self.swap(idx, smallest)
+    def min_heapify(self, i: int) -> None:
+        l = self.left(i)
+        r = self.right(i)
+        smallest = i
+        if l < len(self.heap) and self.heap[l] < self.heap[i]:
+            smallest = l
+        if r < len(self.heap) and self.heap[r] < self.heap[smallest]:
+            smallest = r
+        if smallest != i:
+            self.swap(smallest, i)
             self.min_heapify(smallest)
 
     def insert(self, tup):
