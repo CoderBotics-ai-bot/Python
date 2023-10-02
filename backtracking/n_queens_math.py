@@ -76,22 +76,43 @@ for another one or vice versa.
 
 """
 from __future__ import annotations
-
+from typing import List
 
 def depth_first_search(
-    possible_board: list[int],
-    diagonal_right_collisions: list[int],
-    diagonal_left_collisions: list[int],
-    boards: list[list[str]],
+    possible_board: List[int],
+    diagonal_right_collisions: List[int],
+    diagonal_left_collisions: List[int],
+    boards: List[List[str]],
     n: int,
 ) -> None:
     """
-    >>> boards = []
-    >>> depth_first_search([], [], [], boards, 4)
-    >>> for board in boards:
-    ...     print(board)
-    ['. Q . . ', '. . . Q ', 'Q . . . ', '. . Q . ']
-    ['. . Q . ', 'Q . . . ', '. . . Q ', '. Q . . ']
+    Uses depth-first search for all possible placement of queens on a chess board
+    while avoiding any clashes. Each valid arrangement is appended to the provided
+    boards list as a List of strings. Mutates the input list `boards` in place.
+
+    Args:
+        possible_board (List[int]): A list representing a possible board configuration.
+            Indices represent rows, values represent column in which queen is placed.
+        diagonal_right_collisions (List[int]): A list keeping track of diagonals from
+            top right to bottom left that are already blocked by a queen.
+        diagonal_left_collisions (List[int]): A list keeping track of diagonals from
+            top left to bottom right that are already blocked by a queen.
+        boards (List[List[str]]): A list of lists of strings that represent all possible
+            valid board configurations. Each valid board configuration is appended to
+            `boards` in place.
+        n (int): Number of queens to be placed on the n x n chess board.
+
+    Returns:
+        None
+
+    Examples:
+        >>> depth_first_search([], [], [], [], 4)
+        # Mutates the provided boards list to contain all solutions as demonstrated below
+        >>> boards
+        [
+            ['. Q . . ', '. . . Q ', 'Q . . . ', '. . Q . '],
+            ['. . Q . ', 'Q . . . ', '. . . Q ', '. Q . . ']
+        ]
     """
 
     # Get next row in the current board (possible_board) to fill it with a queen
@@ -148,6 +169,32 @@ def n_queens_solution(n: int) -> None:
         print("")
 
     print(len(boards), "solutions were found.")
+
+def is_valid_position(
+    board: List[int],
+    diagonal_right_collisions: List[int],
+    diagonal_left_collisions: List[int],
+    row: int,
+    col: int,
+) -> bool:
+    """
+    Check if a given position in board is a valid position to place a queen.
+
+    Args:
+        board (List[int]): The current board configuration.
+        diagonal_right_collisions (List[int]): The right diagonals already occupied by other queens.
+        diagonal_left_collisions (List[int]): The left diagonals already occupied by other queens.
+        row (int): The current row were we are trying to place a new queen.
+        col (int): The current column were we are trying to place a new queen.
+
+    Returns:
+        bool: True if it is a valid position, False otherwise.
+    """
+    return (
+        col not in board
+        and row - col not in diagonal_right_collisions
+        and row + col not in diagonal_left_collisions
+    )
 
 
 if __name__ == "__main__":
