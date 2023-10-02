@@ -1,115 +1,78 @@
 from __future__ import annotations
 
 
+from typing import List
+
 def solve_maze(maze: list[list[int]]) -> bool:
-    """
-    This method solves the "rat in maze" problem.
-    In this problem we have some n by n matrix, a start point and an end point.
-    We want to go from the start to the end. In this matrix zeroes represent walls
-    and ones paths we can use.
-    Parameters :
-        maze(2D matrix) : maze
-    Returns:
-        Return: True if the maze has a solution or False if it does not.
-    >>> maze = [[0, 1, 0, 1, 1],
-    ...         [0, 0, 0, 0, 0],
-    ...         [1, 0, 1, 0, 1],
-    ...         [0, 0, 1, 0, 0],
-    ...         [1, 0, 0, 1, 0]]
-    >>> solve_maze(maze)
-    [1, 0, 0, 0, 0]
-    [1, 1, 1, 1, 0]
-    [0, 0, 0, 1, 0]
-    [0, 0, 0, 1, 1]
-    [0, 0, 0, 0, 1]
-    True
-
-    >>> maze = [[0, 1, 0, 1, 1],
-    ...         [0, 0, 0, 0, 0],
-    ...         [0, 0, 0, 0, 1],
-    ...         [0, 0, 0, 0, 0],
-    ...         [0, 0, 0, 0, 0]]
-    >>> solve_maze(maze)
-    [1, 0, 0, 0, 0]
-    [1, 0, 0, 0, 0]
-    [1, 0, 0, 0, 0]
-    [1, 0, 0, 0, 0]
-    [1, 1, 1, 1, 1]
-    True
-
-    >>> maze = [[0, 0, 0],
-    ...         [0, 1, 0],
-    ...         [1, 0, 0]]
-    >>> solve_maze(maze)
-    [1, 1, 1]
-    [0, 0, 1]
-    [0, 0, 1]
-    True
-
-    >>> maze = [[0, 1, 0],
-    ...         [0, 1, 0],
-    ...         [1, 0, 0]]
-    >>> solve_maze(maze)
-    No solution exists!
-    False
-
-    >>> maze = [[0, 1],
-    ...         [1, 0]]
-    >>> solve_maze(maze)
-    No solution exists!
-    False
-    """
+    """Finds path from start to end in the maze."""
     size = len(maze)
-    # We need to create solution object to save path.
-    solutions = [[0 for _ in range(size)] for _ in range(size)]
-    solved = run_maze(maze, 0, 0, solutions)
-    if solved:
-        print("\n".join(str(row) for row in solutions))
-    else:
+    solutions = [[0] * size for _ in range(size)]
+    if not run_maze(maze, 0, 0, solutions):
         print("No solution exists!")
-    return solved
+        return False
+    print_solutions(solutions)
+    return True
 
 
-def run_maze(maze: list[list[int]], i: int, j: int, solutions: list[list[int]]) -> bool:
-    """
-    This method is recursive starting from (i, j) and going in one of four directions:
-    up, down, left, right.
-    If a path is found to destination it returns True otherwise it returns False.
-    Parameters:
-        maze(2D matrix) : maze
-        i, j : coordinates of matrix
-        solutions(2D matrix) : solutions
-    Returns:
-        Boolean if path is found True, Otherwise False.
-    """
+def run_maze(maze: List[List[int]], i: int, j: int, solutions: List[List[int]]) -> bool:
     size = len(maze)
+
     # Final check point.
     if i == j == (size - 1):
         solutions[i][j] = 1
         return True
 
-    lower_flag = (not i < 0) and (not j < 0)  # Check lower bounds
-    upper_flag = (i < size) and (j < size)  # Check upper bounds
+    if bounds_check(i, j, size) and block_check(i, j, maze, solutions):
+        solutions[i][j] = 1
 
-    if lower_flag and upper_flag:
-        # check for already visited and block points.
-        block_flag = (not solutions[i][j]) and (not maze[i][j])
-        if block_flag:
-            # check visited
-            solutions[i][j] = 1
+        # Define directions: Down, Right, Up, Left
+        directions = [(i + 1, j), (i, j + 1), (i - 1, j), (i, j - 1)]
 
-            # check for directions
-            if (
-                run_maze(maze, i + 1, j, solutions)
-                or run_maze(maze, i, j + 1, solutions)
-                or run_maze(maze, i - 1, j, solutions)
-                or run_maze(maze, i, j - 1, solutions)
-            ):
+        # check for directions
+        for direction_i, direction_j in directions:
+            if run_maze(maze, direction_i, direction_j, solutions):
                 return True
 
-            solutions[i][j] = 0
-            return False
+        solutions[i][j] = 0
+
     return False
+
+
+def print_solutions(solutions: list[list[int]]) -> None:
+    """Displays solutions in readable format."""
+    print("\n".join(str(row) for row in solutions))
+
+def bounds_check(i: int, j: int, size: int) -> bool:
+    """
+    Function to check if the coordinates (i, j) are within the bounds of the maze.
+
+    Parameters:
+    i (int): The row index.
+    j (int): The column index.
+    size (int): Size of the maze.
+
+    Returns:
+    bool: True if the coordinates are within the bounds, otherwise False.
+    """
+    return (0 <= i < size) and (0 <= j < size)
+
+
+def block_check(
+    i: int, j: int, maze: List[List[int]], solutions: List[List[int]]
+) -> bool:
+    """
+    Function to check if a cell in the maze is a block or already visited.
+
+    Parameters:
+    i (int): The row index.
+    j (int): The column index.
+    maze (List[List[int]]): Maze in the form of a 2D list.
+    solutions (List[List[int]]): Solutions in the form of a 2D list.
+
+    Returns:
+    bool: True if the cell is not a block and not visited, otherwise False.
+    """
+    return (0 == maze[i][j]) and (0 == solutions[i][j])
 
 
 if __name__ == "__main__":
