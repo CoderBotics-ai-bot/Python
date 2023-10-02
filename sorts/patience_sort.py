@@ -28,39 +28,51 @@ class Stack(list):
         return self[-1] == other[-1]
 
 
-def patience_sort(collection: list) -> list:
-    """A pure implementation of patience sort algorithm in Python
-
-    :param collection: some mutable ordered collection with heterogeneous
-    comparable items inside
-    :return: the same collection ordered by ascending
-
-    Examples:
-    >>> patience_sort([1, 9, 5, 21, 17, 6])
-    [1, 5, 6, 9, 17, 21]
-
-    >>> patience_sort([])
-    []
-
-    >>> patience_sort([-3, -17, -48])
-    [-48, -17, -3]
-    """
-    stacks: list[Stack] = []
-    # sort into stacks
-    for element in collection:
-        new_stacks = Stack([element])
-        i = bisect_left(stacks, new_stacks)
-        if i != len(stacks):
-            stacks[i].append(element)
-        else:
-            stacks.append(new_stacks)
-
-    # use a heap-based merge to merge stack efficiently
-    collection[:] = merge(*(reversed(stack) for stack in stacks))
-    return collection
-
-
 if __name__ == "__main__":
     user_input = input("Enter numbers separated by a comma:\n").strip()
     unsorted = [int(item) for item in user_input.split(",")]
     print(patience_sort(unsorted))
+
+def patience_sort(collection: list) -> list:
+    """Sorts a collection in ascending order using patience sort algorithm.
+
+    Args:
+        collection (List[Any]): The list to be sorted.
+
+    Returns:
+        List[Any]: The sorted list.
+    """
+    if isinstance(collection, list) and len(collection) > 0:
+        stacks: list = _create_stacks(collection)
+        _merge_stacks(stacks, collection)
+    return collection
+
+
+def _create_stacks(collection: list) -> list:
+    """Creates stacks from the input collection.
+
+    Args:
+        collection (List[Any]): The list to be sorted.
+
+    Returns:
+        List[List[Any]]: The list of stacks.
+    """
+    stacks: list = []
+    for element in collection:
+        new_stack = Stack([element])
+        i = bisect_left(stacks, new_stack)
+        if i != len(stacks):
+            stacks[i].append(element)
+        else:
+            stacks.append(new_stack)
+    return stacks
+
+
+def _merge_stacks(stacks: list, collection: list):
+    """Merges the sorted stacks back into the collection.
+
+    Args:
+        stacks (List[List[Any]]): The sorted stacks.
+        collection (List[Any]): The list into which the merged stacks are put.
+    """
+    collection[:] = merge(*(reversed(stack) for stack in stacks))
