@@ -14,30 +14,29 @@ solution = []
 
 def is_safe(board: list[list[int]], row: int, column: int) -> bool:
     """
-    This function returns a boolean value True if it is safe to place a queen there
-    considering the current state of the board.
+    Check if it's safe to place a queen at given position on the board.
 
-    Parameters :
-    board(2D matrix) : board
-    row ,column : coordinates of the cell on a board
+    Parameters
+    ----------
+    board : list[list[int]]
+        A nested list representing the current state of the chess board.
+        '1' indicates there's a queen at that cell and '0' indicates the cell is empty.
+    row : int
+        The row index of the board where the safety for placing a queen is being checked.
+    column : int
+        The column index of the board where the safety for placing a queen is being checked.
 
-    Returns :
-    Boolean Value
-
+    Returns
+    -------
+    bool
+        `True` if it's safe to place a queen at the (row, column),
+        `False` otherwise.
     """
-    for i in range(len(board)):
-        if board[row][i] == 1:
-            return False
-    for i in range(len(board)):
-        if board[i][column] == 1:
-            return False
-    for i, j in zip(range(row, -1, -1), range(column, -1, -1)):
-        if board[i][j] == 1:
-            return False
-    for i, j in zip(range(row, -1, -1), range(column, len(board))):
-        if board[i][j] == 1:
-            return False
-    return True
+    return not (
+        is_in_row(board, row)
+        or is_in_column(board, column)
+        or is_in_diagonal(board, row, column)
+    )
 
 
 def solve(board: list[list[int]], row: int) -> bool:
@@ -68,6 +67,24 @@ def solve(board: list[list[int]], row: int) -> bool:
             solve(board, row + 1)
             board[row][i] = 0
     return False
+
+def is_in_row(board: list[list[int]], row: int) -> bool:
+    """Check if a queen exists in the given row of the board."""
+    return 1 in board[row]
+
+
+def is_in_column(board: list[list[int]], column: int) -> bool:
+    """Check if a queen exists in the given column of the board."""
+    return 1 in [row[column] for row in board]
+
+
+def is_in_diagonal(board: list[list[int]], row: int, column: int) -> bool:
+    """Check if a queen exists in any of the diagonals for the given position."""
+    return any(
+        board[i][j] == 1 for i, j in zip(range(row, -1, -1), range(column, -1, -1))
+    ) or any(
+        board[i][j] == 1 for i, j in zip(range(row, -1, -1), range(column, len(board)))
+    )
 
 
 def printboard(board: list[list[int]]) -> None:
