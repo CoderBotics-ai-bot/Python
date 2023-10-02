@@ -1,4 +1,5 @@
 from __future__ import annotations
+from typing import List
 
 
 def dfs(u):
@@ -21,18 +22,26 @@ def dfs2(u):
         dfs2(v)
 
 
-def kosaraju():
-    global graph, reversed_graph, scc, component, visit, stack
-    for i in range(n):
-        dfs(i)
-    visit = [False] * n
-    for i in stack[::-1]:
-        if visit[i]:
-            continue
-        component = []
-        dfs2(i)
-        scc.append(component)
-    return scc
+def kosaraju() -> List[List[int]]:
+    """
+    Implements Kosaraju's algorithm to find strongly connected components in the given graph.
+
+    Global variables:
+    - graph: Adjacency list representation of the graph
+    - reversed_graph: Reversed graph of the original graph
+    - scc: List to store all strongly connected components
+    - component: List to store the current strongly connected component
+    - visit: Boolean list to keep track of visited nodes
+    - stack: Stack to store visited nodes in DFS
+    - n: Number of nodes in the graph
+
+    Returns:
+        List of strongly connected components. Each component is represented as a list of nodes.
+    """
+    global graph, reversed_graph, n
+    initiate_global_variables(n)
+
+    return perform_kosaraju_algorithm(n)
 
 
 if __name__ == "__main__":
@@ -52,3 +61,44 @@ if __name__ == "__main__":
     scc: list[int] = []
     component: list[int] = []
     print(kosaraju())
+
+def initiate_global_variables(n: int) -> None:
+    """
+    Initialize the given global variables before implementing the Kosaraju's
+    algorithm.
+
+    Args:
+        n: Number of nodes in the graph
+    """
+    global component, visit, stack, scc
+
+    visit = [False] * n
+    stack = []
+    scc = []
+    component = []
+
+
+def perform_kosaraju_algorithm(n: int) -> List[List[int]]:
+    """
+    Perform the Kosaraju's algorithm and return the result.
+
+    Args:
+        n: Number of nodes in the graph
+
+    Returns:
+        List of strongly connected components. Each component is represented
+        as a list of nodes.
+    """
+    for i in range(n):
+        if not visit[i]:
+            dfs(i)
+
+    visit = [False] * n
+
+    for node in reversed(stack):
+        if not visit[node]:
+            component = []
+            dfs2(node)
+            scc.append(component)
+
+    return scc
