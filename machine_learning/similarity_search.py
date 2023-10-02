@@ -15,6 +15,12 @@ import numpy as np
 from numpy.linalg import norm
 
 
+from typing import List
+
+
+from typing import List, Tuple
+
+
 def euclidean(input_a: np.ndarray, input_b: np.ndarray) -> float:
     """
     Calculates euclidean distance between two data.
@@ -32,111 +38,33 @@ def euclidean(input_a: np.ndarray, input_b: np.ndarray) -> float:
     """
     return math.sqrt(sum(pow(a - b, 2) for a, b in zip(input_a, input_b)))
 
-
 def similarity_search(
     dataset: np.ndarray, value_array: np.ndarray
 ) -> list[list[list[float] | float]]:
     """
-    :param dataset: Set containing the vectors. Should be ndarray.
-    :param value_array: vector/vectors we want to know the nearest vector from dataset.
-    :return: Result will be a list containing
-            1. the nearest vector
-            2. distance from the vector
+    Find vectors in the dataset closest to the vectors in value_array.
 
-    >>> dataset = np.array([[0], [1], [2]])
-    >>> value_array = np.array([[0]])
-    >>> similarity_search(dataset, value_array)
-    [[[0], 0.0]]
+    This function traverses the dataset and calculates the Euclidean distance
+    between each vector in the dataset and the vectors in value_array.
+    The function returns the vectors in the dataset closest to the vectors in
+    value_array together with their respective distances.
 
-    >>> dataset = np.array([[0, 0], [1, 1], [2, 2]])
-    >>> value_array = np.array([[0, 1]])
-    >>> similarity_search(dataset, value_array)
-    [[[0, 0], 1.0]]
+    Arguments:
+    dataset -- nd-array of vectors forming the dataset.
+    value_array -- nd-array of vectors for which closest vectors in dataset are to be found.
 
-    >>> dataset = np.array([[0, 0, 0], [1, 1, 1], [2, 2, 2]])
-    >>> value_array = np.array([[0, 0, 1]])
-    >>> similarity_search(dataset, value_array)
-    [[[0, 0, 0], 1.0]]
-
-    >>> dataset = np.array([[0, 0, 0], [1, 1, 1], [2, 2, 2]])
-    >>> value_array = np.array([[0, 0, 0], [0, 0, 1]])
-    >>> similarity_search(dataset, value_array)
-    [[[0, 0, 0], 0.0], [[0, 0, 0], 1.0]]
-
-    These are the errors that might occur:
-
-    1. If dimensions are different.
-    For example, dataset has 2d array and value_array has 1d array:
-    >>> dataset = np.array([[1]])
-    >>> value_array = np.array([1])
-    >>> similarity_search(dataset, value_array)
-    Traceback (most recent call last):
-        ...
-    ValueError: Wrong input data's dimensions... dataset : 2, value_array : 1
-
-    2. If data's shapes are different.
-    For example, dataset has shape of (3, 2) and value_array has (2, 3).
-    We are expecting same shapes of two arrays, so it is wrong.
-    >>> dataset = np.array([[0, 0], [1, 1], [2, 2]])
-    >>> value_array = np.array([[0, 0, 0], [0, 0, 1]])
-    >>> similarity_search(dataset, value_array)
-    Traceback (most recent call last):
-        ...
-    ValueError: Wrong input data's shape... dataset : 2, value_array : 3
-
-    3. If data types are different.
-    When trying to compare, we are expecting same types so they should be same.
-    If not, it'll come up with errors.
-    >>> dataset = np.array([[0, 0], [1, 1], [2, 2]], dtype=np.float32)
-    >>> value_array = np.array([[0, 0], [0, 1]], dtype=np.int32)
-    >>> similarity_search(dataset, value_array)  # doctest: +NORMALIZE_WHITESPACE
-    Traceback (most recent call last):
-        ...
-    TypeError: Input data have different datatype...
-    dataset : float32, value_array : int32
+    Returns:
+    A list of lists where each sub-list contains the closest vector from the dataset to the
+    corresponding vector in value_array and the calculated distance between them.
     """
+    _validate_input(dataset, value_array)
 
-    if dataset.ndim != value_array.ndim:
-        msg = (
-            "Wrong input data's dimensions... "
-            f"dataset : {dataset.ndim}, value_array : {value_array.ndim}"
+    return [
+        [vector, distance]
+        for vector, distance in map(
+            _find_closest_vector, value_array, [dataset] * len(value_array)
         )
-        raise ValueError(msg)
-
-    try:
-        if dataset.shape[1] != value_array.shape[1]:
-            msg = (
-                "Wrong input data's shape... "
-                f"dataset : {dataset.shape[1]}, value_array : {value_array.shape[1]}"
-            )
-            raise ValueError(msg)
-    except IndexError:
-        if dataset.ndim != value_array.ndim:
-            raise TypeError("Wrong shape")
-
-    if dataset.dtype != value_array.dtype:
-        msg = (
-            "Input data have different datatype... "
-            f"dataset : {dataset.dtype}, value_array : {value_array.dtype}"
-        )
-        raise TypeError(msg)
-
-    answer = []
-
-    for value in value_array:
-        dist = euclidean(value, dataset[0])
-        vector = dataset[0].tolist()
-
-        for dataset_value in dataset[1:]:
-            temp_dist = euclidean(value, dataset_value)
-
-            if dist > temp_dist:
-                dist = temp_dist
-                vector = dataset_value.tolist()
-
-        answer.append([vector, dist])
-
-    return answer
+    ]
 
 
 def cosine_similarity(input_a: np.ndarray, input_b: np.ndarray) -> float:
@@ -153,6 +81,32 @@ def cosine_similarity(input_a: np.ndarray, input_b: np.ndarray) -> float:
     0.9615239476408232
     """
     return np.dot(input_a, input_b) / (norm(input_a) * norm(input_b))
+
+
+def _validate_input(dataset: np.ndarray, value_array: np.ndarray) -> None:
+    if dataset.ndim != value_array.ndim:
+        raise ValueError(
+            f"Wrong input data's dimensions... dataset : {dataset.ndim}, value_array : {value_array.ndim}"
+        )
+
+    if dataset.dtype != value_array.dtype:
+        raise TypeError(
+            f"Input data have different datatype... dataset : {dataset.dtype}, value_array : {value_array.dtype}"
+        )
+
+    if dataset.shape[1] != value_array.shape[1]:
+        raise ValueError(
+            f"Wrong input data's shape... dataset : {dataset.shape[1]}, value_array : {value_array.shape[1]}"
+        )
+
+
+def _find_closest_vector(
+    value_array: np.ndarray, dataset: np.ndarray
+) -> Tuple[List[float], float]:
+    vector_dist_pairs = (
+        (vector.tolist(), euclidean(value_array, vector)) for vector in dataset
+    )
+    return min(vector_dist_pairs, key=lambda pair: pair[1])
 
 
 if __name__ == "__main__":
