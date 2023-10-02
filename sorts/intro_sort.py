@@ -8,19 +8,24 @@ import math
 
 def insertion_sort(array: list, start: int = 0, end: int = 0) -> list:
     """
-    >>> array = [4, 2, 6, 8, 1, 7, 8, 22, 14, 56, 27, 79, 23, 45, 14, 12]
+    A function that sorts a list of elements using the Insertion Sort algorithm.
 
-    >>> insertion_sort(array, 0, len(array))
-    [1, 2, 4, 6, 7, 8, 8, 12, 14, 14, 22, 23, 27, 45, 56, 79]
+    Args:
+        array (list): The list of elements to be sorted.
+        start (int, optional): The starting index from where to start sorting, default is 0.
+        end (int, optional): The end index till where to sort. If not specified, entire list is sorted.
+
+    Returns:
+        list: A sorted list.
+
+    Examples:
+        >>> array = [4, 2, 6, 8, 1, 7, 8, 22, 14, 56, 27, 79, 23, 45, 14, 12]
+        >>> insertion_sort(array, 0, len(array))
+        [1, 2, 4, 6, 7, 8, 8, 12, 14, 14, 22, 23, 27, 45, 56, 79]
     """
     end = end or len(array)
     for i in range(start, end):
-        temp_index = i
-        temp_index_value = array[i]
-        while temp_index != start and temp_index_value < array[temp_index - 1]:
-            array[temp_index] = array[temp_index - 1]
-            temp_index -= 1
-        array[temp_index] = temp_index_value
+        array[shift_elements(array, start, i)] = array[i]
     return array
 
 
@@ -43,6 +48,23 @@ def heapify(array: list, index: int, heap_size: int) -> None:  # Max Heap
     if largest != index:
         array[index], array[largest] = array[largest], array[index]
         heapify(array, largest, heap_size)
+
+def shift_elements(array: list, start: int, index: int) -> int:
+    """Shifts elements to right in array starting from start and till index
+
+    Args:
+        array (list): array where elements needs to be shifted
+        start (int): start index of array where shifting needs to start
+        index (int): index of array till where elements needs to be shifted
+
+    Returns:
+        int: position where current index element should be located
+    """
+    temp_index_value = array[index]
+    while index != start and temp_index_value < array[index - 1]:
+        array[index] = array[index - 1]
+        index -= 1
+    return index
 
 
 def heap_sort(array: list) -> list:
