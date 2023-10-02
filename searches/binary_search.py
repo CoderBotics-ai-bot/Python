@@ -13,51 +13,13 @@ from __future__ import annotations
 
 import bisect
 
-
 def bisect_left(
     sorted_collection: list[int], item: int, lo: int = 0, hi: int = -1
 ) -> int:
-    """
-    Locates the first element in a sorted array that is larger or equal to a given
-    value.
-
-    It has the same interface as
-    https://docs.python.org/3/library/bisect.html#bisect.bisect_left .
-
-    :param sorted_collection: some ascending sorted collection with comparable items
-    :param item: item to bisect
-    :param lo: lowest index to consider (as in sorted_collection[lo:hi])
-    :param hi: past the highest index to consider (as in sorted_collection[lo:hi])
-    :return: index i such that all values in sorted_collection[lo:i] are < item and all
-        values in sorted_collection[i:hi] are >= item.
-
-    Examples:
-    >>> bisect_left([0, 5, 7, 10, 15], 0)
-    0
-
-    >>> bisect_left([0, 5, 7, 10, 15], 6)
-    2
-
-    >>> bisect_left([0, 5, 7, 10, 15], 20)
-    5
-
-    >>> bisect_left([0, 5, 7, 10, 15], 15, 1, 3)
-    3
-
-    >>> bisect_left([0, 5, 7, 10, 15], 6, 2)
-    2
-    """
+    """Thin wrapper around Python's built-in `bisect.bisect_left` function."""
     if hi < 0:
         hi = len(sorted_collection)
-
-    while lo < hi:
-        mid = lo + (hi - lo) // 2
-        if sorted_collection[mid] < item:
-            lo = mid + 1
-        else:
-            hi = mid
-
-    return lo
+    return bisect.bisect_left(sorted_collection, item, lo, hi)
 
 
 def bisect_right(
