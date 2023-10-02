@@ -1,21 +1,14 @@
+from typing import List
 def quick_sort_3partition(sorting: list, left: int, right: int) -> None:
+    """Sorts 'sorting' list using a three-way (Dutch National Flag) QuickSort method."""
+
     if right <= left:
         return
-    a = i = left
-    b = right
-    pivot = sorting[left]
-    while i <= b:
-        if sorting[i] < pivot:
-            sorting[a], sorting[i] = sorting[i], sorting[a]
-            a += 1
-            i += 1
-        elif sorting[i] > pivot:
-            sorting[b], sorting[i] = sorting[i], sorting[b]
-            b -= 1
-        else:
-            i += 1
+
+    a, z = rearrange_elements(sorting, left, right)
+
     quick_sort_3partition(sorting, left, a - 1)
-    quick_sort_3partition(sorting, b + 1, right)
+    quick_sort_3partition(sorting, z + 1, right)
 
 
 def quick_sort_lomuto_partition(sorting: list, left: int, right: int) -> None:
@@ -49,6 +42,55 @@ def quick_sort_lomuto_partition(sorting: list, left: int, right: int) -> None:
         quick_sort_lomuto_partition(sorting, pivot_index + 1, right)
 
 
+def rearrange_elements(sorting: list, left: int, right: int) -> tuple:
+    """
+    Rearrange elements in 'sorting' list with standart QuickSort
+    method using pivot.
+    """
+
+    a = i = left
+    b = right
+    pivot = sorting[left]
+
+    while i <= b:
+        if sorting[i] < pivot:
+            sorting[a], sorting[i] = sorting[i], sorting[a]
+            a, i = increment_indices(a, i)
+        elif sorting[i] > pivot:
+            sorting[b], sorting[i] = sorting[i], sorting[b]
+            b -= 1
+        else:
+            i += 1
+
+    return a, b
+
+
+def increment_indices(a: int, i: int) -> tuple:
+    """Increment 'a' and 'i' indices by one."""
+    return a + 1, i + 1
+
+
+def three_way_radix_quicksort(nums: List[int]) -> List[int]:
+    """
+    Perform three-way radix quicksort.
+
+    This method divides the list into three parts (less than, equal to, and greater than the pivot),
+    then recursively sorts the "less than" and "greater than" parts.
+
+    Arguments:
+    nums -- list of integers to sort
+
+    Returns:
+    Sorted list of integers.
+    """
+    if len(nums) <= 1:
+        return nums
+
+    less, equal, greater = partition(nums)
+
+    return three_way_radix_quicksort(less) + equal + three_way_radix_quicksort(greater)
+
+
 def lomuto_partition(sorting: list, left: int, right: int) -> int:
     """
     Example:
@@ -64,30 +106,32 @@ def lomuto_partition(sorting: list, left: int, right: int) -> int:
     sorting[right], sorting[store_index] = sorting[store_index], sorting[right]
     return store_index
 
-
-def three_way_radix_quicksort(sorting: list) -> list:
+def partition(nums: List[int]) -> List[List[int]]:
     """
-    Three-way radix quicksort:
-    https://en.wikipedia.org/wiki/Quicksort#Three-way_radix_quicksort
-    First divide the list into three parts.
-    Then recursively sort the "less than" and "greater than" partitions.
+    Partition the list into three parts.
 
-    >>> three_way_radix_quicksort([])
-    []
-    >>> three_way_radix_quicksort([1])
-    [1]
-    >>> three_way_radix_quicksort([-5, -2, 1, -2, 0, 1])
-    [-5, -2, -2, 0, 1, 1]
-    >>> three_way_radix_quicksort([1, 2, 5, 1, 2, 0, 0, 5, 2, -1])
-    [-1, 0, 0, 1, 1, 2, 2, 2, 5, 5]
+    The first part contains elements less than the pivot.
+    The second part contains elements equal to the pivot.
+    The third part contains elements greater than the pivot.
+
+    Arguments:
+    nums -- list of integers to partition
+
+    Returns:
+    A list of three lists: less, equal, and greater parts.
     """
-    if len(sorting) <= 1:
-        return sorting
-    return (
-        three_way_radix_quicksort([i for i in sorting if i < sorting[0]])
-        + [i for i in sorting if i == sorting[0]]
-        + three_way_radix_quicksort([i for i in sorting if i > sorting[0]])
-    )
+    pivot = nums[0]
+    less, equal, greater = [], [], []
+
+    for num in nums:
+        if num < pivot:
+            less.append(num)
+        elif num > pivot:
+            greater.append(num)
+        else:
+            equal.append(num)
+
+    return [less, equal, greater]
 
 
 if __name__ == "__main__":
