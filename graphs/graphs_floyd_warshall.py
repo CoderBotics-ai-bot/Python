@@ -5,54 +5,64 @@
 """
 
 
-def _print_dist(dist, v):
+from typing import List
+
+
+from typing import List, Tuple
+
+def _print_dist(dist: List[List[float]], v: int) -> None:
+    """
+    Print the matrix of shortest path distances.
+
+    This function uses Floyd Warshall algorithm and prints the matrix of shortest paths between all pairs of vertices.
+    The matrix is printed in a human readable format: each row corresponds to a vertex, each column
+    to a destination vertex, and each cell contains the shortest path distance from the corresponding vertex
+    to the destination vertex. If a certain path is not reachable, "INF" is printed in the corresponding cell.
+
+    Arguments:
+    dist -- 2D list representing the distances between each pair of vertices
+    v -- Number of vertices in the graph
+
+    Returns:
+    None
+    """
     print("\nThe shortest path matrix using Floyd Warshall algorithm\n")
-    for i in range(v):
-        for j in range(v):
-            if dist[i][j] != float("inf"):
-                print(int(dist[i][j]), end="\t")
-            else:
-                print("INF", end="\t")
-        print()
 
+    def format_value(value: float) -> str:
+        """Format the value to display"""
+        return str(int(value)) if value != float("inf") else "INF"
 
-def floyd_warshall(graph, v):
+    rows = ["\t".join(format_value(dist[i][j]) for j in range(v)) for i in range(v)]
+    print("\n".join(rows))
+
+def floyd_warshall(graph: List[List[float]], v: int) -> Tuple[List[List[float]], int]:
     """
-    :param graph: 2D array calculated from weight[edge[i, j]]
-    :type graph: List[List[float]]
-    :param v: number of vertices
-    :type v: int
-    :return: shortest distance between all vertex pairs
-    distance[u][v] will contain the shortest distance from vertex u to v.
+    Implement the Floyd Warshall algorithm to find the shortest paths between all pairs of vertices in a given graph.
 
-    1. For all edges from v to n, distance[i][j] = weight(edge(i, j)).
-    3. The algorithm then performs distance[i][j] = min(distance[i][j], distance[i][k] +
-        distance[k][j]) for each possible pair i, j of vertices.
-    4. The above is repeated for each vertex k in the graph.
-    5. Whenever distance[i][j] is given a new minimum value, next vertex[i][j] is
-        updated to the next vertex[i][k].
+    This function takes a graph represented by a 2D matrix and the number of vertices in the graph. It calculates the
+    shortest path between all pairs of vertices and returns a 2D matrix of shortest path distances and the number of vertices.
+
+    The Floyd Warshall algorithm is a dynamic programming algorithm that solves the all-pairs shortest path problem.
+    The algorithm compares all possible paths through the graph between each pair of vertices and keeps the shortest one.
+
+    Arguments:
+    graph -- 2D list representing the graph where each cell [i, j] represents the weight of the edge between vertices i and j.
+    v -- Number of vertices in the graph.
+
+    Returns:
+    dist -- 2D list representing the shortest path distances between each pair of vertices.
+    v -- Number of vertices in the graph.
     """
 
-    dist = [[float("inf") for _ in range(v)] for _ in range(v)]
+    # initialize the distance matrix
+    dist = initialize_dist(graph, v)
 
-    for i in range(v):
-        for j in range(v):
-            dist[i][j] = graph[i][j]
+    # calculate shortest path
+    dist = calculate_shortest_path(dist, v)
 
-            # check vertex k against all other vertices (i, j)
-    for k in range(v):
-        # looping through rows of graph array
-        for i in range(v):
-            # looping through columns of graph array
-            for j in range(v):
-                if (
-                    dist[i][k] != float("inf")
-                    and dist[k][j] != float("inf")
-                    and dist[i][k] + dist[k][j] < dist[i][j]
-                ):
-                    dist[i][j] = dist[i][k] + dist[k][j]
-
+    # print the shortest path
     _print_dist(dist, v)
+
     return dist, v
 
 
@@ -100,3 +110,29 @@ if __name__ == "__main__":
     # 0		INF	INF
     # INF	0	2
     # INF	1	0
+
+
+def initialize_dist(graph: List[List[float]], v: int) -> List[List[float]]:
+    """Initialize the distance matrix with edges' weights or infinity if no edge"""
+    dist = [[float("inf") for _ in range(v)] for _ in range(v)]
+
+    for i in range(v):
+        for j in range(v):
+            dist[i][j] = graph[i][j]
+
+    return dist
+
+
+def calculate_shortest_path(dist: List[List[float]], v: int) -> List[List[float]]:
+    """Calculate the shortest path for all pairs of vertices using Floyd Warshall algorithm"""
+    for k in range(v):
+        for i in range(v):
+            for j in range(v):
+                if (
+                    dist[i][k] != float("inf")
+                    and dist[k][j] != float("inf")
+                    and dist[i][k] + dist[k][j] < dist[i][j]
+                ):
+                    dist[i][j] = dist[i][k] + dist[k][j]
+
+    return dist
