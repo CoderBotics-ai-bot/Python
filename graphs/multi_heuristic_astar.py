@@ -3,6 +3,13 @@ import sys
 
 import numpy as np
 
+
+from typing import Dict, Tuple
+
+
+from sys import exit as sys_exit
+from numpy import chararray as np_chararray
+
 TPos = tuple[int, int]
 
 
@@ -78,45 +85,17 @@ def key(start: TPos, i: int, goal: TPos, g_function: dict[TPos, float]):
     return ans
 
 
-def do_something(back_pointer, goal, start):
-    grid = np.chararray((n, n))
-    for i in range(n):
-        for j in range(n):
-            grid[i][j] = "*"
+def do_something(back_pointer: dict[TPos, TPos], goal: TPos, start: TPos) -> None:
+    grid = create_initial_grid()
+    visualize_grid(grid, back_pointer, goal, start)
 
-    for i in range(n):
-        for j in range(n):
-            if (j, (n - 1) - i) in blocks:
-                grid[i][j] = "#"
-
-    grid[0][(n - 1)] = "-"
-    x = back_pointer[goal]
-    while x != start:
-        (x_c, y_c) = x
-        # print(x)
-        grid[(n - 1) - y_c][x_c] = "-"
-        x = back_pointer[x]
-    grid[(n - 1)][0] = "-"
-
-    for i in range(n):
-        for j in range(n):
-            if (i, j) == (0, n - 1):
-                print(grid[i][j], end=" ")
-                print("<-- End position", end=" ")
-            else:
-                print(grid[i][j], end=" ")
-        print()
     print("^")
     print("Start position")
     print()
     print("# is an obstacle")
     print("- is the path taken by algorithm")
-    print("PATH TAKEN BY THE ALGORITHM IS:-")
-    x = back_pointer[goal]
-    while x != start:
-        print(x, end=" ")
-        x = back_pointer[x]
-    print(x)
+
+    print_path_back_trace(back_pointer, goal, start)
     sys.exit()
 
 
@@ -126,6 +105,58 @@ def valid(p: TPos):
     if p[1] < 0 or p[1] > n - 1:
         return False
     return True
+
+def visualize_grid(
+    grid: np.array, back_pointer: Dict[TPos, TPos], goal: TPos, start: TPos
+) -> None:
+    """Visualizes the grid and prints it to the console."""
+
+    grid[0][(n - 1)] = "-"
+    x = back_pointer[goal]
+
+    while x != start:
+        (x_c, y_c) = x
+        grid[(n - 1) - y_c][x_c] = "-"
+        x = back_pointer[x]
+    grid[(n - 1)][0] = "-"
+
+    for i in range(n):
+        print_end_position(grid, i)
+        print()
+
+
+def print_end_position(grid, i):
+    """Prints the character representation of the position on the grid."""
+    for j in range(n):
+        if (i, j) == (0, n - 1):
+            print(grid[i][j], end=" ")
+            print("<-- End position", end=" ")
+        else:
+            print(grid[i][j], end=" ")
+
+
+def print_path_back_trace(
+    back_pointer: Dict[TPos, TPos], goal: TPos, start: TPos
+) -> None:
+    """Prints the path back trace and prints it the console."""
+    print("PATH TAKEN BY THE ALGORITHM IS:-")
+    x = back_pointer[goal]
+
+    while x != start:
+        print(x, end=" ")
+        x = back_pointer[x]
+
+    print(x)
+
+
+def create_initial_grid() -> np.array:
+    """Create the initial grid and mark the obstacles with '#'. Returns the grid."""
+    grid = np.chararray((n, n))
+
+    for i in range(n):
+        for j in range(n):
+            grid[(n - 1) - i][j] = "#" if (j, (n - 1) - i) in blocks else "*"
+    return grid
 
 
 def expand_state(
