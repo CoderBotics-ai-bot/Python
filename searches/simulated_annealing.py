@@ -4,10 +4,15 @@ import random
 from typing import Any
 
 from .hill_climbing import SearchProblem
+import math
+
+
+from typing import Any, List
+import random, math
 
 
 def simulated_annealing(
-    search_prob,
+    search_prob: SearchProblem,
     find_max: bool = True,
     max_x: float = math.inf,
     min_x: float = -math.inf,
@@ -18,79 +23,51 @@ def simulated_annealing(
     rate_of_decrease: float = 0.01,
     threshold_temp: float = 1,
 ) -> Any:
-    """
-    Implementation of the simulated annealing algorithm. We start with a given state,
-    find all its neighbors. Pick a random neighbor, if that neighbor improves the
-    solution, we move in that direction, if that neighbor does not improve the solution,
-    we generate a random real number between 0 and 1, if the number is within a certain
-    range (calculated using temperature) we move in that direction, else we pick
-    another neighbor randomly and repeat the process.
-
-    Args:
-        search_prob: The search state at the start.
-        find_max: If True, the algorithm should find the minimum else the minimum.
-        max_x, min_x, max_y, min_y: the maximum and minimum bounds of x and y.
-        visualization: If True, a matplotlib graph is displayed.
-        start_temperate: the initial temperate of the system when the program starts.
-        rate_of_decrease: the rate at which the temperate decreases in each iteration.
-        threshold_temp: the threshold temperature below which we end the search
-    Returns a search state having the maximum (or minimum) score.
-    """
-    search_end = False
     current_state = search_prob
     current_temp = start_temperate
-    scores = []
-    iterations = 0
     best_state = None
+    scores = []
 
-    while not search_end:
+    while current_temp >= threshold_temp:
         current_score = current_state.score()
-        if best_state is None or current_score > best_state.score():
-            best_state = current_state
+        best_state = (
+            current_state
+            if best_state is None or current_score > best_state.score()
+            else best_state
+        )
         scores.append(current_score)
-        iterations += 1
-        next_state = None
+
         neighbors = current_state.get_neighbors()
-        while (
-            next_state is None and neighbors
-        ):  # till we do not find a neighbor that we can move to
-            index = random.randint(0, len(neighbors) - 1)  # picking a random neighbor
-            picked_neighbor = neighbors.pop(index)
-            change = picked_neighbor.score() - current_score
+        next_state = None
 
-            if (
-                picked_neighbor.x > max_x
-                or picked_neighbor.x < min_x
-                or picked_neighbor.y > max_y
-                or picked_neighbor.y < min_y
-            ):
-                continue  # neighbor outside our bounds
+        while not next_state and neighbors:
+            picked_neighbor = get_random_neighbor(neighbors)
 
-            if not find_max:
-                change = change * -1  # in case we are finding minimum
-            if change > 0:  # improves the solution
+            if not is_valid_neighbor(picked_neighbor, max_x, min_x, max_y, min_y):
+                continue
+
+            change = (picked_neighbor.score() - current_score) * (
+                -1 if not find_max else 1
+            )
+
+            if change > 0 or neighbor_probability_change(change, current_temp):
                 next_state = picked_neighbor
-            else:
-                probability = (math.e) ** (
-                    change / current_temp
-                )  # probability generation function
-                if random.random() < probability:  # random number within probability
-                    next_state = picked_neighbor
-        current_temp = current_temp - (current_temp * rate_of_decrease)
 
-        if current_temp < threshold_temp or next_state is None:
-            # temperature below threshold, or could not find a suitable neighbor
-            search_end = True
+        current_temp = update_temperature(current_temp, rate_of_decrease)
+
+        if next_state is None:
+            break
         else:
             current_state = next_state
 
     if visualization:
         from matplotlib import pyplot as plt
 
-        plt.plot(range(iterations), scores)
+        plt.plot(range(len(scores)), scores)
         plt.xlabel("Iterations")
         plt.ylabel("Function values")
         plt.show()
+
     return best_state
 
 
@@ -135,3 +112,31 @@ if __name__ == "__main__":
         "The maximum score for f(x, y) = 3*x^2 - 6*y found via hill climbing: "
         f"{local_min.score()}"
     )
+
+def get_random_neighbor(neighbors: List[SearchProblem]) -> SearchProblem:
+    """Pick a random neighbor from the list."""
+    index = random.randint(0, len(neighbors) - 1)
+    return neighbors.pop(index)
+
+
+def is_valid_neighbor(
+    neighbor: SearchProblem, max_x: float, min_x: float, max_y: float, min_y: float
+) -> bool:
+    """Check if potential neighbor is within defined bounds."""
+    return not (
+        neighbor.x > max_x
+        or neighbor.x < min_x
+        or neighbor.y > max_y
+        or neighbor.y < min_y
+    )
+
+
+def update_temperature(current_temp: float, rate_of_decrease: float) -> float:
+    """Decrease the temperature based on rate_of_decrease"""
+    return current_temp - (current_temp * rate_of_decrease)
+
+
+def neighbor_probability_change(change: float, current_temp: float) -> bool:
+    """Probability function deciding if a neighbor causing negative change should be accepted."""
+    probability = math.exp(change / current_temp)
+    return random.random() < probability
