@@ -4,21 +4,34 @@ from collections import deque
 from typing import List, Dict
 
 
+from typing import Dict, List
+
+
 def _input(message):
     return input(message).strip().split(" ")
 
-
 def initialize_unweighted_undirected_graph(
     node_count: int, edge_count: int
-) -> dict[int, list[int]]:
-    graph: dict[int, list[int]] = {}
-    for i in range(node_count):
-        graph[i + 1] = []
+) -> Dict[int, List[int]]:
+    """Initialize an unweighted undirected graph.
 
-    for e in range(edge_count):
-        x, y = (int(i) for i in _input(f"Edge {e + 1}: <node1> <node2> "))
-        graph[x].append(y)
-        graph[y].append(x)
+    This function allows the user to define the nodes and edges of an unweighted undirected graph.
+    The user will be prompted to input the two nodes that constitute an edge.
+    Node numbers should start at 1 and increment by 1.
+
+    Args:
+        node_count (int): The number of nodes in the graph.
+        edge_count (int): The number of edges in the graph.
+
+    Returns:
+        Dict[int, List[int]]: A dictionary representing the graph. The dictionary's keys are the nodes,
+            while the dictionary's values are lists of nodes that the key node is connected to by an edge.
+
+    Raises:
+        ValueError: If node values entered for the edges don't exist in the initialized nodes.
+    """
+    graph = create_graph_nodes(node_count)
+    add_graph_edges(graph, edge_count)
     return graph
 
 
