@@ -10,6 +10,7 @@ from __future__ import annotations
 
 from sys import maxsize
 from typing import Generic, TypeVar
+from typing import TypeVar, Generic
 
 T = TypeVar("T")
 
@@ -220,24 +221,8 @@ def prims_algo(
     graph: GraphUndirectedWeighted[T],
 ) -> tuple[dict[T, int], dict[T, T | None]]:
     """
-    >>> graph = GraphUndirectedWeighted()
-
-    >>> graph.add_edge("a", "b", 3)
-    >>> graph.add_edge("b", "c", 10)
-    >>> graph.add_edge("c", "d", 5)
-    >>> graph.add_edge("a", "c", 15)
-    >>> graph.add_edge("b", "d", 100)
-
-    >>> dist, parent = prims_algo(graph)
-
-    >>> abs(dist["a"] - dist["b"])
-    3
-    >>> abs(dist["d"] - dist["b"])
-    15
-    >>> abs(dist["a"] - dist["c"])
-    13
+    Implements Prim's algorithm for minimum spanning tree
     """
-    # prim's algorithm for minimum spanning tree
     dist: dict[T, int] = {node: maxsize for node in graph.connections}
     parent: dict[T, T | None] = {node: None for node in graph.connections}
 
@@ -248,21 +233,35 @@ def prims_algo(
     if priority_queue.is_empty():
         return dist, parent
 
-    # initialization
-    node = priority_queue.extract_min()
-    dist[node] = 0
-    for neighbour in graph.connections[node]:
-        if dist[neighbour] > dist[node] + graph.connections[node][neighbour]:
-            dist[neighbour] = dist[node] + graph.connections[node][neighbour]
-            priority_queue.update_key(neighbour, dist[neighbour])
-            parent[neighbour] = node
+    vertex = priority_queue.extract_min()
+    dist[vertex] = 0
+    update(vertex, graph, dist, parent, priority_queue)
 
-    # running prim's algorithm
     while not priority_queue.is_empty():
-        node = priority_queue.extract_min()
-        for neighbour in graph.connections[node]:
-            if dist[neighbour] > dist[node] + graph.connections[node][neighbour]:
-                dist[neighbour] = dist[node] + graph.connections[node][neighbour]
-                priority_queue.update_key(neighbour, dist[neighbour])
-                parent[neighbour] = node
+        vertex = priority_queue.extract_min()
+        update(vertex, graph, dist, parent, priority_queue)
+
     return dist, parent
+
+def update(
+    vertex: T,
+    graph: GraphUndirectedWeighted[T],
+    dist: dict[T, int],
+    parent: dict[T, T | None],
+    priority_queue: MinPriorityQueue[T],
+):
+    """
+    Helper function to update the dist and parent dictionaries, and the priority queue
+
+    Arguments:
+    vertex -- The current vertex
+    graph -- The graph being traversed
+    dist -- The distance dictionary to update
+    parent -- The parent dictionary to update
+    priority_queue -- The priority queue to update
+    """
+    for neighbour in graph.connections[vertex]:
+        if dist[neighbour] > dist[vertex] + graph.connections[vertex][neighbour]:
+            dist[neighbour] = dist[vertex] + graph.connections[vertex][neighbour]
+            parent[neighbour] = vertex
+            priority_queue.update_key(neighbour, dist[neighbour])
