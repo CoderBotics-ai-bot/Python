@@ -4,6 +4,10 @@ if the size of the list is under 16, use insertion sort
 https://en.wikipedia.org/wiki/Introsort
 """
 import math
+from typing import List
+
+
+from typing import List
 
 
 def insertion_sort(array: list, start: int = 0, end: int = 0) -> list:
@@ -131,19 +135,42 @@ def median_of_3(
         return array[last_index]
 
 
-def partition(array: list, low: int, high: int, pivot: int) -> int:
-    """
-    >>> array = [4, 2, 6, 8, 1, 7, 8, 22, 14, 56, 27, 79, 23, 45, 14, 12]
 
+def partition(array: List[int], low: int, high: int, pivot: int) -> int:
+    """
+    Efficiently partition an array into two halves around a pivot point.
+
+    This function uses the Hoare partition scheme. It reorders the elements in
+    the array so that all elements less than the pivot come before all elements
+    larger than the pivot. The pivot does not necessarily occupy its final sorted
+    position after this operation.
+
+    Args:
+        array (List[int]): the list of integers to be partitioned.
+        low (int): the starting index from where to partition.
+        high (int): the ending index till where to partition.
+        pivot (int): the pivot element around which the array will be partitioned.
+
+    Returns:
+        int: the index where the pivot is placed after partitioning. This can be
+        used as the starting point of the next partitioning operation.
+
+    Raises:
+        ValueError: If 'low', 'high' or 'pivot' are not valid index values in the array.
+
+    Side Effects:
+        Modifies the input array in place, altering the order of elements.
+
+    >>> array = [4, 2, 6, 8, 1, 7, 8, 22, 14, 56, 27, 79, 23, 45, 14, 12]
     >>> partition(array, 0, len(array), 12)
     8
     """
     i = low
-    j = high
+    j = high - 1
+
     while True:
         while array[i] < pivot:
             i += 1
-        j -= 1
         while pivot < array[j]:
             j -= 1
         if i >= j:
