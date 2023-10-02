@@ -32,56 +32,30 @@ def valid_coloring(
         for i, neighbour in enumerate(neighbours)
     )
 
-
 def util_color(
     graph: list[list[int]], max_colors: int, colored_vertices: list[int], index: int
 ) -> bool:
     """
-    Pseudo-Code
-
-    Base Case:
-    1. Check if coloring is complete
-        1.1 If complete return True (meaning that we successfully colored the graph)
-
-    Recursive Step:
-    2. Iterates over each color:
-        Check if the current coloring is valid:
-            2.1. Color given vertex
-            2.2. Do recursive call, check if this coloring leads to a solution
-            2.4. if current coloring leads to a solution return
-            2.5. Uncolor given vertex
-
-    >>> graph = [[0, 1, 0, 0, 0],
-    ...          [1, 0, 1, 0, 1],
-    ...          [0, 1, 0, 1, 0],
-    ...          [0, 1, 1, 0, 0],
-    ...          [0, 1, 0, 0, 0]]
-    >>> max_colors = 3
-    >>> colored_vertices = [0, 1, 0, 0, 0]
-    >>> index = 3
-
-    >>> util_color(graph, max_colors, colored_vertices, index)
-    True
-
-    >>> max_colors = 2
-    >>> util_color(graph, max_colors, colored_vertices, index)
-    False
+    Try to color the graph using a recursive, depth-first approach.
+    Args:
+        graph (list[list[int]]): Adjacency matrix of the graph to color.
+        max_colors (int): Maximum number of different colors that can be used.
+        colored_vertices (list[int]):
+            List that will hold the color for each vertex. -1 indicates that vertex is not yet colored.
+        index (int): The index of the current vertex to try and color.
+    Returns:
+        bool: True if a valid coloring of the graph was found. False otherwise.
     """
-
-    # Base Case
     if index == len(graph):
         return True
 
-    # Recursive Step
     for i in range(max_colors):
         if valid_coloring(graph[index], colored_vertices, i):
-            # Color current vertex
             colored_vertices[index] = i
-            # Validate coloring
             if util_color(graph, max_colors, colored_vertices, index + 1):
                 return True
-            # Backtrack
             colored_vertices[index] = -1
+
     return False
 
 
