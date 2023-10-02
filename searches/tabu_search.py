@@ -29,6 +29,12 @@ import copy
 
 
 from typing import List
+from typing import Tuple, List, Dict
+
+
+from typing import Tuple, List, Dict
+
+MAX_DISTANCE = 10000
 
 def generate_neighbours(path: str) -> dict:
     """
@@ -49,59 +55,6 @@ def generate_neighbours(path: str) -> dict:
             add_neighbor(neighbors_dict, neighbor, [node, cost])
 
     return neighbors_dict
-
-
-def generate_first_solution(path, dict_of_neighbours):
-    """
-    Pure implementation of generating the first solution for the Tabu search to start,
-    with the redundant resolution strategy. That means that we start from the starting
-    node (e.g. node 'a'), then we go to the city nearest (lowest distance) to this node
-    (let's assume is node 'c'), then we go to the nearest city of the node 'c', etc.
-    till we have visited all cities and return to the starting node.
-
-    :param path: The path to the .txt file that includes the graph (e.g.tabudata2.txt)
-    :param dict_of_neighbours: Dictionary with key each node and value a list of lists
-        with the neighbors of the node and the cost (distance) for each neighbor.
-    :return first_solution: The solution for the first iteration of Tabu search using
-        the redundant resolution strategy in a list.
-    :return distance_of_first_solution: The total distance that Travelling Salesman
-        will travel, if he follows the path in first_solution.
-    """
-
-    with open(path) as f:
-        start_node = f.read(1)
-    end_node = start_node
-
-    first_solution = []
-
-    visiting = start_node
-
-    distance_of_first_solution = 0
-    while visiting not in first_solution:
-        minim = 10000
-        for k in dict_of_neighbours[visiting]:
-            if int(k[1]) < int(minim) and k[0] not in first_solution:
-                minim = k[1]
-                best_node = k[0]
-
-        first_solution.append(visiting)
-        distance_of_first_solution = distance_of_first_solution + int(minim)
-        visiting = best_node
-
-    first_solution.append(end_node)
-
-    position = 0
-    for k in dict_of_neighbours[first_solution[-2]]:
-        if k[0] == start_node:
-            break
-        position += 1
-
-    distance_of_first_solution = (
-        distance_of_first_solution
-        + int(dict_of_neighbours[first_solution[-2]][position][1])
-        - 10000
-    )
-    return first_solution, distance_of_first_solution
 
 
 def find_neighborhood(solution, dict_of_neighbours):
@@ -163,6 +116,32 @@ def find_neighborhood(solution, dict_of_neighbours):
 
     neighborhood_of_solution.sort(key=lambda x: x[index_of_last_item_in_the_list])
     return neighborhood_of_solution
+
+
+def generate_first_solution(
+    path: str, dict_of_neighbours: Dict[str, List[List[str]]]
+) -> Tuple[List[str], int]:
+    with open(path) as f:
+        start_node = f.read(1)
+    first_solution = []
+    distance_of_first_solution = 0
+    visiting = start_node
+
+    while visiting not in first_solution:
+        best_node, min_distance = find_node_with_min_dist(
+            visiting, dict_of_neighbours, first_solution
+        )
+        if not best_node:
+            break  # break if there is no neighbour to visit
+        first_solution.append(visiting)
+        distance_of_first_solution += min_distance
+        visiting = best_node
+
+    first_solution.append(start_node)
+    distance_of_first_solution += calculate_total_distance(
+        first_solution[-2], start_node, dict_of_neighbours
+    )
+    return first_solution, distance_of_first_solution
 
 
 def tabu_search(
@@ -228,6 +207,35 @@ def tabu_search(
         count = count + 1
 
     return best_solution_ever, best_cost
+
+
+
+def find_node_with_min_dist(
+    node: str, dict_of_neighbours: Dict[str, List[List[str]]], first_solution: List[str]
+) -> Tuple[str, int]:
+    """Find the node with the minimum distance from the given node and not in first_solution"""
+
+    neighbours = [
+        (int(k[1]), k[0])
+        for k in dict_of_neighbours[node]
+        if k[0] not in first_solution
+    ]
+    if not neighbours:  # if no neighbours are found
+        return "", MAX_DISTANCE
+    min_distance, best_node = min(neighbours)
+    return best_node, min_distance
+
+
+def calculate_total_distance(
+    node: str, start_node: str, dict_of_neighbours: Dict[str, List[List[str]]]
+) -> int:
+    """Calculate the total distance to the start node from the given node"""
+    position = next(
+        i
+        for i, neighbour in enumerate(dict_of_neighbours[node])
+        if neighbour[0] == start_node
+    )
+    return int(dict_of_neighbours[node][position][1]) - MAX_DISTANCE
 
 
 def main(args=None):
