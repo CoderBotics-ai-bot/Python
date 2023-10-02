@@ -8,43 +8,22 @@ URL: https://en.wikipedia.org/wiki/Random_graph
 
 import random
 
-
 def random_graph(
     vertices_number: int, probability: float, directed: bool = False
 ) -> dict:
-    """
-    Generate a random graph
-    @input: vertices_number (number of vertices),
-            probability (probability that a generic edge (u,v) exists),
-            directed (if True: graph will be a directed graph,
-                      otherwise it will be an undirected graph)
-    @examples:
-    >>> random.seed(1)
-    >>> random_graph(4, 0.5)
-    {0: [1], 1: [0, 2, 3], 2: [1, 3], 3: [1, 2]}
-    >>> random.seed(1)
-    >>> random_graph(4, 0.5, True)
-    {0: [1], 1: [2, 3], 2: [3], 3: []}
-    """
-    graph: dict = {i: [] for i in range(vertices_number)}
-
-    # if probability is greater or equal than 1, then generate a complete graph
+    """Generate a random adjacency-list representation of a graph based on the number of vertices, edge probability,
+    and whether it is directed or not."""
+    # Return complete graph if probability >= 1
     if probability >= 1:
         return complete_graph(vertices_number)
-    # if probability is lower or equal than 0, then return a graph without edges
-    if probability <= 0:
-        return graph
 
-    # for each couple of nodes, add an edge from u to v
-    # if the number randomly generated is greater than probability probability
-    for i in range(vertices_number):
-        for j in range(i + 1, vertices_number):
-            if random.random() < probability:
-                graph[i].append(j)
-                if not directed:
-                    # if the graph is undirected, add an edge in from j to i, either
-                    graph[j].append(i)
-    return graph
+    # Return graph without edges if probability <= 0
+    if probability <= 0:
+        return {i: [] for i in range(vertices_number)}
+
+    # Generate edges for the graph
+    adjacency_list = generate_edges(vertices_number, probability, directed)
+    return adjacency_list
 
 
 def complete_graph(vertices_number: int) -> dict:
@@ -59,6 +38,21 @@ def complete_graph(vertices_number: int) -> dict:
     return {
         i: [j for j in range(vertices_number) if i != j] for i in range(vertices_number)
     }
+
+
+def generate_edges(vertices_number: int, probability: float, directed: bool) -> dict:
+    """Generates and returns edges of a graph based on the number of vertices, edge probability,
+    and whether it's directed or not."""
+    graph = {i: [] for i in range(vertices_number)}
+
+    for i in range(vertices_number):
+        for j in range(i + 1, vertices_number):
+            if random.random() < probability:
+                graph[i].append(j)
+                if not directed:
+                    graph[j].append(i)
+
+    return graph
 
 
 if __name__ == "__main__":
