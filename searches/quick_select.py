@@ -7,22 +7,31 @@ https://en.wikipedia.org/wiki/Quickselect
 import random
 
 
-def _partition(data: list, pivot) -> tuple:
+from typing import List, Tuple
+
+def _partition(data: List[int], pivot: int) -> Tuple[List[int], List[int], List[int]]:
     """
-    Three way partition the data into smaller, equal and greater lists,
-    in relationship to the pivot
-    :param data: The data to be sorted (a list)
-    :param pivot: The value to partition the data on
-    :return: Three list: smaller, equal and greater
+    Partitions the data into three lists: less than, equal to, and greater than the pivot.
+
+    This function performs a three-way partition of the data based on the pivot. It divides
+    the data into three lists:
+        1. Numbers less than the pivot.
+        2. Numbers equal to the pivot.
+        3. Numbers greater than the pivot.
+
+    Args:
+        data (List[int]): The data to be sorted.
+        pivot (int): The value to partition the data on.
+
+    Returns:
+        Tuple[List[int], List[int], List[int]]: A tuple containing three lists: numbers less than,
+        equal to, and greater than the pivot.
+
     """
-    less, equal, greater = [], [], []
-    for element in data:
-        if element < pivot:
-            less.append(element)
-        elif element > pivot:
-            greater.append(element)
-        else:
-            equal.append(element)
+    less = [x for x in data if x < pivot]
+    equal = [x for x in data if x == pivot]
+    greater = [x for x in data if x > pivot]
+
     return less, equal, greater
 
 
