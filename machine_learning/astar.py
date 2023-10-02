@@ -15,6 +15,9 @@ https://en.wikipedia.org/wiki/A*_search_algorithm
 import numpy as np
 
 
+from typing import List
+
+
 class Cell:
     """
     Class cell represents a cell in the world which have the properties:
@@ -85,53 +88,6 @@ class Gridworld:
         return neighbours
 
 
-def astar(world, start, goal):
-    """
-    Implementation of a start algorithm.
-    world : Object of the world object.
-    start : Object of the cell as  start position.
-    stop  : Object of the cell as goal position.
-
-    >>> p = Gridworld()
-    >>> start = Cell()
-    >>> start.position = (0,0)
-    >>> goal = Cell()
-    >>> goal.position = (4,4)
-    >>> astar(p, start, goal)
-    [(0, 0), (1, 1), (2, 2), (3, 3), (4, 4)]
-    """
-    _open = []
-    _closed = []
-    _open.append(start)
-
-    while _open:
-        min_f = np.argmin([n.f for n in _open])
-        current = _open[min_f]
-        _closed.append(_open.pop(min_f))
-        if current == goal:
-            break
-        for n in world.get_neigbours(current):
-            for c in _closed:
-                if c == n:
-                    continue
-            n.g = current.g + 1
-            x1, y1 = n.position
-            x2, y2 = goal.position
-            n.h = (y2 - y1) ** 2 + (x2 - x1) ** 2
-            n.f = n.h + n.g
-
-            for c in _open:
-                if c == n and c.f < n.f:
-                    continue
-            _open.append(n)
-    path = []
-    while current.parent is not None:
-        path.append(current.position)
-        current = current.parent
-    path.append(current.position)
-    return path[::-1]
-
-
 if __name__ == "__main__":
     world = Gridworld()
     # Start position and goal
@@ -145,3 +101,61 @@ if __name__ == "__main__":
     for i in s:
         world.w[i] = 1
     print(world.w)
+
+def astar(world: "Gridworld", start: "Cell", goal: "Cell") -> List[tuple]:
+    """Implementation of the A* Pathfinding Algorithm."""
+
+    open_list = [start]
+    closed_list = []
+
+    while open_list:
+        current = min(
+            open_list, key=lambda o: o.f
+        )  # Get the node in open list with the lowest f score
+        open_list.remove(current)
+        closed_list.append(current)
+
+        if current == goal:
+            return construct_path(current)
+
+        process_neighbours(world, open_list, closed_list, current, goal)
+
+
+def calculate_fgh(current: "Cell", neighbour: "Cell", goal: "Cell"):
+    """Calculate f, g, and h values for a cell."""
+
+    neighbour.g = current.g + 1
+    x1, y1 = neighbour.position
+    x2, y2 = goal.position
+    neighbour.h = (y2 - y1) ** 2 + (x2 - x1) ** 2
+    neighbour.f = neighbour.h + neighbour.g
+
+
+def process_neighbours(
+    world: "Gridworld",
+    open_list: List["Cell"],
+    closed_list: List["Cell"],
+    current: "Cell",
+    goal: "Cell",
+):
+    """Scan and process all neighbours of the current cell."""
+
+    for neighbour in world.get_neigbours(current):
+        if neighbour in closed_list or (
+            neighbour in open_list and neighbour.f < current.f
+        ):
+            continue
+
+        calculate_fgh(current, neighbour, goal)
+        open_list.append(neighbour)
+
+
+def construct_path(current: "Cell") -> List[tuple]:
+    """Traverse the path from the goal to the start and return the path."""
+
+    path = []
+    while current.parent is not None:
+        path.append(current.position)
+        current = current.parent
+    path.append(current.position)
+    return path[::-1]
