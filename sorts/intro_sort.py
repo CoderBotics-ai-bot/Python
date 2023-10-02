@@ -4,45 +4,95 @@ if the size of the list is under 16, use insertion sort
 https://en.wikipedia.org/wiki/Introsort
 """
 import math
+from typing import List
+
+
+from typing import List
 
 
 def insertion_sort(array: list, start: int = 0, end: int = 0) -> list:
     """
-    >>> array = [4, 2, 6, 8, 1, 7, 8, 22, 14, 56, 27, 79, 23, 45, 14, 12]
+    A function that sorts a list of elements using the Insertion Sort algorithm.
 
-    >>> insertion_sort(array, 0, len(array))
-    [1, 2, 4, 6, 7, 8, 8, 12, 14, 14, 22, 23, 27, 45, 56, 79]
+    Args:
+        array (list): The list of elements to be sorted.
+        start (int, optional): The starting index from where to start sorting, default is 0.
+        end (int, optional): The end index till where to sort. If not specified, entire list is sorted.
+
+    Returns:
+        list: A sorted list.
+
+    Examples:
+        >>> array = [4, 2, 6, 8, 1, 7, 8, 22, 14, 56, 27, 79, 23, 45, 14, 12]
+        >>> insertion_sort(array, 0, len(array))
+        [1, 2, 4, 6, 7, 8, 8, 12, 14, 14, 22, 23, 27, 45, 56, 79]
     """
     end = end or len(array)
     for i in range(start, end):
-        temp_index = i
-        temp_index_value = array[i]
-        while temp_index != start and temp_index_value < array[temp_index - 1]:
-            array[temp_index] = array[temp_index - 1]
-            temp_index -= 1
-        array[temp_index] = temp_index_value
+        array[shift_elements(array, start, i)] = array[i]
     return array
 
 
-def heapify(array: list, index: int, heap_size: int) -> None:  # Max Heap
-    """
-    >>> array = [4, 2, 6, 8, 1, 7, 8, 22, 14, 56, 27, 79, 23, 45, 14, 12]
+def heapify(array: list, index: int, heap_size: int) -> None:
+    """Converts a given array into a max heap at a given index within a heap of certain size.
 
-    >>> heapify(array, len(array) // 2 ,len(array))
+    This function enforces the max-heap property on the array, i.e., for any given node i,
+    array[i] is not smaller than its children. This property is recursively enforced on the
+    left and right subtrees of the node.
+
+    Args:
+        array (list): Input list to be converted into a heap.
+        index (int): The index where the heapify operation needs to be performed.
+        heap_size (int): The number of elements in the heap. Heapify operation is confined to this size.
+
+    Returns:
+        None: The function modifies the array in-place, does not return a value.
     """
     largest = index
-    left_index = 2 * index + 1  # Left Node
-    right_index = 2 * index + 2  # Right Node
+    left_index, right_index = 2 * index + 1, 2 * index + 2  # Left and Right Node
 
-    if left_index < heap_size and array[largest] < array[left_index]:
+    if is_larger(array, left_index, largest):
         largest = left_index
 
-    if right_index < heap_size and array[largest] < array[right_index]:
+    if is_larger(array, right_index, largest):
         largest = right_index
 
     if largest != index:
-        array[index], array[largest] = array[largest], array[index]
+        swap_elements(array, largest, index)
         heapify(array, largest, heap_size)
+
+def shift_elements(array: list, start: int, index: int) -> int:
+    """Shifts elements to right in array starting from start and till index
+
+    Args:
+        array (list): array where elements needs to be shifted
+        start (int): start index of array where shifting needs to start
+        index (int): index of array till where elements needs to be shifted
+
+    Returns:
+        int: position where current index element should be located
+    """
+    temp_index_value = array[index]
+    while index != start and temp_index_value < array[index - 1]:
+        array[index] = array[index - 1]
+        index -= 1
+    return index
+
+def is_larger(array: list, i: int, j: int) -> bool:
+    """Checks if array[i] is larger than array[j].
+
+    Returns:
+        bool: True if array[i] > array[j], else False.
+    """
+    try:
+        return array[i] > array[j]
+    except IndexError:
+        return False
+
+
+def swap_elements(array: list, i: int, j: int) -> None:
+    """Swap the elements of array at positions i and j."""
+    array[i], array[j] = array[j], array[i]
 
 
 def heap_sort(array: list) -> list:
@@ -85,19 +135,42 @@ def median_of_3(
         return array[last_index]
 
 
-def partition(array: list, low: int, high: int, pivot: int) -> int:
-    """
-    >>> array = [4, 2, 6, 8, 1, 7, 8, 22, 14, 56, 27, 79, 23, 45, 14, 12]
 
+def partition(array: List[int], low: int, high: int, pivot: int) -> int:
+    """
+    Efficiently partition an array into two halves around a pivot point.
+
+    This function uses the Hoare partition scheme. It reorders the elements in
+    the array so that all elements less than the pivot come before all elements
+    larger than the pivot. The pivot does not necessarily occupy its final sorted
+    position after this operation.
+
+    Args:
+        array (List[int]): the list of integers to be partitioned.
+        low (int): the starting index from where to partition.
+        high (int): the ending index till where to partition.
+        pivot (int): the pivot element around which the array will be partitioned.
+
+    Returns:
+        int: the index where the pivot is placed after partitioning. This can be
+        used as the starting point of the next partitioning operation.
+
+    Raises:
+        ValueError: If 'low', 'high' or 'pivot' are not valid index values in the array.
+
+    Side Effects:
+        Modifies the input array in place, altering the order of elements.
+
+    >>> array = [4, 2, 6, 8, 1, 7, 8, 22, 14, 56, 27, 79, 23, 45, 14, 12]
     >>> partition(array, 0, len(array), 12)
     8
     """
     i = low
-    j = high
+    j = high - 1
+
     while True:
         while array[i] < pivot:
             i += 1
-        j -= 1
         while pivot < array[j]:
             j -= 1
         if i >= j:
