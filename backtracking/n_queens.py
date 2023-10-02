@@ -9,6 +9,9 @@
 """
 from __future__ import annotations
 
+
+from typing import List
+
 solution = []
 
 
@@ -38,39 +41,40 @@ def is_safe(board: list[list[int]], row: int, column: int) -> bool:
         or is_in_diagonal(board, row, column)
     )
 
-
-def solve(board: list[list[int]], row: int) -> bool:
-    """
-    It creates a state space tree and calls the safe function until it receives a
-    False Boolean and terminates that branch and backtracks to the next
-    possible solution branch.
-    """
-    if row >= len(board):
-        """
-        If the row number exceeds N we have board with a successful combination
-        and that combination is appended to the solution list and the board is printed.
-
-        """
-        solution.append(board)
-        printboard(board)
-        print()
+def solve(board: List[List[int]], row: int) -> bool:
+    """Solve the N-Queens problem using backtracking."""
+    if _all_rows_completed(board, row):
+        _handle_solution(board)
         return True
+
     for i in range(len(board)):
-        """
-        For every row it iterates through each column to check if it is feasible to
-        place a queen there.
-        If all the combinations for that particular branch are successful the board is
-        reinitialized for the next possible combination.
-        """
         if is_safe(board, row, i):
-            board[row][i] = 1
-            solve(board, row + 1)
-            board[row][i] = 0
+            _process_domain_value(board, row, i)
+
     return False
 
 def is_in_row(board: list[list[int]], row: int) -> bool:
     """Check if a queen exists in the given row of the board."""
     return 1 in board[row]
+
+
+def _all_rows_completed(board: List[List[int]], row: int) -> bool:
+    """Check if all rows have been filled."""
+    return row >= len(board)
+
+
+def _handle_solution(board: List[List[int]]) -> None:
+    """Handle the successful completion of a board configuration."""
+    solution.append(board)
+    printboard(board)
+    print()
+
+
+def _process_domain_value(board: List[List[int]], row: int, i: int) -> None:
+    """Act on a potential domain value."""
+    board[row][i] = 1
+    solve(board, row + 1)
+    board[row][i] = 0
 
 
 def is_in_column(board: list[list[int]], column: int) -> bool:
