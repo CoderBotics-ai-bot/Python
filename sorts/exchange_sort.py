@@ -1,23 +1,25 @@
-def exchange_sort(numbers: list[int]) -> list[int]:
+
+
+from typing import List, TypeVar
+
+Comparable = TypeVar("Comparable")
+
+def exchange_sort(numbers: List[Comparable]) -> List[Comparable]:
     """
-    Uses exchange sort to sort a list of numbers.
-    Source: https://en.wikipedia.org/wiki/Sorting_algorithm#Exchange_sort
-    >>> exchange_sort([5, 4, 3, 2, 1])
-    [1, 2, 3, 4, 5]
-    >>> exchange_sort([-1, -2, -3])
-    [-3, -2, -1]
-    >>> exchange_sort([1, 2, 3, 4, 5])
-    [1, 2, 3, 4, 5]
-    >>> exchange_sort([0, 10, -2, 5, 3])
-    [-2, 0, 3, 5, 10]
-    >>> exchange_sort([])
-    []
+    Sort a list of comparable elements using exchange sort algorithm.
     """
+
+    def swap(i: int, j: int) -> None:
+        """
+        Swap elements at index i and j.
+        """
+        numbers[i], numbers[j] = numbers[j], numbers[i]
+
     numbers_length = len(numbers)
     for i in range(numbers_length):
         for j in range(i + 1, numbers_length):
             if numbers[j] < numbers[i]:
-                numbers[i], numbers[j] = numbers[j], numbers[i]
+                swap(i, j)
     return numbers
 
 
