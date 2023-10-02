@@ -1,16 +1,28 @@
-def binary_search(lst, item, start, end):
-    if start == end:
-        return start if lst[start] > item else start + 1
+from typing import List
+
+def binary_search(lst: List[int], item: int, start: int, end: int) -> int:
+    """
+    Perform a Binary Search on the list to find where the item fits in
+    Args:
+        lst: The list to search
+        item: The item to search for
+        start: Start index of the segment to search in
+        end: End index of the segment to search in
+
+    Returns:
+         The index found or -1 if not found
+    """
     if start > end:
         return start
 
-    mid = (start + end) // 2
-    if lst[mid] < item:
-        return binary_search(lst, item, mid + 1, end)
-    elif lst[mid] > item:
+    mid = get_mid_point(start, end)
+
+    if is_item_found(lst, mid, item):
+        return mid
+    elif is_item_less_than_mid(lst, mid, item):
         return binary_search(lst, item, start, mid - 1)
     else:
-        return mid
+        return binary_search(lst, item, mid + 1, end)
 
 
 def insertion_sort(lst):
@@ -22,6 +34,21 @@ def insertion_sort(lst):
         lst = lst[:pos] + [value] + lst[pos:index] + lst[index + 1 :]
 
     return lst
+
+
+def get_mid_point(start: int, end: int) -> int:
+    """Calculate mid point"""
+    return (start + end) // 2
+
+
+def is_item_found(lst: List[int], mid: int, item: int) -> bool:
+    """Check if item is equal to Mid point"""
+    return lst[mid] == item
+
+
+def is_item_less_than_mid(lst: List[int], mid: int, item: int) -> bool:
+    """Check if item is less than Mid point"""
+    return lst[mid] > item
 
 
 def merge(left, right):
