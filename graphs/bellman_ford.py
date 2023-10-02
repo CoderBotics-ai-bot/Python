@@ -6,12 +6,32 @@ def print_distance(distance: list[float], src):
     for i, d in enumerate(distance):
         print(f"{i}\t\t{d}")
 
-
 def check_negative_cycle(
     graph: list[dict[str, int]], distance: list[float], edge_count: int
-):
-    for j in range(edge_count):
-        u, v, w = (graph[j][k] for k in ["src", "dst", "weight"])
+) -> bool:
+    """Check existence of negative weight cycle in the graph.
+
+    This function takes a graph (represented as a list of dictionaries, with each dictionary having a source vertex,
+    destination vertex and weight), a list of distances representing the minimum distance from the source to each vertex,
+    (initialized with infinity except the source which is zero), and an integer representing the number of edges in the graph,
+    all as input.
+
+    It iterates over all the edges and for each edge it checks if the distance to the destination vertex
+    can be shortened by going through the source.
+    It returns True if it can, implying that a negative weight cycle exists and False otherwise.
+
+    Args:
+        graph (list[dict[str, int]]): A list of dictionaries, each representing an edge in the form
+                                      {"src": source_vertex, "dst": destination_vertex, "weight": edge_weight}.
+        distance (list[float]): A list representing the minimum distance from the source to each vertex.
+        edge_count (int): An integer representing the number of edges in the graph.
+
+    Returns:
+        bool: True if there exists a negative weight cycle in the graph, False otherwise.
+
+    """
+    for edge in graph[:edge_count]:
+        u, v, w = edge["src"], edge["dst"], edge["weight"]
         if distance[u] != float("inf") and distance[u] + w < distance[v]:
             return True
     return False
