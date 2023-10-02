@@ -127,14 +127,45 @@ class ExternalSort:
     def get_number_blocks(self, filename, block_size):
         return (os.stat(filename).st_size / block_size) + 1
 
+def parse_memory(string: str) -> int:
+    """
+    Convert a string representing memory size to bytes.
 
-def parse_memory(string):
-    if string[-1].lower() == "k":
-        return int(string[:-1]) * 1024
-    elif string[-1].lower() == "m":
-        return int(string[:-1]) * 1024 * 1024
-    elif string[-1].lower() == "g":
-        return int(string[:-1]) * 1024 * 1024 * 1024
+    The function accepts a string representing memory size and converts it
+    to its corresponding size in bytes. The memory size string can be
+    suffixed with 'k', 'm', or 'g' to indicate kilobytes, megabytes, or
+    gigabytes, respectively, otherwise it is treated as bytes.
+
+    Args:
+        string (str): The string representing memory size
+
+    Returns:
+        int: The memory size in bytes
+
+    For example,
+
+    >>> parse_memory("1k")
+    1024
+
+    >>> parse_memory("1m")
+    1048576
+
+    >>> parse_memory("1g")
+    1073741824
+
+    >>> parse_memory("1024")
+    1024
+
+    The function is case insensitive and will treat 'K', 'M', and 'G'
+    the same as 'k', 'm', and 'g'.
+
+    Note: This function assumes that a kilobyte is 1024 bytes
+    """
+    units = {"k": 1, "m": 2, "g": 3}
+    unit = string[-1].lower()
+
+    if unit in units:
+        return int(string[:-1]) * 1024 ** units[unit]
     else:
         return int(string)
 
