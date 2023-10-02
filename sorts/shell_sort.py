@@ -3,31 +3,41 @@ https://en.wikipedia.org/wiki/Shellsort#Pseudocode
 """
 
 
-def shell_sort(collection):
-    """Pure implementation of shell sort algorithm in Python
-    :param collection:  Some mutable ordered collection with heterogeneous
-    comparable items inside
-    :return:  the same collection ordered by ascending
+from typing import List
 
-    >>> shell_sort([0, 5, 3, 2, 2])
-    [0, 2, 2, 3, 5]
-    >>> shell_sort([])
-    []
-    >>> shell_sort([-2, -5, -45])
-    [-45, -5, -2]
+def shell_sort(collection: List[int]) -> List[int]:
     """
-    # Marcin Ciura's gap sequence
+    Pure implementation of the Shell sort algorithm in Python.
+    Args:
+        collection: Some mutable ordered collection with heterogeneous comparable items inside
+    Returns:
+        A new sorted list from the elements of the input collection
+    """
 
-    gaps = [701, 301, 132, 57, 23, 10, 4, 1]
-    for gap in gaps:
+    def sort_on_gap(collection: List[int], gap: int) -> List[int]:
+        """
+        Sorts the collection based on a given gap
+        Args:
+            collection: The collection to sort
+            gap: The gap to sort with
+        Returns:
+            The sorted collection based on the given gap
+        """
         for i in range(gap, len(collection)):
-            insert_value = collection[i]
+            selected = collection[i]
             j = i
-            while j >= gap and collection[j - gap] > insert_value:
+            while j >= gap and collection[j - gap] > selected:
                 collection[j] = collection[j - gap]
                 j -= gap
             if j != i:
-                collection[j] = insert_value
+                collection[j] = selected
+
+        return collection
+
+    gaps = [701, 301, 132, 57, 23, 10, 4, 1]
+    for gap in gaps:
+        collection = sort_on_gap(collection, gap)
+
     return collection
 
 
