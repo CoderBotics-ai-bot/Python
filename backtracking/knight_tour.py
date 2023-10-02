@@ -42,27 +42,27 @@ def is_complete(board: list[list[int]]) -> bool:
 
     return not any(elem == 0 for row in board for elem in row)
 
-
 def open_knight_tour_helper(
-    board: list[list[int]], pos: tuple[int, int], curr: int
+    board: List[List[int]], pos: Tuple[int, int], curr: int
 ) -> bool:
     """
-    Helper function to solve knight tour problem.
-    """
+    Recursive helper function to solve the open knight's tour problem. This function works by checking
+    if the board traversal is complete, if it's complete it returns True immediately. If not, it continues
+    to check and mark each valid move from the current position to find a solution path. If none found, it
+    backtracks by resetting the current position to zero.
 
+    Args:
+        board (List[List[int]]): A 2D list representing the chessboard, containing numbers indicating the visit order
+        pos (Tuple[int, int]): Current position of the knight
+        curr (int): The current step number of the knight.
+
+    Returns:
+        bool: Returns True if a solution is found, otherwise False.
+    """
     if is_complete(board):
         return True
 
-    for position in get_valid_pos(pos, len(board)):
-        y, x = position
-
-        if board[y][x] == 0:
-            board[y][x] = curr + 1
-            if open_knight_tour_helper(board, position, curr + 1):
-                return True
-            board[y][x] = 0
-
-    return False
+    return try_next_positions(board, pos, curr)
 
 
 def open_knight_tour(n: int) -> list[list[int]]:
@@ -90,6 +90,32 @@ def open_knight_tour(n: int) -> list[list[int]]:
 
     msg = f"Open Kight Tour cannot be performed on a board of size {n}"
     raise ValueError(msg)
+
+
+def try_next_positions(board: List[List[int]], pos: Tuple[int, int], curr: int) -> bool:
+    """
+    Helper function to try and mark all valid positions from the current position. If a solution path
+    is found, returns True, else it backtracks by unmarking the current position and returning False
+
+    Args:
+        board (List[List[int]]): A 2D list representing the chessboard, containing numbers indicating the visit order
+        pos (Tuple[int, int]): Current position of the knight
+        curr (int): The current step number of the knight.
+
+    Returns:
+        bool: Returns True if a solution is found, otherwise False.
+    """
+
+    for position in get_valid_pos(pos, len(board)):
+        y, x = position
+
+        if board[y][x] == 0:
+            board[y][x] = curr + 1
+            if open_knight_tour_helper(board, position, curr + 1):
+                return True
+            board[y][x] = 0
+
+    return False
 
 
 if __name__ == "__main__":
