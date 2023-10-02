@@ -8,7 +8,6 @@ The only solution is 2^2+3^2. Constraints: 1<=X<=1000, 2<=N<=10.
 
 from math import pow
 
-
 def backtrack(
     needed_sum: int,
     power: int,
@@ -17,39 +16,30 @@ def backtrack(
     solutions_count: int,
 ) -> tuple[int, int]:
     """
-    >>> backtrack(13, 2, 1, 0, 0)
-    (0, 1)
-    >>> backtrack(100, 2, 1, 0, 0)
-    (0, 3)
-    >>> backtrack(100, 3, 1, 0, 0)
-    (0, 1)
-    >>> backtrack(800, 2, 1, 0, 0)
-    (0, 561)
-    >>> backtrack(1000, 10, 1, 0, 0)
-    (0, 0)
-    >>> backtrack(400, 2, 1, 0, 0)
-    (0, 55)
-    >>> backtrack(50, 1, 1, 0, 0)
-    (0, 3658)
+    Find the count of solutions wherein the sum of the powers
+    of the consecutive non-negative integers starting from current_number
+    is equal to needed_sum.
+    This function uses backtracking to find the above mentioned solutions.
     """
+    # Solution is found, increment solutions_count and backtrack
     if current_sum == needed_sum:
-        # If the sum of the powers is equal to needed_sum, then we have a solution.
-        solutions_count += 1
-        return current_sum, solutions_count
+        return current_sum, solutions_count + 1
 
-    i_to_n = int(pow(current_number, power))
+    # Calculate power of the current number
+    i_to_n = pow(current_number, power)
+
+    # If current_sum with current number's power is still not greater than needed_sum, proceed and add the number's power to current_sum
     if current_sum + i_to_n <= needed_sum:
-        # If the sum of the powers is less than needed_sum, then continue adding powers.
-        current_sum += i_to_n
-        current_sum, solutions_count = backtrack(
-            needed_sum, power, current_number + 1, current_sum, solutions_count
+        _, solutions_count = backtrack(
+            needed_sum, power, current_number + 1, current_sum + i_to_n, solutions_count
         )
-        current_sum -= i_to_n
+
+    # Regardless of the above condition, if current number's power is still less than needed_sum, proceed without adding the number's power to current_sum
     if i_to_n < needed_sum:
-        # If the power of i is less than needed_sum, then try with the next power.
-        current_sum, solutions_count = backtrack(
+        _, solutions_count = backtrack(
             needed_sum, power, current_number + 1, current_sum, solutions_count
         )
+
     return current_sum, solutions_count
 
 
