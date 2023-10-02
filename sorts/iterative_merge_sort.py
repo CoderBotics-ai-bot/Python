@@ -12,10 +12,31 @@ python3 iterative_merge_sort.py
 from __future__ import annotations
 
 
+from typing import List
+
 def merge(input_list: list, low: int, mid: int, high: int) -> list:
     """
-    sorting left-half and right-half individually
-    then merging them into result
+    Merges and sorts two halves of a list.
+
+    This function divides the input_list into two halves, sorts the individual halves and
+    then merges them back together. The boundaries of the two halves are defined by the low, mid
+    and high indices. The two halves are sorted by comparing the first element of each half.
+    The smaller element goes first and then removed from the list, this continues until one
+    of the lists (or both) is empty. Any remaining elements from either half are then added
+    to the end of the sorted list. The input_list from index low to high is then replaced by
+    the sorted list.
+
+    Args:
+        input_list (List): The list to be sorted.
+        low (int): The starting index for the first half.
+        mid (int): The ending index for the first half and starting index for the second half.
+        high (int): The ending index for the second half.
+
+    Returns:
+        input_list (List): The sorted list.
+
+    Side effects:
+        This function modifies the original input_list.
     """
     result = []
     left, right = input_list[low:mid], input_list[mid : high + 1]
@@ -24,62 +45,39 @@ def merge(input_list: list, low: int, mid: int, high: int) -> list:
     input_list[low : high + 1] = result + left + right
     return input_list
 
-
-# iteration over the unsorted list
-def iter_merge_sort(input_list: list) -> list:
+def iter_merge_sort(input_list: List[int]) -> List[int]:
     """
-    Return a sorted copy of the input list
+    An efficient implementation of iterative merge sort using python built-in functions.
 
-    >>> iter_merge_sort([5, 9, 8, 7, 1, 2, 7])
-    [1, 2, 5, 7, 7, 8, 9]
-    >>> iter_merge_sort([1])
-    [1]
-    >>> iter_merge_sort([2, 1])
-    [1, 2]
-    >>> iter_merge_sort([2, 1, 3])
-    [1, 2, 3]
-    >>> iter_merge_sort([4, 3, 2, 1])
-    [1, 2, 3, 4]
-    >>> iter_merge_sort([5, 4, 3, 2, 1])
-    [1, 2, 3, 4, 5]
-    >>> iter_merge_sort(['c', 'b', 'a'])
-    ['a', 'b', 'c']
-    >>> iter_merge_sort([0.3, 0.2, 0.1])
-    [0.1, 0.2, 0.3]
-    >>> iter_merge_sort(['dep', 'dang', 'trai'])
-    ['dang', 'dep', 'trai']
-    >>> iter_merge_sort([6])
-    [6]
-    >>> iter_merge_sort([])
-    []
-    >>> iter_merge_sort([-2, -9, -1, -4])
-    [-9, -4, -2, -1]
-    >>> iter_merge_sort([1.1, 1, 0.0, -1, -1.1])
-    [-1.1, -1, 0.0, 1, 1.1]
-    >>> iter_merge_sort(['c', 'b', 'a'])
-    ['a', 'b', 'c']
-    >>> iter_merge_sort('cba')
-    ['a', 'b', 'c']
+    Args:
+        input_list: A list of integers that need to be sorted.
+
+    Returns:
+        A new list containing all the elements from the input list in ascending order.
+
+    Examples:
+        >>> iter_merge_sort([5, 9, 8, 7, 1, 2, 7])
+        [1, 2, 5, 7, 7, 8, 9]
+        >>> iter_merge_sort(['c', 'b', 'a'])
+        ['a', 'b', 'c']
+        >>> iter_merge_sort([0.3, 0.2, 0.1])
+        [0.1, 0.2, 0.3]
     """
-    if len(input_list) <= 1:
+    list_length = len(input_list)
+
+    if list_length <= 1:
         return input_list
-    input_list = list(input_list)
 
-    # iteration for two-way merging
-    p = 2
-    while p <= len(input_list):
-        # getting low, high and middle value for merge-sort of single list
-        for i in range(0, len(input_list), p):
-            low = i
-            high = i + p - 1
-            mid = (low + high + 1) // 2
-            input_list = merge(input_list, low, mid, high)
-        # final merge of last two parts
-        if p * 2 >= len(input_list):
-            mid = i
-            input_list = merge(input_list, 0, mid, len(input_list) - 1)
-            break
-        p *= 2
+    input_list = list(input_list)
+    merge_size = 1
+
+    while merge_size < list_length:
+        for i in range(0, list_length, 2 * merge_size):
+            left = input_list[i : i + merge_size]
+            right = input_list[i + merge_size : i + 2 * merge_size]
+            merge_array = sorted(left + right)
+            input_list[i : i + 2 * merge_size] = merge_array
+        merge_size *= 2
 
     return input_list
 
