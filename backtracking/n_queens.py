@@ -57,6 +57,20 @@ def is_in_row(board: list[list[int]], row: int) -> bool:
     """Check if a queen exists in the given row of the board."""
     return 1 in board[row]
 
+def printboard(board: List[List[int]]) -> None:
+    """
+    Prints the board that has a successful combination.
+
+    Args:
+    board (List[List[int]]): The N x N board where queens are currently placed.
+
+    Returns:
+    None
+    """
+    for row in board:
+        print(" ".join("Q" if cell == 1 else "." for cell in row), end=" ")
+        print()
+
 
 def _all_rows_completed(board: List[List[int]], row: int) -> bool:
     """Check if all rows have been filled."""
@@ -89,19 +103,6 @@ def is_in_diagonal(board: list[list[int]], row: int, column: int) -> bool:
     ) or any(
         board[i][j] == 1 for i, j in zip(range(row, -1, -1), range(column, len(board)))
     )
-
-
-def printboard(board: list[list[int]]) -> None:
-    """
-    Prints the boards that have a successful combination.
-    """
-    for i in range(len(board)):
-        for j in range(len(board)):
-            if board[i][j] == 1:
-                print("Q", end=" ")
-            else:
-                print(".", end=" ")
-        print()
 
 
 # n=int(input("The no. of queens"))
