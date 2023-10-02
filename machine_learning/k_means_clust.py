@@ -47,6 +47,12 @@ import pandas as pd
 from matplotlib import pyplot as plt
 from sklearn.metrics import pairwise_distances
 
+
+from typing import List, Tuple, Optional
+
+
+from typing import List, Optional, Tuple
+
 warnings.filterwarnings("ignore")
 
 TAG = "K-MEANS-CLUST/ "
@@ -126,15 +132,31 @@ def plot_heterogeneity(heterogeneity, k):
 
 
 def kmeans(
-    data, k, initial_centroids, maxiter=500, record_heterogeneity=None, verbose=False
-):
-    """This function runs k-means on given data and initial set of centroids.
-    maxiter: maximum number of iterations to run.(default=500)
-    record_heterogeneity: (optional) a list, to store the history of heterogeneity
-                          as function of iterations
-                          if None, do not store the history.
-    verbose: if True, print how many data points changed their cluster labels in
-                          each iteration"""
+    data: np.ndarray,
+    k: int,
+    initial_centroids: np.ndarray,
+    maxiter: int = 500,
+    record_heterogeneity: Optional[List[float]] = None,
+    verbose: bool = False,
+) -> Tuple[np.ndarray, np.ndarray]:
+    """
+    Run K-means algorithm on given data with a specified number of clusters and initial set of centroids.
+
+    Parameters:
+        data (np.ndarray): A multi-dimensional numpy array where each row represents a data point and columns
+        are features of the data point.
+        k (int): The number of clusters to form.
+        initial_centroids (np.ndarray): Initial centroid values. Each row represents a centroid and columns
+        corresponds to features of the centroid.
+        maxiter (int, optional): Maximum number of iterations to run, defaults to 500.
+        record_heterogeneity (List[float], optional): track history of heterogeneity, which is the
+        convergence metric.
+        Defaults to None.
+        verbose (bool, optional): Whether to print the progress of the algorithm. Defaults to False.
+
+    Returns:
+        Tuple[np.ndarray, np.ndarray]: A tuple of two numpy arrays. The first array represents the centroids of the clusters. The second array represents the labels of the data points.
+    """
     centroids = initial_centroids[:]
     prev_cluster_assignment = None
 
@@ -145,30 +167,17 @@ def kmeans(
         # 1. Make cluster assignments using nearest centroids
         cluster_assignment = assign_clusters(data, centroids)
 
-        # 2. Compute a new centroid for each of the k clusters, averaging all data
-        #    points assigned to that cluster.
+        # 2. Compute a new centroid for each of the k clusters, averaging all data points assigned to that cluster.
         centroids = revise_centroids(data, k, cluster_assignment)
 
-        # Check for convergence: if none of the assignments changed, stop
-        if (
-            prev_cluster_assignment is not None
-            and (prev_cluster_assignment == cluster_assignment).all()
-        ):
+        if check_convergence(cluster_assignment, prev_cluster_assignment, verbose):
             break
-
-        # Print number of new assignments
-        if prev_cluster_assignment is not None:
-            num_changed = np.sum(prev_cluster_assignment != cluster_assignment)
-            if verbose:
-                print(
-                    f"    {num_changed:5d} elements changed their cluster assignment."
-                )
 
         # Record heterogeneity convergence metric
         if record_heterogeneity is not None:
-            # YOUR CODE HERE
-            score = compute_heterogeneity(data, k, centroids, cluster_assignment)
-            record_heterogeneity.append(score)
+            record_heterogeneity_metric(
+                data, k, centroids, cluster_assignment, record_heterogeneity
+            )
 
         prev_cluster_assignment = cluster_assignment[:]
 
@@ -192,6 +201,33 @@ if False:  # change to true to run this test case.
         verbose=True,
     )
     plot_heterogeneity(heterogeneity, k)
+
+def check_convergence(
+    cluster_assignment: np.ndarray, prev_cluster_assignment: np.ndarray, verbose: bool
+) -> bool:
+    """Check for convergence: if none of the assignments changed, stop"""
+    if (
+        prev_cluster_assignment is not None
+        and (prev_cluster_assignment == cluster_assignment).all()
+    ):
+        return True
+    elif prev_cluster_assignment is not None:
+        num_changed = np.sum(prev_cluster_assignment != cluster_assignment)
+        if verbose:
+            print(f"    {num_changed:5d} elements changed their cluster assignment.")
+    return False
+
+
+def record_heterogeneity_metric(
+    data: np.ndarray,
+    k: int,
+    centroids: np.ndarray,
+    cluster_assignment: np.ndarray,
+    heterogeneity: List[float],
+) -> None:
+    """Record heterogeneity convergence metric"""
+    score = compute_heterogeneity(data, k, centroids, cluster_assignment)
+    heterogeneity.append(score)
 
 
 def report_generator(
